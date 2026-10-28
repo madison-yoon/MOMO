@@ -113,7 +113,7 @@ function SignUp() {
             <input
               id="signup-id"
               name="id"
-              type="string"
+              type="text"
               placeholder="아이디 입력해 주세요"
               value={formData.id}
               onChange={handleChange}
