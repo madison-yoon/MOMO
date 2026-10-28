@@ -3,7 +3,7 @@ import { Link } from "react-router-dom";
 import "../App.css";
 
 // 백엔드 API 서버 주소로 올바르게 설정
-const API_URL = "http://localhost:8111/api/movies";
+const API_URL = "http://localhost:8000/api/movies";
 
 function formatNumber(value) {
   return Number(value || 0).toLocaleString("ko-KR");

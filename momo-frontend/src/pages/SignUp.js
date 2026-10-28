@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { Link } from "react-router-dom";
+import { Link,useNavigate } from "react-router-dom";
 import '../App.css';
 import logoImage from '../textlogo.png'; 
 
@@ -11,6 +11,7 @@ const nicknameRegex = /^[가-힣a-zA-Z0-9]{2,10}$/;
 
 function SignUp() {
   const [formData, setFormData] = useState({
+    id: "",
     email: "",
     password: "",
     passwordConfirm: "",
@@ -19,6 +20,7 @@ function SignUp() {
 
   const [errors, setErrors] = useState({});
   const [message, setMessage] = useState("");
+  const navigate = useNavigate();
 
   const handleChange = (e) => {
     const { name, value } = e.target;
@@ -40,6 +42,9 @@ function SignUp() {
     e.preventDefault();
 
     const newErrors = {};
+    if (!formData.id.trim()) {
+      newErrors.id = "아이디를 입력해 주세요.";
+    }
 
     if (!emailRegex.test(formData.email)) {
       newErrors.email = "올바른 이메일 형식을 입력해 주세요.";
@@ -69,7 +74,7 @@ function SignUp() {
             "Content-Type": "application/json",
           },
           body: JSON.stringify({
-            loginId: formData.email,
+            loginId: formData.id,
             email: formData.email,
             password: formData.password,
             nickname: formData.nickname,
@@ -78,8 +83,9 @@ function SignUp() {
 
         if (response.ok) {
           setMessage("회원가입이 완료되었습니다!");
-          // 필요하다면 로그인 페이지로 이동: navigate('/login') 등
-        } else {
+            setTimeout(() => {
+            navigate("/login");
+          }, 1000);        } else {
           setMessage("회원가입에 실패했습니다. 입력한 정보를 확인해 주세요.");
         }
       } catch (error) {
@@ -102,6 +108,20 @@ function SignUp() {
         </p>
 
         <form onSubmit={handleSubmit} noValidate>
+          <div className="auth-field">
+            <label htmlFor="signup-id">ID</label>
+            <input
+              id="signup-id"
+              name="id"
+              type="string"
+              placeholder="아이디 입력해 주세요"
+              value={formData.id}
+              onChange={handleChange}
+            />
+            {errors.id && <p className="auth-error">{errors.id}</p>}
+          </div>
+
+
           <div className="auth-field">
             <label htmlFor="signup-email">EMAIL</label>
             <input
