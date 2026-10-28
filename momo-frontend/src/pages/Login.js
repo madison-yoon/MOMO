@@ -3,10 +3,8 @@ import { Link, useNavigate } from "react-router-dom";
 import '../App.css';
 import logoImage from '../textlogo.png'; 
 
-const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-
 function Login() {
-  const [email, setEmail] = useState("");
+  const [id, setId] = useState("");
   const [password, setPassword] = useState("");
   const [errors, setErrors] = useState({});
   const [message, setMessage] = useState("");
@@ -17,8 +15,8 @@ function Login() {
 
     const newErrors = {};
 
-    if (!emailRegex.test(email.trim())) {
-      newErrors.email = "올바른 이메일 형식을 입력해 주세요.";
+    if (!id.trim()) {
+      newErrors.id = "아이디를 입력해 주세요.";
     }
 
     if (!password) {
@@ -37,7 +35,7 @@ function Login() {
             "Content-Type": "application/json",
           },
           body: JSON.stringify({
-            loginId: email, // 백엔드 LoginRequest의 필드명에 맞춤
+            loginId: id.trim(), // 백엔드 LoginRequest의 필드명에 맞춤
             password: password,
           }),
         });
@@ -60,77 +58,99 @@ function Login() {
     }
   };
 
-  return (
-    <main className="auth-page">
-      <section className="auth-card">
-        <Link to="/" className="auth-logo">
-          <img src={logoImage} alt="MOMO 로고" style={{ height: '32px' }} /> 
-        </Link>
-        <br/>
-      
 
-        <p className="auth-description">
-          로그인하고 영화 리뷰를 확인해 보세요.
-        </p>
+return (
+  <main className="signup-page">
+    <section className="signup-wrapper">
+      <Link to="/" className="signup-brand">
+        <img src={logoImage} alt="MOMO 로고" />
+        <span>MOVIE MEMO</span>
+      </Link>
+
+      <section className="signup-card login-card">
+        <div className="signup-card-heading">
+          <span className="signup-eyebrow">WELCOME BACK</span>
+          <h1>
+            다시, 나만의 영화 메모로
+            <br />
+            돌아오셨네요.
+          </h1>
+          <p>
+            로그인하고 마음에 남는 영화와
+            <br />
+            다양한 리뷰를 만나 보세요.
+          </p>
+          <div className="signup-note-label">
+            <span>MY MOVIE NOTE</span>
+            <span>LOGIN TO MOMO</span>
+          </div>
+        </div>
 
         <form onSubmit={handleSubmit} noValidate>
-          <div className="auth-field">
-            <label htmlFor="login-email">이메일</label>
-
-
+          <div className="signup-field">
+            <label htmlFor="login-id">아이디</label>
             <input
-              id="login-email"
-              type="email"
-              placeholder="example@email.com"
-              value={email}
+              id="login-id"
+              type="text"
+              placeholder="아이디를 입력해 주세요"
+              value={id}
+              autoComplete="username"
               onChange={(e) => {
-                setEmail(e.target.value);
-                setErrors((prev) => ({ ...prev, email: "" }));
+                setId(e.target.value);
+                setErrors((prev) => ({ ...prev, id: "" }));
                 setMessage("");
               }}
             />
-
-            {errors.email && <p className="auth-error">{errors.email}</p>}
+            {errors.id && (
+              <p className="signup-error">{errors.id}</p>
+            )}
           </div>
-          <br/>
 
 
-          <div className="auth-field">
+          <div className="signup-field">
             <label htmlFor="login-password">비밀번호</label>
-          <br/>
-
-
             <input
               id="login-password"
               type="password"
               placeholder="비밀번호를 입력해 주세요"
               value={password}
+              autoComplete="current-password"
               onChange={(e) => {
                 setPassword(e.target.value);
                 setErrors((prev) => ({ ...prev, password: "" }));
                 setMessage("");
               }}
             />
-
-            {errors.password && <p className="auth-error">{errors.password}</p>}
+            {errors.password && (
+              <p className="signup-error">{errors.password}</p>
+            )}
           </div>
-          <br/>
 
-          <button type="submit" className="auth-submit">
+          <button type="submit" className="signup-submit">
             로그인
+            <span aria-hidden="true">→</span>
           </button>
 
-          {message && <p className="auth-notice">{message}</p>}
+          {message && (
+            <p className="signup-message" role="status">
+              {message}
+            </p>
+          )}
         </form>
-          <br/>
 
-
-        <p className="auth-footer">
-          아직 회원이 아니신가요? <Link to="/signup">회원가입</Link>
-        </p>
+        <div className="signup-footer">
+          <span>아직 회원이 아니신가요?</span>
+          <Link to="/signup">회원가입</Link>
+        </div>
       </section>
-    </main>
-  );
+
+      <p className="signup-bottom-caption">
+        YOUR MOVIES, YOUR MEMORIES.
+      </p>
+    </section>
+  </main>
+);
+
 }
 
 export default Login;

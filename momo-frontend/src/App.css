@@ -518,3 +518,370 @@ form button[type="submit"]:hover:not(:disabled),
     grid-template-columns: repeat(2, minmax(0, 1fr));
   }
 }
+
+
+/* ========================================
+   MOMO 회원가입 페이지
+   Brand: 종이색 + 메모지 + 잉크색
+======================================== */
+
+.signup-page {
+  min-height: 100vh;
+  box-sizing: border-box;
+  padding: 36px 24px 28px;
+  background: #F7F4E9;
+  color: #392F22;
+  font-family: inherit;
+}
+
+.signup-page *,
+.signup-page *::before,
+.signup-page *::after {
+  box-sizing: border-box;
+}
+
+.signup-wrapper {
+  width: 100%;
+  max-width: 680;
+  margin: 0 auto;
+}
+
+/* 상단 로고 */
+
+.signup-brand {
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+  margin-bottom: 28px;
+  color: #392F22;
+  text-decoration: none;
+}
+
+.signup-brand img {
+  display: block;
+  width: auto;
+  height: 36px;
+  object-fit: contain;
+}
+
+.signup-brand span {
+  padding-left: 10px;
+  border-left: 1px solid #D8CBAA;
+  color: #8C8065;
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: 1.4px;
+}
+
+/* 메모지 형태의 회원가입 카드 */
+
+.signup-card {
+  padding: 36px 44px;
+  background: #FFFCF3;
+  border: 1px solid #E6DAB9;
+  border-radius: 14px;
+  box-shadow: 0 8px 22px rgba(78, 61, 31, 0.06);
+}
+
+
+/* 제목 영역 */
+
+.signup-card-heading {
+  margin-bottom: 30px;
+  padding: 24px 26px;
+  background: #FFF7CD;
+  border: 1px solid #F0E4B7;
+  border-radius: 9px;
+}
+
+.signup-eyebrow {
+  display: block;
+  margin-bottom: 12px;
+  color: #8C7442;
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: 1.5px;
+}
+
+.signup-card-heading h1 {
+  margin: 0;
+  color: #392F22;
+  font-size: 27px;
+  font-weight: 750;
+  line-height: 1.45;
+  letter-spacing: -0.8px;
+}
+
+.signup-card-heading > p {
+  margin: 12px 0 0;
+  color: #75694F;
+  font-size: 13px;
+  line-height: 1.8;
+}
+
+.signup-note-label {
+  display: flex;
+  justify-content: space-between;
+  gap: 12px;
+  margin-top: 22px;
+  padding-top: 12px;
+  border-top: 1px dashed #D8CBAA;
+  color: #8C8065;
+  font-size: 9px;
+  font-weight: 700;
+  letter-spacing: 1px;
+}
+
+/* 입력 필드 */
+
+.signup-field {
+  margin-bottom: 19px;
+}
+
+.signup-field label {
+  display: block;
+  margin-bottom: 7px;
+  color: #514632;
+  font-size: 13px;
+  font-weight: 650;
+}
+
+.signup-field input {
+  display: block;
+  width: 100%;
+  min-height: 45px;
+  padding: 11px 13px;
+  border: 1px solid #E3D8BE;
+  border-radius: 7px;
+  outline: none;
+  background: #FFFFFF;
+  color: #392F22;
+  font: inherit;
+  font-size: 13px;
+  transition: border-color 0.18s ease, box-shadow 0.18s ease;
+}
+
+.signup-field input::placeholder {
+  color: #A69B84;
+}
+
+.signup-field input:focus {
+  border-color: #C6A83F;
+  box-shadow: 0 0 0 3px rgba(240, 214, 110, 0.24);
+}
+
+.signup-hint {
+  margin: 6px 0 0;
+  color: #8C8065;
+  font-size: 11px;
+  line-height: 1.6;
+}
+
+.signup-error {
+  margin: 7px 0 0;
+  color: #B4483E;
+  font-size: 12px;
+  line-height: 1.5;
+}
+
+/* 회원가입 버튼 */
+
+.signup-submit {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+  width: 100%;
+  min-height: 48px;
+  margin-top: 8px;
+  padding: 12px 16px;
+  border: 1px solid #D8BC4D;
+  border-radius: 7px;
+  background: #F0D66E;
+  color: #392F22;
+  font: inherit;
+  font-size: 14px;
+  font-weight: 750;
+  cursor: pointer;
+  transition: background 0.18s ease, transform 0.18s ease;
+}
+
+.signup-submit:hover {
+  background: #E8CB56;
+}
+
+.signup-submit:active {
+  transform: translateY(1px);
+}
+
+.signup-submit:focus-visible {
+  outline: 3px solid #8C7442;
+  outline-offset: 3px;
+}
+
+.signup-message {
+  margin: 14px 0 0;
+  color: #514632;
+  font-size: 13px;
+  line-height: 1.6;
+  text-align: center;
+}
+
+/* 로그인 링크 */
+
+.signup-footer {
+  display: flex;
+  justify-content: center;
+  flex-wrap: wrap;
+  gap: 6px;
+  margin-top: 22px;
+  color: #827660;
+  font-size: 12px;
+}
+
+.signup-footer a {
+  color: #514632;
+  font-weight: 700;
+  text-decoration: underline;
+  text-underline-offset: 3px;
+}
+
+.signup-footer a:hover {
+  color: #8C7442;
+}
+
+/* 페이지 하단 문구 */
+
+.signup-bottom-caption {
+  margin: 22px 0 0;
+  color: #A69B84;
+  font-size: 9px;
+  font-weight: 650;
+  letter-spacing: 2px;
+  text-align: center;
+}
+
+/* 브라우저 자동완성 배경 */
+
+.signup-field input:-webkit-autofill,
+.signup-field input:-webkit-autofill:hover,
+.signup-field input:-webkit-autofill:focus {
+  -webkit-text-fill-color: #392F22;
+  box-shadow: 0 0 0 1000px #FFFFFF inset;
+  transition: background-color 9999s ease-out;
+}
+
+
+/* MOMO 회원가입 가독성 개선 */
+.signup-page {
+  padding: 40px 32px;
+}
+
+.signup-wrapper {
+  max-width: 760px;
+}
+
+.signup-brand img {
+  height: 42px;
+}
+
+.signup-brand span {
+  font-size: 12px;
+}
+
+.signup-card {
+  padding: 42px 48px;
+  border-radius: 16px;
+}
+
+.signup-card-heading {
+  padding: 30px;
+  margin-bottom: 34px;
+}
+
+.signup-eyebrow {
+  font-size: 12px;
+  margin-bottom: 16px;
+}
+
+.signup-card-heading h1 {
+  font-size: 34px;
+  line-height: 1.5;
+}
+
+.signup-card-heading > p {
+  font-size: 15px;
+  line-height: 1.9;
+}
+
+.signup-note-label {
+  font-size: 11px;
+  margin-top: 26px;
+}
+
+.signup-field {
+  margin-bottom: 24px;
+}
+
+.signup-field label {
+  font-size: 15px;
+  margin-bottom: 9px;
+}
+
+.signup-field input {
+  min-height: 54px;
+  padding: 14px 16px;
+  font-size: 15px;
+  border-radius: 8px;
+}
+
+.signup-hint {
+  font-size: 12px;
+  margin-top: 8px;
+}
+
+.signup-error {
+  font-size: 13px;
+}
+
+.signup-submit {
+  min-height: 58px;
+  margin-top: 12px;
+  font-size: 16px;
+}
+
+.signup-message {
+  font-size: 14px;
+}
+
+.signup-footer {
+  margin-top: 26px;
+  font-size: 14px;
+}
+
+.signup-bottom-caption {
+  margin-top: 28px;
+  font-size: 11px;
+}
+
+@media (max-width: 520px) {
+  .signup-page {
+    padding: 22px 16px;
+  }
+
+  .signup-card {
+    padding: 22px 18px;
+  }
+
+  .signup-card-heading {
+    padding: 20px;
+  }
+
+  .signup-card-heading h1 {
+    font-size: 27px;
+  }
+
+  .signup-field input {
+    min-height: 50px;
+  }
+}
