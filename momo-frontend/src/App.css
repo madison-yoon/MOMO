@@ -1,0 +1,520 @@
+@font-face {
+  font-family: "Pretendard";
+  src: url("https://cdn.jsdelivr.net/gh/projectnoonnu/pretendard@1.0/Pretendard-Thin.woff2")
+    format("woff2");
+  font-weight: 100;
+  font-display: swap;
+}
+@font-face {
+  font-family: "Pretendard";
+  src: url("https://cdn.jsdelivr.net/gh/projectnoonnu/pretendard@1.0/Pretendard-ExtraLight.woff2")
+    format("woff2");
+  font-weight: 200;
+  font-display: swap;
+}
+@font-face {
+  font-family: "Pretendard";
+  src: url("https://cdn.jsdelivr.net/gh/projectnoonnu/pretendard@1.0/Pretendard-Light.woff2")
+    format("woff2");
+  font-weight: 300;
+  font-display: swap;
+}
+@font-face {
+  font-family: "Pretendard";
+  src: url("https://cdn.jsdelivr.net/gh/projectnoonnu/pretendard@1.0/Pretendard-Regular.woff2")
+    format("woff2");
+  font-weight: 400;
+  font-display: swap;
+}
+@font-face {
+  font-family: "Pretendard";
+  src: url("https://cdn.jsdelivr.net/gh/projectnoonnu/pretendard@1.0/Pretendard-Medium.woff2")
+    format("woff2");
+  font-weight: 500;
+  font-display: swap;
+}
+@font-face {
+  font-family: "Pretendard";
+  src: url("https://cdn.jsdelivr.net/gh/projectnoonnu/pretendard@1.0/Pretendard-SemiBold.woff2")
+    format("woff2");
+  font-weight: 600;
+  font-display: swap;
+}
+@font-face {
+  font-family: "Pretendard";
+  src: url("https://cdn.jsdelivr.net/gh/projectnoonnu/pretendard@1.0/Pretendard-Bold.woff2")
+    format("woff2");
+  font-weight: 700;
+  font-display: swap;
+}
+@font-face {
+  font-family: "Pretendard";
+  src: url("https://cdn.jsdelivr.net/gh/projectnoonnu/pretendard@1.0/Pretendard-ExtraBold.woff2")
+    format("woff2");
+  font-weight: 800;
+  font-display: swap;
+}
+@font-face {
+  font-family: "Pretendard";
+  src: url("https://cdn.jsdelivr.net/gh/projectnoonnu/pretendard@1.0/Pretendard-Black.woff2")
+    format("woff2");
+  font-weight: 900;
+  font-display: swap;
+}
+
+:root {
+  color-scheme: light;
+  font-family:
+    "Pretendard",
+    -apple-system,
+    BlinkMacSystemFont,
+    "Segoe UI",
+    sans-serif;
+  font-synthesis: none;
+  text-rendering: optimizeLegibility;
+
+  /* 종이 바탕 + 메모지 + 잉크를 중심으로 한 MOMO 색상 */
+  --momo-bg: #f7f4e9;
+  --momo-surface: #fffef9;
+  --momo-note: #fff7cd;
+  --momo-note-border: #ebdea0;
+  --momo-text: #302e27;
+  --momo-muted: #7b7568;
+  --momo-border: #e7e0cd;
+  --momo-accent: #f0d66e;
+  --momo-accent-hover: #e8c64b;
+  --momo-accent-ink: #6f5a13;
+  --momo-ink-button: #38352d;
+  --momo-ink-button-hover: #4a463b;
+  --momo-error: #b42318;
+  --momo-radius: 10px;
+  --momo-shadow: 0 3px 10px rgb(56 49 30 / 5%);
+}
+
+* {
+  box-sizing: border-box;
+}
+
+html {
+  min-width: 320px;
+  scroll-behavior: smooth;
+}
+
+body {
+  margin: 0;
+  color: var(--momo-text);
+  background: var(--momo-bg);
+  font-family: inherit;
+  font-size: 16px;
+  line-height: 1.65;
+  -webkit-font-smoothing: antialiased;
+}
+
+button,
+input,
+textarea,
+select {
+  color: inherit;
+  font: inherit;
+}
+button {
+  cursor: pointer;
+}
+button:disabled {
+  opacity: 0.58;
+  cursor: not-allowed;
+}
+button:focus-visible,
+a:focus-visible,
+input:focus-visible,
+textarea:focus-visible,
+select:focus-visible {
+  outline: 3px solid rgb(190 151 35 / 42%);
+  outline-offset: 2px;
+}
+
+a {
+  color: inherit;
+}
+img {
+  display: block;
+  max-width: 100%;
+}
+
+.site-header {
+  position: sticky;
+  top: 0;
+  z-index: 10;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 20px;
+  min-height: 68px;
+  padding: 12px max(4%, calc((100% - 1120px) / 2));
+  color: var(--momo-text);
+  background: rgb(255 254 249 / 94%);
+  border-bottom: 1px solid var(--momo-border);
+  backdrop-filter: blur(8px);
+}
+
+.brand {
+  flex-shrink: 0;
+  font-size: 26px;
+  font-weight: 800;
+  letter-spacing: -1.1px;
+  line-height: 1;
+  text-decoration: none;
+}
+
+nav {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 6px 10px;
+}
+nav a {
+  padding: 5px 9px;
+  color: var(--momo-muted);
+  border-radius: 6px;
+  font-size: 14px;
+  font-weight: 500;
+  text-decoration: none;
+  transition:
+    color 0.15s ease,
+    background-color 0.15s ease;
+}
+nav a:hover,
+nav a.active {
+  color: var(--momo-text);
+  background: var(--momo-note);
+}
+
+main {
+  width: min(1120px, 92%);
+  margin: 32px auto 68px;
+}
+section {
+  margin: 30px 0;
+}
+h1,
+h2,
+h3,
+p {
+  margin-top: 0;
+}
+h1,
+h2,
+h3 {
+  line-height: 1.3;
+  letter-spacing: -0.025em;
+}
+h1 {
+  font-size: clamp(27px, 4vw, 38px);
+  font-weight: 700;
+}
+h2 {
+  font-size: clamp(22px, 3vw, 27px);
+  font-weight: 700;
+}
+h3 {
+  font-size: 18px;
+  font-weight: 600;
+}
+
+.hero {
+  padding: clamp(22px, 4vw, 38px);
+  background: var(--momo-note);
+  border: 1px solid var(--momo-note-border);
+  border-radius: 8px 16px 16px 16px;
+  box-shadow: var(--momo-shadow);
+}
+
+.search-form {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 10px;
+}
+.search-form input {
+  flex: 1;
+  min-width: 180px;
+}
+
+input,
+textarea,
+select {
+  width: 100%;
+  min-width: 0;
+  padding: 11px 13px;
+  background: var(--momo-surface);
+  border: 1px solid var(--momo-border);
+  border-radius: 8px;
+}
+textarea {
+  min-height: 140px;
+  resize: vertical;
+}
+input::placeholder,
+textarea::placeholder {
+  color: #958d7b;
+}
+
+button,
+.button {
+  display: inline-flex;
+  justify-content: center;
+  align-items: center;
+  gap: 8px;
+  min-height: 40px;
+  padding: 8px 14px;
+  color: var(--momo-text);
+  background: var(--momo-surface);
+  border: 1px solid var(--momo-border);
+  border-radius: 8px;
+  font-weight: 600;
+  text-decoration: none;
+  transition:
+    background-color 0.15s ease,
+    border-color 0.15s ease,
+    transform 0.15s ease;
+}
+button:hover:not(:disabled),
+.button:hover {
+  border-color: #cec39e;
+  background: #f8f1d9;
+}
+button.primary,
+.button.primary,
+form button[type="submit"],
+.search-form button {
+  color: var(--momo-text);
+  background: var(--momo-accent);
+  border-color: #d7b843;
+}
+button.primary:hover:not(:disabled),
+.button.primary:hover,
+form button[type="submit"]:hover:not(:disabled),
+.search-form button:hover:not(:disabled) {
+  background: var(--momo-accent-hover);
+  border-color: #c7a530;
+}
+
+.movie-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(165px, 1fr));
+  gap: 16px;
+}
+.movie-card {
+  display: block;
+  padding: 13px;
+  color: inherit;
+  background: var(--momo-surface);
+  border: 1px solid var(--momo-border);
+  border-radius: 8px;
+  box-shadow: var(--momo-shadow);
+  text-decoration: none;
+  transition:
+    transform 0.15s ease,
+    box-shadow 0.15s ease;
+}
+.movie-card:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 6px 16px rgb(56 49 30 / 9%);
+}
+.movie-card img {
+  width: 100%;
+  aspect-ratio: 2 / 3;
+  object-fit: cover;
+  background: #eee9d9;
+  border-radius: 5px;
+}
+.movie-card h3 {
+  margin: 12px 0 5px;
+}
+.movie-card p {
+  margin-bottom: 0;
+  color: var(--momo-muted);
+  font-size: 13px;
+}
+
+/* 포스터가 없는 영화도 동일한 비율을 유지 */
+.poster-placeholder {
+  display: grid;
+  place-items: center;
+  width: 100%;
+  min-height: 220px;
+  aspect-ratio: 2 / 3;
+  color: var(--momo-muted);
+  background: #f1eddf;
+  border: 1px dashed #d8ceaf;
+  border-radius: 5px;
+  font-size: 13px;
+}
+
+.movie-detail {
+  display: flex;
+  align-items: flex-start;
+  gap: 26px;
+  flex-wrap: wrap;
+  padding: clamp(18px, 3vw, 28px);
+  background: var(--momo-surface);
+  border: 1px solid var(--momo-border);
+  border-radius: 10px;
+  box-shadow: var(--momo-shadow);
+}
+.movie-detail img,
+.movie-detail .poster-placeholder {
+  width: 200px;
+  max-width: 100%;
+  flex-shrink: 0;
+  object-fit: contain;
+}
+
+/* 리뷰는 흰색 영화 카드와 구별되는 메모지 톤 */
+.review-card {
+  position: relative;
+  margin: 14px 0;
+  padding: 17px 18px;
+  color: var(--momo-text);
+  background: var(--momo-note);
+  border: 1px solid var(--momo-note-border);
+  border-left: 4px solid #e4c64f;
+  border-radius: 5px 10px 10px 5px;
+  box-shadow: 0 2px 7px rgb(56 49 30 / 4%);
+}
+.review-meta,
+.reaction-row,
+.owner-actions,
+.button-row {
+  display: flex;
+  gap: 9px;
+  flex-wrap: wrap;
+  align-items: center;
+}
+.review-meta {
+  justify-content: space-between;
+}
+.review-meta span {
+  color: var(--momo-muted);
+  font-size: 13px;
+}
+.review-body {
+  white-space: pre-wrap;
+  overflow-wrap: anywhere;
+}
+
+.reaction-row button.active,
+.reaction-row button[aria-pressed="true"] {
+  background: var(--momo-accent);
+  border-color: #d7b843;
+}
+.review-form,
+.stack-form {
+  display: grid;
+  gap: 13px;
+  max-width: 650px;
+}
+.review-form label,
+.stack-form label {
+  display: grid;
+  gap: 6px;
+  font-weight: 500;
+}
+.review-form textarea {
+  background: #fffef8;
+}
+
+.error {
+  color: var(--momo-error);
+}
+.empty,
+.loading,
+.error-state {
+  padding: 22px;
+  color: var(--momo-muted);
+  background: var(--momo-surface);
+  border: 1px dashed var(--momo-border);
+  border-radius: 8px;
+  text-align: center;
+}
+.error-state {
+  color: var(--momo-error);
+  border-color: #e8c5bf;
+}
+.muted {
+  color: var(--momo-muted);
+}
+
+@media (max-width: 700px) {
+  .site-header {
+    align-items: flex-start;
+    flex-direction: column;
+    padding: 13px 4%;
+  }
+  nav {
+    gap: 5px;
+  }
+  nav a {
+    padding: 5px 7px;
+  }
+  main {
+    width: 92%;
+    margin-top: 22px;
+  }
+  .movie-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 11px;
+  }
+  .movie-card {
+    padding: 10px;
+  }
+  .review-card {
+    padding: 14px;
+  }
+  .movie-detail {
+    flex-direction: column;
+  }
+  .movie-detail img,
+  .movie-detail .poster-placeholder {
+    width: min(220px, 100%);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    scroll-behavior: auto !important;
+    transition-duration: 0.01ms !important;
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+  }
+}
+
+.movie-grid {
+  display: grid;
+  grid-template-columns: repeat(5, minmax(0, 1fr));
+  gap: 16px;
+  width: 100%;
+  max-width: 1120px;
+  margin: 0 auto;
+  box-sizing: border-box;
+}
+
+.movie-grid > * {
+  min-width: 0;
+  max-width: 100%;
+  box-sizing: border-box;
+}
+
+@media (max-width: 900px) {
+  .movie-grid {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+  }
+}
+
+@media (max-width: 600px) {
+  .movie-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
