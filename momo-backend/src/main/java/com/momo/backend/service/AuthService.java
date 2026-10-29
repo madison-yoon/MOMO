@@ -131,6 +131,27 @@ public class AuthService {
         return new UserResponse(user);
     }
 
+    // 로그인한 회원이 누른 좋아요 총개수 조회
+    @Transactional(readOnly = true)
+    public long getMyLikeCount(String loginId) {
+
+        // 로그인 아이디로 회원 조회
+        User user = getLoginUser(loginId);
+
+        // 회원이 리뷰에 누른 좋아요 개수
+        long reviewLikeCount =
+                reviewReactionRepository.countByUser_UserIdAndLiked(
+                        user.getUserId(), true);
+
+        // 회원이 댓글에 누른 좋아요 개수
+        long commentLikeCount =
+                commentReactionRepository.countByUser_UserIdAndLiked(
+                        user.getUserId(), true);
+
+        // 리뷰와 댓글 좋아요 개수 합산
+        return reviewLikeCount + commentLikeCount;
+    }
+
 
     // 회원 탈퇴 시 작성한 댓글과 리뷰, 좋아요/싫어요를 모두 삭제
     public void deleteMyAccount(String loginId) {
