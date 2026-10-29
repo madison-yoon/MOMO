@@ -305,7 +305,10 @@ form button[type="submit"]:hover:not(:disabled),
   gap: 16px;
 }
 .movie-card {
-  display: block;
+  display: flex;
+  flex-direction: column;    /* 세로로 차곡차곡 정렬 */
+  justify-content: space-between; /* 위아래 공간을 균등하게 배분 */
+  height: 100%;             /* 카드들의 전체 높이를 동일하게 맞춤 */
   padding: 13px;
   color: inherit;
   background: var(--momo-surface);
@@ -317,10 +320,12 @@ form button[type="submit"]:hover:not(:disabled),
     transform 0.15s ease,
     box-shadow 0.15s ease;
 }
+
 .movie-card:hover {
   transform: translateY(-2px);
   box-shadow: 0 6px 16px rgb(56 49 30 / 9%);
 }
+
 .movie-card img {
   width: 100%;
   aspect-ratio: 2 / 3;
@@ -328,13 +333,22 @@ form button[type="submit"]:hover:not(:disabled),
   background: #eee9d9;
   border-radius: 5px;
 }
+
 .movie-card h3 {
   margin: 12px 0 5px;
 }
+
 .movie-card p {
   margin-bottom: 0;
   color: var(--momo-muted);
   font-size: 13px;
+}
+
+/* 추가로 카드 안의 정보 영역(`.movie-info`)이 있다면 아래 내용도 함께 적용해 주세요 */
+.movie-card .movie-info {
+  display: flex;
+  flex-direction: column;
+  flex-grow: 1;
 }
 
 /* 포스터가 없는 영화도 동일한 비율을 유지 */

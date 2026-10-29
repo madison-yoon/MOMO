@@ -2,8 +2,18 @@ import { useEffect, useMemo, useState } from "react";
 import { Link } from "react-router-dom";
 import "../App.css";
 
-// 백엔드 API 서버 주소로 올바르게 설정
-const API_URL = "http://localhost:8000/api/movies";
+// 💡 어제 날짜를 YYYYMMDD 형식으로 계산하는 함수 (박스오피스는 전날 데이터가 확실하게 나옵니다)
+function getYesterdayDateString() {
+  const date = new Date();
+  date.setDate(date.getDate() - 1); // 하루 전(어제)
+  const year = date.getFullYear();
+  const month = String(date.getMonth() + 1).padStart(2, "0");
+  const day = String(date.getDate()).padStart(2, "0");
+  return `${year}${month}${day}`;
+}
+
+// 🎯 백엔드 BoxOfficeController의 실제 주소(/api/boxoffice/daily)와 targetDate 파라미터 조합
+const API_URL = `http://localhost:8111/api/boxoffice/daily?targetDate=${getYesterdayDateString()}`;
 
 function formatNumber(value) {
   return Number(value || 0).toLocaleString("ko-KR");
@@ -47,21 +57,29 @@ export default function Home() {
         if (!response.ok) {
           throw new Error("영화 정보를 불러오지 못했어요.");
         }
+        
         const data = await response.json();
-        const list = Array.isArray(data.movies)
+        
+        // 💡 백엔드가 주는 배열 형태([...]) 또는 객체 형태 모두 대응할 수 있도록 안전하게 처리
+        const list = Array.isArray(data)
+          ? data
+          : Array.isArray(data.movies)
           ? data.movies
           : Array.isArray(data.dailyBoxOfficeList)
           ? data.dailyBoxOfficeList
           : [];
+
+        // 💡 백엔드 BoxOfficeResponse DTO 필드명(movieCode, title, releaseDate, audienceCount 등)에 매핑
         const formattedMovies = list.map((movie, index) => ({
-          id: movie.id ?? movie.movieCd ?? `movie-${index}`,
-          title: movie.title ?? movie.movieNm ?? "제목 없음",
+          id: movie.movieCode ?? movie.id ?? `movie-${index}`,
+          title: movie.title ?? "제목 없음",
           rank: Number(movie.rank || 0),
-          audience: Number(movie.audience ?? movie.audiCnt ?? 0),
-          totalAudience: Number(movie.totalAudience ?? movie.audiAcc ?? 0),
-          openDate: movie.openDate ?? movie.openDt ?? "",
+          audience: Number(movie.audienceCount ?? movie.audience ?? 0),
+          totalAudience: Number(movie.totalAudience ?? 0),
+          openDate: movie.releaseDate ?? movie.openDate ?? "",
           posterUrl: movie.posterUrl || "",
         }));
+
         if (!cancelled) {
           setMovies(formattedMovies);
           if (formattedMovies.length === 0) {
