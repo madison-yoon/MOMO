@@ -33,4 +33,7 @@ public interface CommentReactionRepository
 
     // 특정 회원이 작성한 댓글에 달린 모든 반응 삭제
     void deleteByComment_User_UserId(Long userId);
+
+    // 특정 회원이 누른 댓글 좋아요 개수 조회
+    long countByUser_UserIdAndLiked(Long userId, Boolean liked);
 }

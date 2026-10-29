@@ -37,6 +37,8 @@ public class AuthController {
     // 회원가입 기능을 처리하는 Service 객체
     private final AuthService authService;
 
+
+
     // 회원가입 요청을 받아 Service에 전달
     @PostMapping("/signup")
     public ResponseEntity<UserResponse> signUp(
@@ -137,7 +139,6 @@ public class AuthController {
     }
 
 
-
     // 로그아웃 시 현재 세션을 종료
     @PostMapping("/logout")
     public ResponseEntity<Void> logout(HttpServletRequest request) {
@@ -153,5 +154,14 @@ public class AuthController {
         SecurityContextHolder.clearContext();
 
         return ResponseEntity.noContent().build();
+    }
+    // 로그인한 회원이 누른 좋아요 총개수 조회
+    @GetMapping("/me/likes/count")
+    public ResponseEntity<Long> getMyLikeCount(
+            Authentication authentication) {
+
+        long count = authService.getMyLikeCount(authentication.getName());
+
+        return ResponseEntity.ok(count);
     }
 }

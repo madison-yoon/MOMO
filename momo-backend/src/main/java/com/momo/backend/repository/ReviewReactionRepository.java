@@ -24,4 +24,7 @@ public interface ReviewReactionRepository
 
     // 특정 회원이 남긴 모든 리뷰 반응 삭제
     void deleteByUser_UserId(Long userId);
+
+    // 특정 회원이 누른 리뷰 좋아요 개수 조회
+    long countByUser_UserIdAndLiked(Long userId, Boolean liked);
 }
