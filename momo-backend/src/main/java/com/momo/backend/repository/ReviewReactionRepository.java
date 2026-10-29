@@ -2,7 +2,8 @@ package com.momo.backend.repository;
 
 import com.momo.backend.entity.ReviewReactions;
 import org.springframework.data.jpa.repository.JpaRepository;
-
+import java.util.List;
+import org.springframework.data.domain.Pageable;
 import java.util.Optional;
 
 public interface ReviewReactionRepository
@@ -27,4 +28,9 @@ public interface ReviewReactionRepository
 
     // 특정 회원이 누른 리뷰 좋아요 개수 조회
     long countByUser_UserIdAndLiked(Long userId, Boolean liked);
+
+    // 특정 회원이 좋아요한 리뷰 반응 목록 조회
+    List<ReviewReactions> findByUser_UserIdAndLiked(
+            Long userId, Boolean like, Pageable pageable
+    );
 }
