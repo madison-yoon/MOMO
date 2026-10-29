@@ -201,7 +201,7 @@ function Layout() {
         <Navigation>
           {nickname ? (
             <UserArea>
-              <NavLink to="/profile/me">{nickname}님</NavLink>
+              <NavLink to="/profile">{nickname}님</NavLink>
               <ActionButton onClick={handleLogout}>로그아웃</ActionButton>
             </UserArea>
           ) : (
