@@ -1,6 +1,7 @@
 package com.momo.backend.service;
 
 import com.momo.backend.client.KobisApiClient;
+import com.momo.backend.client.KmdbApiClient;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
@@ -20,6 +21,7 @@ import com.momo.backend.dto.movie.BoxOfficeResponse;
 public class MovieService {
 
     private final KobisApiClient kobisApiClient;
+    private final KmdbApiClient kmdbApiClient;
     private final ObjectMapper objectMapper;
 
     // 영화 제목으로 KOBIS 영화 목록 검색
@@ -152,13 +154,17 @@ public class MovieService {
 
             for (JsonNode movie : boxOfficeList) {
 
+                String title = movie.path("movieNm").asText("");
+                String posterUrl = getPosterUrl(title);
+
                 movies.add(new BoxOfficeResponse(
                         movie.path("rank").asInt(),
                         movie.path("movieCd").asText(""),
-                        movie.path("movieNm").asText(""),
+                        title,
                         movie.path("openDt").asText(""),
                         movie.path("audiCnt").asText(""),
-                        movie.path("audiAcc").asText("")
+                        movie.path("audiAcc").asText(""),
+                        posterUrl
                 ));
             }
 
@@ -167,6 +173,41 @@ public class MovieService {
         }
 
         return movies;
+    }
+
+    // KMDb에서 영화 포스터 주소 조회
+    private String getPosterUrl(String title) {
+
+        String json = kmdbApiClient.searchMovie(title);
+
+        try {
+            JsonNode data = objectMapper.readTree(json)
+                    .path("Data");
+
+            if (!data.isArray() || data.isEmpty()) {
+                return "";
+            }
+
+            JsonNode results = data.get(0).path("Result");
+
+            if (!results.isArray() || results.isEmpty()) {
+                return "";
+            }
+
+            String posters = results.get(0)
+                    .path("posters")
+                    .asText("");
+
+            if (posters.isBlank()) {
+                return "";
+            }
+
+            // 포스터 주소가 여러 개면 첫 번째 주소 사용
+            return posters.split("\\|")[0];
+
+        } catch (Exception e) {
+            return "";
+        }
     }
 
 }
