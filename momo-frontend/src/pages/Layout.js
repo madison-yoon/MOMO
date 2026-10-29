@@ -1,6 +1,11 @@
-
 import { useState, useEffect } from "react";
-import { Link, NavLink, Outlet, useNavigate } from "react-router-dom";
+import {
+  Link,
+  NavLink,
+  Outlet,
+  useNavigate,
+  useSearchParams,
+} from "react-router-dom";
 import styled from "styled-components";
 import textlogo from "../textlogo.png";
 
@@ -35,6 +40,49 @@ const LogoImage = styled.img`
   width: auto;
   height: 40px;
   object-fit: contain;
+`;
+
+const SearchForm = styled.form`
+  display: flex;
+  align-items: center;
+  background-color: #faf9f6;
+  border: 1px solid #e8e5df;
+  border-radius: 20px;
+  padding: 6px 14px;
+  width: 320px;
+  max-width: 100%;
+  box-sizing: border-box;
+
+  &:focus-within {
+    border-color: #292929; /* 포커스 시 테두리 진하게 */
+  }
+`;
+
+const SearchInput = styled.input`
+  flex: 1;
+  border: none;
+  background: transparent;
+  outline: none;
+  font-size: 14px;
+  color: #292929;
+
+  &::placeholder {
+    color: #999999;
+  }
+`;
+
+const SearchButton = styled.button`
+  background: none;
+  border: none;
+  cursor: pointer;
+  font-size: 14px;
+  color: #666666;
+  padding: 0;
+  margin-left: 8px;
+
+  &:hover {
+    color: #292929;
+  }
 `;
 
 const Navigation = styled.nav`
@@ -106,15 +154,25 @@ const FooterText = styled.p`
 
 function Layout() {
   const navigate = useNavigate();
+  const [searchParams] = useSearchParams();
+  const [keyword, setKeyword] = useState(searchParams.get("keyword") || "");
 
   const [nickname, setNickname] = useState(
-    localStorage.getItem("username") || ""
+    localStorage.getItem("username") || "",
   );
 
   useEffect(() => {
     const savedNickname = localStorage.getItem("username") || "";
     setNickname(savedNickname);
   }, []);
+
+  const handleSearchSubmit = (e) => {
+    e.preventDefault();
+    if (!keyword.trim()) return;
+
+    // 엔터나 검색 버튼을 누르면 검색 결과 페이지로 이동 (예: /search?keyword=사랑)
+    navigate(`/search?keyword=${encodeURIComponent(keyword.trim())}`);
+  };
 
   const handleLogout = () => {
     localStorage.removeItem("username");
@@ -129,17 +187,21 @@ function Layout() {
           <LogoImage src={textlogo} alt="MOMO" />
         </Logo>
 
-        <Navigation>
-          <NavLink to="/">홈</NavLink>
-          <NavLink to="/board">리뷰 게시판</NavLink>
-          <NavLink to="/about">서비스 소개</NavLink>
+        <SearchForm onSubmit={handleSearchSubmit}>
+          <SearchInput
+            type="text"
+            placeholder="영화 제목 또는 키워드 검색"
+            value={keyword}
+            onChange={(e) => setKeyword(e.target.value)}
+          />
+          <SearchButton type="submit">검색</SearchButton>
+        </SearchForm>
 
+        <Navigation>
           {nickname ? (
             <UserArea>
               <NavLink to="/profile/me">{nickname}님</NavLink>
-              <ActionButton onClick={handleLogout}>
-                로그아웃
-              </ActionButton>
+              <ActionButton onClick={handleLogout}>로그아웃</ActionButton>
             </UserArea>
           ) : (
             <UserArea>
@@ -156,9 +218,7 @@ function Layout() {
 
       <Footer>
         <FooterLogo src={textlogo} alt="MOMO" />
-        <FooterText>
-          영화에 대한 생각을 기록하는 공간, MOVIEMEMO.
-        </FooterText>
+        <FooterText>영화에 대한 생각을 기록하는 공간, MOVIEMEMO.</FooterText>
         <FooterText>
           나만의 감상과 다른 사람의 시선을 함께 기록하세요.
         </FooterText>
