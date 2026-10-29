@@ -30,7 +30,12 @@ public class SecurityConfig {
 
                 // API 주소별로 로그인 여부에 따른 접근 권한 설정
                 .authorizeHttpRequests(auth -> auth
-
+                        // 개발 중 Swagger API 문서 접근 허용
+                        .requestMatchers(
+                                "/swagger-ui/**",
+                                "/swagger-ui.html",
+                                "/v3/api-docs/**"
+                        ).permitAll()
                         // 회원가입과 로그인은 로그인하지 않은 사용자도 접근 가능
                         .requestMatchers(HttpMethod.POST,
                                 "/api/auth/signup",

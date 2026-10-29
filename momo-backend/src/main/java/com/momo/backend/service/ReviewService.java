@@ -15,7 +15,7 @@ import com.momo.backend.dto.review.ReviewUpdateRequest;
 import com.momo.backend.exception.CustomException;
 import java.util.Map;
 import java.util.HashMap;
-
+import org.springframework.data.domain.Sort;
 
 @Service
 @Transactional
@@ -100,6 +100,30 @@ public class ReviewService {
                 .findByMovieCodeOrderByCreatedAtDesc(movieCode, pageable)
                 .map(ReviewResponse::new);
     }
+
+    // 로그인한 회원이 작성한 리뷰 목록 조회
+    @Transactional(readOnly = true)
+    public Page<ReviewResponse> getMyReviews(String loginId, int page) {
+
+        // 로그인 아이디로 회원 조회
+        User user = userRepository.findByLoginId(loginId)
+                .orElseThrow(() ->
+                        new CustomException(
+                                "USER_NOT_FOUND",
+                                "회원 정보를 찾을 수 없습니다."));
+
+        // 페이지당 10개, 작성일 최신순으로 조회
+        Pageable pageable = PageRequest.of(
+                page, 10,
+                Sort.by(Sort.Direction.DESC, "createdAt", "reviewId")
+        );
+
+        // 로그인한 회원이 작성한 리뷰만 조회
+        return reviewRepository
+                .findByUser_UserId(user.getUserId(), pageable)
+                .map(ReviewResponse::new);
+    }
+
 
 
     // 로그인한 사용자가 작성한 리뷰 수정

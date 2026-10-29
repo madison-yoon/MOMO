@@ -14,6 +14,7 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.Authentication;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.data.domain.Page;
 
 
 @RestController
@@ -53,6 +54,18 @@ public class ReviewController {
                 reviewService.getReview(reviewId)
         );
     }
+
+    // 로그인한 회원이 작성한 리뷰 목록 조회
+    @GetMapping("/me")
+    public ResponseEntity<Page<ReviewResponse>> getMyReviews(
+            Authentication authentication,
+            @RequestParam(defaultValue = "0") int page) {
+
+        return ResponseEntity.ok(
+                reviewService.getMyReviews(authentication.getName(), page)
+        );
+    }
+
 
     // 로그인한 사용자의 리뷰 수정 요청
     @PutMapping("/{reviewId}")
