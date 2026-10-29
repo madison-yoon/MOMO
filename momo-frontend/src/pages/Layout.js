@@ -1,5 +1,6 @@
 
-import { Link, NavLink, Outlet } from "react-router-dom";
+import { useState, useEffect } from "react";
+import { Link, NavLink, Outlet, useNavigate } from "react-router-dom";
 import styled from "styled-components";
 import textlogo from "../textlogo.png";
 
@@ -17,6 +18,7 @@ const Header = styled.header`
   display: flex;
   align-items: center;
   justify-content: space-between;
+  gap: 24px;
   background-color: #ffffff;
   border-bottom: 1px solid #e8e5df;
   box-sizing: border-box;
@@ -25,7 +27,7 @@ const Header = styled.header`
 const Logo = styled(Link)`
   display: flex;
   align-items: center;
-  text-decoration: none;
+  flex-shrink: 0;
 `;
 
 const LogoImage = styled.img`
@@ -38,7 +40,9 @@ const LogoImage = styled.img`
 const Navigation = styled.nav`
   display: flex;
   align-items: center;
-  gap: 28px;
+  justify-content: flex-end;
+  flex-wrap: wrap;
+  gap: 24px;
 
   a {
     color: #666666;
@@ -49,6 +53,27 @@ const Navigation = styled.nav`
   a.active {
     color: #292929;
     font-weight: 700;
+  }
+`;
+
+const UserArea = styled.div`
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  white-space: nowrap;
+  font-size: 14px;
+`;
+
+const ActionButton = styled.button`
+  padding: 8px 12px;
+  border: 1px solid #e8e5df;
+  border-radius: 6px;
+  background-color: #ffffff;
+  color: #292929;
+  cursor: pointer;
+
+  &:hover {
+    background-color: #faf9f6;
   }
 `;
 
@@ -80,6 +105,23 @@ const FooterText = styled.p`
 `;
 
 function Layout() {
+  const navigate = useNavigate();
+
+  const [nickname, setNickname] = useState(
+    localStorage.getItem("username") || ""
+  );
+
+  useEffect(() => {
+    const savedNickname = localStorage.getItem("username") || "";
+    setNickname(savedNickname);
+  }, []);
+
+  const handleLogout = () => {
+    localStorage.removeItem("username");
+    setNickname("");
+    navigate("/login");
+  };
+
   return (
     <Container>
       <Header>
@@ -91,7 +133,20 @@ function Layout() {
           <NavLink to="/">홈</NavLink>
           <NavLink to="/board">리뷰 게시판</NavLink>
           <NavLink to="/about">서비스 소개</NavLink>
-          <NavLink to="/profile/me">마이페이지</NavLink>
+
+          {nickname ? (
+            <UserArea>
+              <NavLink to="/profile/me">{nickname}님</NavLink>
+              <ActionButton onClick={handleLogout}>
+                로그아웃
+              </ActionButton>
+            </UserArea>
+          ) : (
+            <UserArea>
+              <NavLink to="/login">로그인</NavLink>
+              <NavLink to="/signup">회원가입</NavLink>
+            </UserArea>
+          )}
         </Navigation>
       </Header>
 
@@ -101,11 +156,9 @@ function Layout() {
 
       <Footer>
         <FooterLogo src={textlogo} alt="MOMO" />
-
         <FooterText>
           영화에 대한 생각을 기록하는 공간, MOVIEMEMO.
         </FooterText>
-
         <FooterText>
           나만의 감상과 다른 사람의 시선을 함께 기록하세요.
         </FooterText>

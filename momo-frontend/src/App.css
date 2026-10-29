@@ -295,8 +295,373 @@
   }
 }
 
+
+/* ========================================
+   MOMO 로그인 · 회원가입 공통 디자인
+======================================== */
+
+
+/* 회원가입 상단 노란색 안내 카드 */
+.signup-card .signup-card-heading {
+  padding: 28px 30px;
+  margin-bottom: 28px;
+  background-color: var(--momo-note, #fff7cd);
+  border: 1px solid var(--momo-note-border, #ebdea0);
+  border-radius: 8px 14px 14px 14px;
+}
+
+.signup-card .signup-eyebrow {
+  display: inline-block;
+  margin-bottom: 16px;
+  color: var(--momo-accent-ink, #6f5a13);
+  font-size: 12px;
+  font-weight: 800;
+  letter-spacing: 1.5px;
+}
+
+.signup-card .signup-card-heading h1 {
+  margin: 0 0 14px;
+  color: var(--momo-text, #302e27);
+  font-size: 28px;
+  line-height: 1.55;
+  letter-spacing: -0.8px;
+}
+
+.signup-card .signup-card-heading > p {
+  margin: 0;
+  color: var(--momo-muted, #7b7568);
+  font-size: 14px;
+  line-height: 1.9;
+}
+
+.signup-card .signup-note-label {
+  display: flex;
+  justify-content: space-between;
+  gap: 12px;
+  margin-top: 24px;
+  padding: 14px 0 0;
+  background: transparent;
+  border: 0;
+  border-top: 1px solid var(--momo-note-border, #ebdea0);
+  border-radius: 0;
+}
+
+.signup-card .signup-note-label span {
+  color: var(--momo-accent-ink, #6f5a13);
+  font-size: 10px;
+  font-weight: 800;
+  letter-spacing: 1px;
+}
+
+@media (max-width: 600px) {
+  .signup-card .signup-card-heading {
+    padding: 22px 18px;
+  }
+
+  .signup-card .signup-card-heading h1 {
+    font-size: 23px;
+  }
+
+  .signup-card .signup-note-label span {
+    font-size: 9px;
+  }
+}
+
+
+.signup-page {
+  min-height: 100vh;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  box-sizing: border-box;
+  padding: 48px 20px;
+  background-color: var(--momo-bg, #f7f4e9);
+  color: var(--momo-text, #302e27);
+}
+
 .signup-wrapper {
   width: 100%;
-  max-width: 680px;
+  max-width: 760px;
   margin: 0 auto;
+}
+
+.signup-brand {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+  margin-bottom: 28px;
+  color: var(--momo-text, #302e27);
+  text-decoration: none;
+}
+
+.signup-brand img {
+  display: block;
+  width: auto;
+  height: 42px;
+  object-fit: contain;
+}
+
+.signup-brand span {
+  font-size: 15px;
+  font-weight: 800;
+  letter-spacing: 2px;
+}
+
+.signup-card {
+  padding: 42px 48px;
+  background-color: var(--momo-surface, #fffef9);
+  border: 1px solid var(--momo-border, #e7e0cd);
+  border-radius: 14px;
+  box-shadow: var(--momo-shadow, 0 3px 10px rgb(56 49 30 / 5%));
+}
+
+.signup-card-heading {
+  margin-bottom: 32px;
+}
+
+.signup-eyebrow {
+  display: inline-block;
+  margin-bottom: 16px;
+  color: var(--momo-accent-ink, #6f5a13);
+  font-size: 12px;
+  font-weight: 800;
+  letter-spacing: 2px;
+}
+
+.signup-card-heading h1 {
+  margin: 0 0 16px;
+  font-size: 30px;
+  font-weight: 800;
+  line-height: 1.5;
+  letter-spacing: -1px;
+  overflow-wrap: anywhere;
+}
+
+.signup-card-heading > p {
+  margin: 0;
+  color: var(--momo-muted, #7b7568);
+  font-size: 14px;
+  line-height: 1.9;
+}
+
+.signup-note-label {
+  display: flex;
+  justify-content: space-between;
+  gap: 12px;
+  margin-top: 26px;
+  padding: 12px 14px;
+  background-color: var(--momo-note, #fff7cd);
+  border: 1px solid var(--momo-note-border, #ebdea0);
+  border-radius: 6px;
+}
+
+.signup-note-label span {
+  font-size: 10px;
+  font-weight: 800;
+  letter-spacing: 1px;
+}
+
+.signup-field {
+  margin-bottom: 22px;
+}
+
+.signup-field label {
+  display: block;
+  margin-bottom: 9px;
+  font-size: 14px;
+  font-weight: 700;
+}
+
+.signup-field input,
+.signup-field select,
+.signup-field textarea {
+  width: 100%;
+  min-height: 48px;
+  box-sizing: border-box;
+  padding: 12px 14px;
+  color: var(--momo-text, #302e27);
+  background-color: #ffffff;
+  border: 1px solid var(--momo-border, #e7e0cd);
+  border-radius: 7px;
+  font: inherit;
+  font-size: 14px;
+  outline: none;
+  transition: border-color 0.15s ease, box-shadow 0.15s ease;
+}
+
+.signup-field input:focus,
+.signup-field select:focus,
+.signup-field textarea:focus {
+  border-color: var(--momo-accent-hover, #e8c64b);
+  box-shadow: 0 0 0 3px rgb(232 198 75 / 18%);
+}
+
+.signup-field input::placeholder,
+.signup-field textarea::placeholder {
+  color: #aaa394;
+}
+
+.signup-error {
+  margin: 8px 0 0;
+  color: var(--momo-error, #b42318);
+  font-size: 12px;
+  line-height: 1.6;
+}
+
+.signup-submit {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  width: 100%;
+  min-height: 52px;
+  margin-top: 8px;
+  padding: 0 18px;
+  color: #ffffff;
+  background-color: var(--momo-ink-button, #38352d);
+  border: none;
+  border-radius: 7px;
+  font-size: 14px;
+  font-weight: 700;
+  cursor: pointer;
+  transition: background-color 0.15s ease;
+}
+
+.signup-submit:hover {
+  background-color: var(--momo-ink-button-hover, #4a463b);
+}
+
+.signup-submit span {
+  font-size: 20px;
+}
+
+.signup-message {
+  margin: 16px 0 0;
+  color: var(--momo-muted, #7b7568);
+  font-size: 13px;
+  line-height: 1.7;
+  text-align: center;
+  overflow-wrap: anywhere;
+}
+
+.signup-footer {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-top: 26px;
+  color: var(--momo-muted, #7b7568);
+  font-size: 13px;
+}
+
+.signup-footer a {
+  color: var(--momo-accent-ink, #6f5a13);
+  font-weight: 700;
+  text-decoration: underline;
+  text-underline-offset: 3px;
+}
+
+.signup-bottom-caption {
+  margin: 24px 0 0;
+  color: var(--momo-muted, #7b7568);
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: 2px;
+  text-align: center;
+}
+
+/* 로그인 페이지 전용 */
+.login-card .signup-card-heading {
+  margin-bottom: 30px;
+}
+
+/* 작은 화면 */
+@media (max-width: 600px) {
+  .signup-page {
+    align-items: flex-start;
+    padding: 28px 14px;
+  }
+
+  .signup-wrapper {
+    max-width: 100%;
+  }
+
+  .signup-brand {
+    margin-bottom: 22px;
+  }
+
+  .signup-card {
+    padding: 28px 22px;
+  }
+
+  .signup-card-heading h1 {
+    font-size: 25px;
+  }
+
+  .signup-note-label {
+    flex-wrap: wrap;
+  }
+
+  .signup-note-label span {
+    font-size: 9px;
+  }
+}
+
+
+/* 로그인 상단 노란색 안내 카드 */
+.login-card .signup-card-heading {
+  padding: 28px 30px;
+  margin-bottom: 28px;
+  background-color: var(--momo-note, #fff7cd);
+  border: 1px solid var(--momo-note-border, #ebdea0);
+  border-radius: 8px 14px 14px 14px;
+}
+
+.login-card .signup-eyebrow {
+  display: inline-block;
+  margin-bottom: 16px;
+  color: var(--momo-accent-ink, #6f5a13);
+  font-size: 12px;
+  font-weight: 800;
+  letter-spacing: 1.5px;
+}
+
+.login-card .signup-card-heading h1 {
+  margin: 0 0 14px;
+  color: var(--momo-text, #302e27);
+  font-size: 28px;
+  line-height: 1.55;
+  letter-spacing: -0.8px;
+}
+
+.login-card .signup-card-heading > p {
+  margin: 0;
+  color: var(--momo-muted, #7b7568);
+  font-size: 14px;
+  line-height: 1.9;
+}
+
+.login-card .signup-note-label {
+  display: flex;
+  justify-content: space-between;
+  gap: 12px;
+  margin-top: 24px;
+  padding-top: 14px;
+  border-top: 1px solid var(--momo-note-border, #ebdea0);
+  background: transparent;
+  border-right: 0;
+  border-bottom: 0;
+  border-left: 0;
+  border-radius: 0;
+}
+
+@media (max-width: 600px) {
+  .login-card .signup-card-heading {
+    padding: 22px 18px;
+  }
+
+  .login-card .signup-card-heading h1 {
+    font-size: 23px;
+  }
 }

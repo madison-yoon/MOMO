@@ -1,121 +1,149 @@
-import { useState } from "react";
-import { Link,useNavigate } from "react-router-dom";
-import '../App.css';
-import logoImage from '../textlogo.png'; 
+import { useState, useEffect } from "react";
+import { Link, useNavigate } from "react-router-dom";
+import "../App.css";
+import logoImage from "../textlogo.png";
+import AxiosApi from "../api/AxiosApi";
 
+/* 정규식 */
 
-const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-const passwordRegex =
-  /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[!@#$%^&*])[A-Za-z\d!@#$%^&*]{8,20}$/;
-const nicknameRegex = /^[가-힣a-zA-Z0-9]{2,10}$/;
+// 이메일: 이메일 형식 검사
+const EMAIL_REGEX = /^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/;
+
+// 비밀번호: 영문, 숫자, 특수문자 포함 8~20자
+const PWD_REGEX =
+  /^(?=.*[A-Za-z])(?=.*\d)(?=.*[!@#$%^&*])[A-Za-z\d!@#$%^&*]{8,20}$/;
+
+// 닉네임: 한글, 영문, 숫자 2~10자
+const NICKNAME_REGEX = /^[가-힣a-zA-Z0-9]{2,10}$/;
 
 function SignUp() {
-  const [formData, setFormData] = useState({
-    id: "",
-    email: "",
-    password: "",
-    passwordConfirm: "",
-    nickname: "",
-  });
+  // 입력값
+  const [inputId, setInputId] = useState("");
+  const [inputEmail, setInputEmail] = useState("");
+  const [inputPwd, setInputPwd] = useState("");
+  const [inputPwdCheck, setInputPwdCheck] = useState("");
+  const [inputNickname, setInputNickname] = useState("");
 
-  const [errors, setErrors] = useState({});
-  const [message, setMessage] = useState("");
-  const navigate = useNavigate();
+  // 아이디 중복 확인 상태
+  const [idStatus, setIdStatus] = useState("idle");
 
-  const handleChange = (e) => {
-    const { name, value } = e.target;
+  const nav = useNavigate();
 
-    setFormData((prev) => ({
-      ...prev,
-      [name]: value,
-    }));
+  // 입력값 유효성 검사
+  const isId = inputId.trim() !== "";
+  const isEmail = EMAIL_REGEX.test(inputEmail);
+  const isPwd = PWD_REGEX.test(inputPwd);
+  const isPwdCheck = inputPwdCheck !== "" && inputPwd === inputPwdCheck;
+  const isNickname = NICKNAME_REGEX.test(inputNickname);
 
-    setErrors((prev) => ({
-      ...prev,
-      [name]: "",
-    }));
+  /*
+   * 아이디 중복 확인
+   * 입력이 멈춘 뒤 0.5초 후 서버에 요청
+   */
+  useEffect(() => {
+    if (!isId) {
+      setIdStatus("idle");
+      return;
+    }
 
-    setMessage("");
+    setIdStatus("checking");
+
+    let ignore = false;
+
+    const timer = setTimeout(async () => {
+      try {
+        const response = await AxiosApi.memberIdExist(inputId.trim());
+
+        if (ignore) return;
+
+        // 이미 존재하는 아이디면 true
+        setIdStatus(response.data === true ? "duplicate" : "available");
+      } catch (error) {
+        if (!ignore) {
+          setIdStatus("error");
+        }
+      }
+    }, 500);
+
+    return () => {
+      ignore = true;
+      clearTimeout(timer);
+    };
+  }, [inputId, isId]);
+
+  // 아이디 중복 확인 통과 + 나머지 입력값 유효성 검사
+  const isIdOk = isId && idStatus === "available";
+
+  const isAllValid = isIdOk && isEmail && isPwd && isPwdCheck && isNickname;
+
+  // 아이디 메시지
+  const getIdMessage = () => {
+    if (!inputId) return "";
+
+    switch (idStatus) {
+      case "checking":
+        return "아이디 중복 확인 중...";
+      case "available":
+        return "사용 가능한 아이디입니다.";
+      case "duplicate":
+        return "이미 사용 중인 아이디입니다.";
+      case "error":
+        return "아이디 중복 확인 중 오류가 발생했습니다.";
+      default:
+        return "";
+    }
   };
 
-  const handleSubmit = async (e) => {
+  // 회원가입 요청
+  const onSubmit = async (e) => {
     e.preventDefault();
 
-    const newErrors = {};
-    if (!formData.id.trim()) {
-      newErrors.id = "아이디를 입력해 주세요.";
-    }
+    if (!isAllValid) return;
 
-    if (!emailRegex.test(formData.email)) {
-      newErrors.email = "올바른 이메일 형식을 입력해 주세요.";
-    }
+    try {
+      const response = await AxiosApi.memberSignup(
+        inputId.trim(),
+        inputPwd,
+        inputNickname.trim(),
+        inputEmail.trim(),
+      );
 
-    if (!passwordRegex.test(formData.password)) {
-      newErrors.password =
-        "8~20자, 영문 대문자·소문자·숫자·특수문자를 포함해 주세요.";
-    }
+      console.log(response.data);
 
-    if (formData.passwordConfirm !== formData.password) {
-      newErrors.passwordConfirm = "비밀번호가 일치하지 않습니다.";
-    }
-
-    if (!nicknameRegex.test(formData.nickname)) {
-      newErrors.nickname = "닉네임은 한글·영문·숫자로 2~10자 입력해 주세요.";
-    }
-
-    setErrors(newErrors);
-    setMessage("");
-
-    if (Object.keys(newErrors).length === 0) {
-      try {
-        const response = await fetch("/api/auth/signup", {
-          method: "POST",
-          headers: {
-            "Content-Type": "application/json",
-          },
-          body: JSON.stringify({
-            loginId: formData.id,
-            email: formData.email,
-            password: formData.password,
-            nickname: formData.nickname,
-          }),
-        });
-
-        if (response.ok) {
-          setMessage("회원가입이 완료되었습니다!");
-            setTimeout(() => {
-            navigate("/login");
-          }, 1000);        } else {
-          setMessage("회원가입에 실패했습니다. 입력한 정보를 확인해 주세요.");
-        }
-      } catch (error) {
-        setMessage("서버와 통신하는 중 오류가 발생했습니다.");
+      // 백엔드에서 HTTP 201을 반환하면 회원가입 성공
+      if (response.status === 201) {
+        alert(`${inputNickname}님, 회원가입이 완료되었습니다.`);
+        nav("/login", { replace: true });
+      } else {
+        alert("회원가입에 실패했습니다.");
       }
+    } catch (error) {
+      console.error("회원가입 오류:", error);
+      alert("회원가입 중 오류가 발생했습니다.");
     }
   };
-  
+
   return (
     <main className="signup-page">
       <section className="signup-wrapper">
-        {/* 상단 브랜드 영역 */}
         <Link to="/" className="signup-brand">
           <img src={logoImage} alt="MOMO 로고" />
-          <span>MOVIE MEMO</span>
         </Link>
 
-        {/* 회원가입 카드 */}
         <section className="signup-card">
           <div className="signup-card-heading">
             <span className="signup-eyebrow">YOUR MOVIE JOURNAL</span>
+
             <h1>
               나만의 영화 메모를
               <br />
               시작해 볼까요?
             </h1>
+
             <p>
-              좋아하는 영화도, 마음에 남은 장면도
+              회원가입하고 마음에 남는 영화와
               <br />
-              편하게 기록해 보세요.
+              다양한 리뷰를 기록해 보세요.
             </p>
 
             <div className="signup-note-label">
@@ -124,107 +152,146 @@ function SignUp() {
             </div>
           </div>
 
-          <form onSubmit={handleSubmit} noValidate>
+          <form onSubmit={onSubmit}>
+            {/* 아이디 */}
             <div className="signup-field">
-              <label htmlFor="signup-id">아이디</label>
+              <label htmlFor="signupId">아이디</label>
+
               <input
-                id="signup-id"
+                id="signupId"
+                type="text"
                 name="id"
-                type="text"
-                placeholder="사용할 아이디를 입력해 주세요"
-                value={formData.id}
-                onChange={handleChange}
-                autoComplete="username"
+                value={inputId}
+                placeholder="아이디를 입력해 주세요."
+                onChange={(e) => setInputId(e.target.value)}
+                required
               />
-              {errors.id && (
-                <p className="signup-error">{errors.id}</p>
-              )}
+
+              <p
+                className="signup-message"
+                style={{
+                  color: isIdOk ? "#2e9e4f" : "#e5484d",
+                }}
+              >
+                {getIdMessage()}
+              </p>
             </div>
 
+            {/* 이메일: 형식만 검사 */}
             <div className="signup-field">
-              <label htmlFor="signup-email">이메일</label>
+              <label htmlFor="signupEmail">이메일</label>
+
               <input
-                id="signup-email"
-                name="email"
+                id="signupEmail"
                 type="email"
-                placeholder="이메일 주소를 입력해 주세요"
-                value={formData.email}
-                onChange={handleChange}
-                autoComplete="email"
+                name="email"
+                value={inputEmail}
+                placeholder="이메일을 입력해 주세요."
+                onChange={(e) => setInputEmail(e.target.value.trim())}
+                required
               />
-              {errors.email && (
-                <p className="signup-error">{errors.email}</p>
-              )}
+
+              <p
+                className="signup-message"
+                style={{
+                  color: isEmail ? "#2e9e4f" : "#e5484d",
+                }}
+              >
+                {inputEmail &&
+                  (isEmail
+                    ? "올바른 이메일 형식입니다."
+                    : "이메일 형식이 올바르지 않습니다.")}
+              </p>
             </div>
 
+            {/* 비밀번호 */}
             <div className="signup-field">
-              <label htmlFor="signup-password">비밀번호</label>
+              <label htmlFor="signupPassword">비밀번호</label>
+
               <input
-                id="signup-password"
+                id="signupPassword"
+                type="password"
                 name="password"
-                type="password"
-                placeholder="8~20자 비밀번호를 입력해 주세요"
-                value={formData.password}
-                onChange={handleChange}
-                autoComplete="new-password"
+                value={inputPwd}
+                placeholder="비밀번호를 입력해 주세요."
+                onChange={(e) => setInputPwd(e.target.value)}
+                required
               />
-              <p className="signup-hint">
-                영문 대문자·소문자·숫자·특수문자를 포함해 주세요.
+
+              <p
+                className="signup-message"
+                style={{
+                  color: isPwd ? "#2e9e4f" : "#e5484d",
+                }}
+              >
+                {inputPwd &&
+                  (isPwd
+                    ? "사용 가능한 비밀번호입니다."
+                    : "영문, 숫자, 특수문자를 포함해 8~20자로 입력하세요.")}
               </p>
-              {errors.password && (
-                <p className="signup-error">{errors.password}</p>
-              )}
             </div>
 
+            {/* 비밀번호 확인 */}
             <div className="signup-field">
-              <label htmlFor="signup-passwordConfirm">
-                비밀번호 확인
-              </label>
+              <label htmlFor="signupPasswordCheck">비밀번호 확인</label>
+
               <input
-                id="signup-passwordConfirm"
-                name="passwordConfirm"
+                id="signupPasswordCheck"
                 type="password"
-                placeholder="비밀번호를 다시 입력해 주세요"
-                value={formData.passwordConfirm}
-                onChange={handleChange}
-                autoComplete="new-password"
+                name="passwordCheck"
+                value={inputPwdCheck}
+                placeholder="비밀번호를 다시 입력해 주세요."
+                onChange={(e) => setInputPwdCheck(e.target.value)}
+                required
               />
-              {errors.passwordConfirm && (
-                <p className="signup-error">
-                  {errors.passwordConfirm}
-                </p>
-              )}
+
+              <p
+                className="signup-message"
+                style={{
+                  color: isPwdCheck ? "#2e9e4f" : "#e5484d",
+                }}
+              >
+                {inputPwdCheck &&
+                  (isPwdCheck
+                    ? "비밀번호가 일치합니다."
+                    : "비밀번호가 일치하지 않습니다.")}
+              </p>
             </div>
 
+            {/* 닉네임 */}
             <div className="signup-field">
-              <label htmlFor="signup-nickname">닉네임</label>
+              <label htmlFor="signupNickname">닉네임</label>
+
               <input
-                id="signup-nickname"
-                name="nickname"
+                id="signupNickname"
                 type="text"
-                placeholder="영화 메모에 표시할 이름"
-                value={formData.nickname}
-                onChange={handleChange}
-                autoComplete="nickname"
+                name="nickname"
+                value={inputNickname}
+                placeholder="닉네임을 입력해 주세요."
+                onChange={(e) => setInputNickname(e.target.value.trim())}
+                required
               />
-              <p className="signup-hint">
-                한글·영문·숫자로 2~10자까지 입력할 수 있어요.
+
+              <p
+                className="signup-message"
+                style={{
+                  color: isNickname ? "#2e9e4f" : "#e5484d",
+                }}
+              >
+                {inputNickname &&
+                  (isNickname
+                    ? "사용 가능한 닉네임입니다."
+                    : "한글, 영문, 숫자로 2~10자 입력하세요.")}
               </p>
-              {errors.nickname && (
-                <p className="signup-error">{errors.nickname}</p>
-              )}
             </div>
 
-            <button type="submit" className="signup-submit">
+            <button
+              type="submit"
+              className="signup-submit"
+              disabled={!isAllValid}
+            >
               무료 회원가입하고 영화 메모하러 가기
-              <span aria-hidden="true">▶</span>
             </button>
-
-            {message && (
-              <p className="signup-message" role="status">
-                {message}
-              </p>
-            )}
           </form>
 
           <div className="signup-footer">
@@ -233,9 +300,7 @@ function SignUp() {
           </div>
         </section>
 
-        <p className="signup-bottom-caption">
-          YOUR MOVIES, YOUR MEMORIES.
-        </p>
+        <p className="signup-bottom-caption">YOUR MOVIES, YOUR MEMORIES.</p>
       </section>
     </main>
   );
