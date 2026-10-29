@@ -1,314 +1,25 @@
-@font-face {
-  font-family: "Pretendard";
-  src: url("https://cdn.jsdelivr.net/gh/projectnoonnu/pretendard@1.0/Pretendard-Thin.woff2")
-    format("woff2");
-  font-weight: 100;
-  font-display: swap;
-}
-@font-face {
-  font-family: "Pretendard";
-  src: url("https://cdn.jsdelivr.net/gh/projectnoonnu/pretendard@1.0/Pretendard-ExtraLight.woff2")
-    format("woff2");
-  font-weight: 200;
-  font-display: swap;
-}
-@font-face {
-  font-family: "Pretendard";
-  src: url("https://cdn.jsdelivr.net/gh/projectnoonnu/pretendard@1.0/Pretendard-Light.woff2")
-    format("woff2");
-  font-weight: 300;
-  font-display: swap;
-}
-@font-face {
-  font-family: "Pretendard";
-  src: url("https://cdn.jsdelivr.net/gh/projectnoonnu/pretendard@1.0/Pretendard-Regular.woff2")
-    format("woff2");
-  font-weight: 400;
-  font-display: swap;
-}
-@font-face {
-  font-family: "Pretendard";
-  src: url("https://cdn.jsdelivr.net/gh/projectnoonnu/pretendard@1.0/Pretendard-Medium.woff2")
-    format("woff2");
-  font-weight: 500;
-  font-display: swap;
-}
-@font-face {
-  font-family: "Pretendard";
-  src: url("https://cdn.jsdelivr.net/gh/projectnoonnu/pretendard@1.0/Pretendard-SemiBold.woff2")
-    format("woff2");
-  font-weight: 600;
-  font-display: swap;
-}
-@font-face {
-  font-family: "Pretendard";
-  src: url("https://cdn.jsdelivr.net/gh/projectnoonnu/pretendard@1.0/Pretendard-Bold.woff2")
-    format("woff2");
-  font-weight: 700;
-  font-display: swap;
-}
-@font-face {
-  font-family: "Pretendard";
-  src: url("https://cdn.jsdelivr.net/gh/projectnoonnu/pretendard@1.0/Pretendard-ExtraBold.woff2")
-    format("woff2");
-  font-weight: 800;
-  font-display: swap;
-}
-@font-face {
-  font-family: "Pretendard";
-  src: url("https://cdn.jsdelivr.net/gh/projectnoonnu/pretendard@1.0/Pretendard-Black.woff2")
-    format("woff2");
-  font-weight: 900;
-  font-display: swap;
+
+/* 영화 카드 목록 */
+.movie-grid {
+  display: grid;
+  grid-template-columns: repeat(5, minmax(0, 1fr));
+  gap: 16px;
+  width: 100%;
+  max-width: 1120px;
+  margin: 0 auto;
 }
 
-:root {
-  color-scheme: light;
-  font-family:
-    "Pretendard",
-    -apple-system,
-    BlinkMacSystemFont,
-    "Segoe UI",
-    sans-serif;
-  font-synthesis: none;
-  text-rendering: optimizeLegibility;
-
-  /* 종이 바탕 + 메모지 + 잉크를 중심으로 한 MOMO 색상 */
-  --momo-bg: #f7f4e9;
-  --momo-surface: #fffef9;
-  --momo-note: #fff7cd;
-  --momo-note-border: #ebdea0;
-  --momo-text: #302e27;
-  --momo-muted: #7b7568;
-  --momo-border: #e7e0cd;
-  --momo-accent: #f0d66e;
-  --momo-accent-hover: #e8c64b;
-  --momo-accent-ink: #6f5a13;
-  --momo-ink-button: #38352d;
-  --momo-ink-button-hover: #4a463b;
-  --momo-error: #b42318;
-  --momo-radius: 10px;
-  --momo-shadow: 0 3px 10px rgb(56 49 30 / 5%);
-}
-
-* {
-  box-sizing: border-box;
-}
-
-html {
-  min-width: 320px;
-  scroll-behavior: smooth;
-}
-
-body {
-  margin: 0;
-  color: var(--momo-text);
-  background: var(--momo-bg);
-  font-family: inherit;
-  font-size: 16px;
-  line-height: 1.65;
-  -webkit-font-smoothing: antialiased;
-}
-
-button,
-input,
-textarea,
-select {
-  color: inherit;
-  font: inherit;
-}
-button {
-  cursor: pointer;
-}
-button:disabled {
-  opacity: 0.58;
-  cursor: not-allowed;
-}
-button:focus-visible,
-a:focus-visible,
-input:focus-visible,
-textarea:focus-visible,
-select:focus-visible {
-  outline: 3px solid rgb(190 151 35 / 42%);
-  outline-offset: 2px;
-}
-
-a {
-  color: inherit;
-}
-img {
-  display: block;
+.movie-grid > * {
+  min-width: 0;
   max-width: 100%;
 }
 
-.site-header {
-  position: sticky;
-  top: 0;
-  z-index: 10;
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  gap: 20px;
-  min-height: 68px;
-  padding: 12px max(4%, calc((100% - 1120px) / 2));
-  color: var(--momo-text);
-  background: rgb(255 254 249 / 94%);
-  border-bottom: 1px solid var(--momo-border);
-  backdrop-filter: blur(8px);
-}
-
-.brand {
-  flex-shrink: 0;
-  font-size: 26px;
-  font-weight: 800;
-  letter-spacing: -1.1px;
-  line-height: 1;
-  text-decoration: none;
-}
-
-nav {
-  display: flex;
-  flex-wrap: wrap;
-  align-items: center;
-  gap: 6px 10px;
-}
-nav a {
-  padding: 5px 9px;
-  color: var(--momo-muted);
-  border-radius: 6px;
-  font-size: 14px;
-  font-weight: 500;
-  text-decoration: none;
-  transition:
-    color 0.15s ease,
-    background-color 0.15s ease;
-}
-nav a:hover,
-nav a.active {
-  color: var(--momo-text);
-  background: var(--momo-note);
-}
-
-main {
-  width: min(1120px, 92%);
-  margin: 32px auto 68px;
-}
-section {
-  margin: 30px 0;
-}
-h1,
-h2,
-h3,
-p {
-  margin-top: 0;
-}
-h1,
-h2,
-h3 {
-  line-height: 1.3;
-  letter-spacing: -0.025em;
-}
-h1 {
-  font-size: clamp(27px, 4vw, 38px);
-  font-weight: 700;
-}
-h2 {
-  font-size: clamp(22px, 3vw, 27px);
-  font-weight: 700;
-}
-h3 {
-  font-size: 18px;
-  font-weight: 600;
-}
-
-.hero {
-  padding: clamp(22px, 4vw, 38px);
-  background: var(--momo-note);
-  border: 1px solid var(--momo-note-border);
-  border-radius: 8px 16px 16px 16px;
-  box-shadow: var(--momo-shadow);
-}
-
-.search-form {
-  display: flex;
-  flex-wrap: wrap;
-  align-items: center;
-  gap: 10px;
-}
-.search-form input {
-  flex: 1;
-  min-width: 180px;
-}
-
-input,
-textarea,
-select {
-  width: 100%;
-  min-width: 0;
-  padding: 11px 13px;
-  background: var(--momo-surface);
-  border: 1px solid var(--momo-border);
-  border-radius: 8px;
-}
-textarea {
-  min-height: 140px;
-  resize: vertical;
-}
-input::placeholder,
-textarea::placeholder {
-  color: #958d7b;
-}
-
-button,
-.button {
-  display: inline-flex;
-  justify-content: center;
-  align-items: center;
-  gap: 8px;
-  min-height: 40px;
-  padding: 8px 14px;
-  color: var(--momo-text);
-  background: var(--momo-surface);
-  border: 1px solid var(--momo-border);
-  border-radius: 8px;
-  font-weight: 600;
-  text-decoration: none;
-  transition:
-    background-color 0.15s ease,
-    border-color 0.15s ease,
-    transform 0.15s ease;
-}
-button:hover:not(:disabled),
-.button:hover {
-  border-color: #cec39e;
-  background: #f8f1d9;
-}
-button.primary,
-.button.primary,
-form button[type="submit"],
-.search-form button {
-  color: var(--momo-text);
-  background: var(--momo-accent);
-  border-color: #d7b843;
-}
-button.primary:hover:not(:disabled),
-.button.primary:hover,
-form button[type="submit"]:hover:not(:disabled),
-.search-form button:hover:not(:disabled) {
-  background: var(--momo-accent-hover);
-  border-color: #c7a530;
-}
-
-.movie-grid {
-  display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(165px, 1fr));
-  gap: 16px;
-}
+/* 영화 카드 */
 .movie-card {
   display: flex;
-  flex-direction: column;    /* 세로로 차곡차곡 정렬 */
-  justify-content: space-between; /* 위아래 공간을 균등하게 배분 */
-  height: 100%;             /* 카드들의 전체 높이를 동일하게 맞춤 */
+  flex-direction: column;
+  height: 100%;
+  min-width: 0;
   padding: 13px;
   color: inherit;
   background: var(--momo-surface);
@@ -316,9 +27,7 @@ form button[type="submit"]:hover:not(:disabled),
   border-radius: 8px;
   box-shadow: var(--momo-shadow);
   text-decoration: none;
-  transition:
-    transform 0.15s ease,
-    box-shadow 0.15s ease;
+  transition: transform 0.15s ease, box-shadow 0.15s ease;
 }
 
 .movie-card:hover {
@@ -344,181 +53,61 @@ form button[type="submit"]:hover:not(:disabled),
   font-size: 13px;
 }
 
-/* 추가로 카드 안의 정보 영역(`.movie-info`)이 있다면 아래 내용도 함께 적용해 주세요 */
 .movie-card .movie-info {
   display: flex;
   flex-direction: column;
   flex-grow: 1;
+  gap: 5px;
 }
 
-/* 포스터가 없는 영화도 동일한 비율을 유지 */
+.poster-frame {
+  position: relative;
+  overflow: hidden;
+  aspect-ratio: 2 / 3;
+  background: #eee9d9;
+  border-radius: 5px;
+}
+
+.poster-frame .movie-poster {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.poster-rank {
+  position: absolute;
+  top: 8px;
+  left: 8px;
+  padding: 4px 8px;
+  color: var(--momo-text);
+  background: var(--momo-note);
+  border: 1px solid var(--momo-note-border);
+  border-radius: 5px;
+  font-size: 12px;
+  font-weight: 700;
+}
+
 .poster-placeholder {
-  display: grid;
-  place-items: center;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
   width: 100%;
   min-height: 220px;
   aspect-ratio: 2 / 3;
+  padding: 12px;
   color: var(--momo-muted);
   background: #f1eddf;
   border: 1px dashed #d8ceaf;
   border-radius: 5px;
-  font-size: 13px;
-}
-
-.movie-detail {
-  display: flex;
-  align-items: flex-start;
-  gap: 26px;
-  flex-wrap: wrap;
-  padding: clamp(18px, 3vw, 28px);
-  background: var(--momo-surface);
-  border: 1px solid var(--momo-border);
-  border-radius: 10px;
-  box-shadow: var(--momo-shadow);
-}
-.movie-detail img,
-.movie-detail .poster-placeholder {
-  width: 200px;
-  max-width: 100%;
-  flex-shrink: 0;
-  object-fit: contain;
-}
-
-/* 리뷰는 흰색 영화 카드와 구별되는 메모지 톤 */
-.review-card {
-  position: relative;
-  margin: 14px 0;
-  padding: 17px 18px;
-  color: var(--momo-text);
-  background: var(--momo-note);
-  border: 1px solid var(--momo-note-border);
-  border-left: 4px solid #e4c64f;
-  border-radius: 5px 10px 10px 5px;
-  box-shadow: 0 2px 7px rgb(56 49 30 / 4%);
-}
-.review-meta,
-.reaction-row,
-.owner-actions,
-.button-row {
-  display: flex;
-  gap: 9px;
-  flex-wrap: wrap;
-  align-items: center;
-}
-.review-meta {
-  justify-content: space-between;
-}
-.review-meta span {
-  color: var(--momo-muted);
-  font-size: 13px;
-}
-.review-body {
-  white-space: pre-wrap;
+  text-align: center;
   overflow-wrap: anywhere;
 }
 
-.reaction-row button.active,
-.reaction-row button[aria-pressed="true"] {
-  background: var(--momo-accent);
-  border-color: #d7b843;
-}
-.review-form,
-.stack-form {
-  display: grid;
-  gap: 13px;
-  max-width: 650px;
-}
-.review-form label,
-.stack-form label {
-  display: grid;
-  gap: 6px;
-  font-weight: 500;
-}
-.review-form textarea {
-  background: #fffef8;
-}
-
-.error {
-  color: var(--momo-error);
-}
-.empty,
-.loading,
-.error-state {
-  padding: 22px;
-  color: var(--momo-muted);
-  background: var(--momo-surface);
-  border: 1px dashed var(--momo-border);
-  border-radius: 8px;
-  text-align: center;
-}
-.error-state {
-  color: var(--momo-error);
-  border-color: #e8c5bf;
-}
-.muted {
-  color: var(--momo-muted);
-}
-
-@media (max-width: 700px) {
-  .site-header {
-    align-items: flex-start;
-    flex-direction: column;
-    padding: 13px 4%;
-  }
-  nav {
-    gap: 5px;
-  }
-  nav a {
-    padding: 5px 7px;
-  }
-  main {
-    width: 92%;
-    margin-top: 22px;
-  }
-  .movie-grid {
-    grid-template-columns: repeat(2, minmax(0, 1fr));
-    gap: 11px;
-  }
-  .movie-card {
-    padding: 10px;
-  }
-  .review-card {
-    padding: 14px;
-  }
-  .movie-detail {
-    flex-direction: column;
-  }
-  .movie-detail img,
-  .movie-detail .poster-placeholder {
-    width: min(220px, 100%);
-  }
-}
-
-@media (prefers-reduced-motion: reduce) {
-  *,
-  *::before,
-  *::after {
-    scroll-behavior: auto !important;
-    transition-duration: 0.01ms !important;
-    animation-duration: 0.01ms !important;
-    animation-iteration-count: 1 !important;
-  }
-}
-
-.movie-grid {
-  display: grid;
-  grid-template-columns: repeat(5, minmax(0, 1fr));
-  gap: 16px;
-  width: 100%;
-  max-width: 1120px;
-  margin: 0 auto;
-  box-sizing: border-box;
-}
-
-.movie-grid > * {
-  min-width: 0;
-  max-width: 100%;
-  box-sizing: border-box;
+.placeholder-mark {
+  font-size: 36px;
+  font-weight: 800;
 }
 
 @media (max-width: 900px) {
@@ -530,372 +119,184 @@ form button[type="submit"]:hover:not(:disabled),
 @media (max-width: 600px) {
   .movie-grid {
     grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 11px;
+  }
+
+  .movie-card {
+    padding: 10px;
   }
 }
 
 
 /* ========================================
-   MOMO 회원가입 페이지
-   Brand: 종이색 + 메모지 + 잉크색
+   MOMO 홈 화면
 ======================================== */
 
-.signup-page {
-  min-height: 100vh;
-  box-sizing: border-box;
-  padding: 36px 24px 28px;
-  background: #F7F4E9;
-  color: #392F22;
-  font-family: inherit;
-}
-
-.signup-page *,
-.signup-page *::before,
-.signup-page *::after {
-  box-sizing: border-box;
-}
-
-.signup-wrapper {
+.home-page {
   width: 100%;
-  max-width: 680;
-  margin: 0 auto;
 }
 
-/* 상단 로고 */
-
-.signup-brand {
-  display: inline-flex;
-  align-items: center;
-  gap: 10px;
-  margin-bottom: 28px;
-  color: #392F22;
-  text-decoration: none;
+.home-page .hero-banner {
+  padding: clamp(22px, 4vw, 38px);
+  background: var(--momo-note);
+  border: 1px solid var(--momo-note-border);
+  border-radius: 8px 16px 16px 16px;
+  box-shadow: var(--momo-shadow);
 }
 
-.signup-brand img {
-  display: block;
-  width: auto;
-  height: 36px;
-  object-fit: contain;
+.home-page .hero-content h1 {
+  font-size: clamp(27px, 4vw, 38px);
+  line-height: 1.5;
 }
 
-.signup-brand span {
-  padding-left: 10px;
-  border-left: 1px solid #D8CBAA;
-  color: #8C8065;
-  font-size: 10px;
-  font-weight: 700;
-  letter-spacing: 1.4px;
-}
-
-/* 메모지 형태의 회원가입 카드 */
-
-.signup-card {
-  padding: 36px 44px;
-  background: #FFFCF3;
-  border: 1px solid #E6DAB9;
-  border-radius: 14px;
-  box-shadow: 0 8px 22px rgba(78, 61, 31, 0.06);
-}
-
-
-/* 제목 영역 */
-
-.signup-card-heading {
-  margin-bottom: 30px;
-  padding: 24px 26px;
-  background: #FFF7CD;
-  border: 1px solid #F0E4B7;
-  border-radius: 9px;
-}
-
-.signup-eyebrow {
-  display: block;
-  margin-bottom: 12px;
-  color: #8C7442;
-  font-size: 10px;
-  font-weight: 700;
-  letter-spacing: 1.5px;
-}
-
-.signup-card-heading h1 {
-  margin: 0;
-  color: #392F22;
-  font-size: 27px;
-  font-weight: 750;
-  line-height: 1.45;
-  letter-spacing: -0.8px;
-}
-
-.signup-card-heading > p {
-  margin: 12px 0 0;
-  color: #75694F;
-  font-size: 13px;
+.home-page .hero-description {
+  color: var(--momo-muted);
   line-height: 1.8;
 }
 
-.signup-note-label {
-  display: flex;
-  justify-content: space-between;
-  gap: 12px;
-  margin-top: 22px;
-  padding-top: 12px;
-  border-top: 1px dashed #D8CBAA;
-  color: #8C8065;
-  font-size: 9px;
-  font-weight: 700;
-  letter-spacing: 1px;
-}
-
-/* 입력 필드 */
-
-.signup-field {
-  margin-bottom: 19px;
-}
-
-.signup-field label {
-  display: block;
-  margin-bottom: 7px;
-  color: #514632;
-  font-size: 13px;
-  font-weight: 650;
-}
-
-.signup-field input {
-  display: block;
-  width: 100%;
-  min-height: 45px;
-  padding: 11px 13px;
-  border: 1px solid #E3D8BE;
-  border-radius: 7px;
-  outline: none;
-  background: #FFFFFF;
-  color: #392F22;
-  font: inherit;
-  font-size: 13px;
-  transition: border-color 0.18s ease, box-shadow 0.18s ease;
-}
-
-.signup-field input::placeholder {
-  color: #A69B84;
-}
-
-.signup-field input:focus {
-  border-color: #C6A83F;
-  box-shadow: 0 0 0 3px rgba(240, 214, 110, 0.24);
-}
-
-.signup-hint {
-  margin: 6px 0 0;
-  color: #8C8065;
-  font-size: 11px;
-  line-height: 1.6;
-}
-
-.signup-error {
-  margin: 7px 0 0;
-  color: #B4483E;
+.home-page .eyebrow {
+  margin-bottom: 10px;
+  color: var(--momo-accent-ink);
   font-size: 12px;
-  line-height: 1.5;
+  font-weight: 700;
+  letter-spacing: 1.2px;
 }
 
-/* 회원가입 버튼 */
+.home-page .section-block {
+  margin: 36px 0;
+  scroll-margin-top: 90px;
+}
 
-.signup-submit {
+.home-page .section-heading {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  margin-bottom: 20px;
+}
+
+.home-page .section-heading h2 {
+  margin-bottom: 8px;
+}
+
+.home-page .section-description {
+  margin-bottom: 0;
+  color: var(--momo-muted);
+}
+
+.home-page .home-search {
+  max-width: 420px;
+  margin-bottom: 20px;
+}
+
+.home-page .state-message,
+.home-page .empty-review-panel {
+  padding: 22px;
+  color: var(--momo-muted);
+  background: var(--momo-surface);
+  border: 1px dashed var(--momo-border);
+  border-radius: var(--momo-radius);
+  text-align: center;
+}
+
+.home-page .movie-info h3 {
+  margin: 12px 0 5px;
+  overflow-wrap: anywhere;
+}
+
+.home-page .movie-info p {
+  margin: 0;
+  color: var(--momo-muted);
+  font-size: 13px;
+}
+
+.home-page .movie-info .outline-button,
+.home-page .movie-info .like-button {
+  width: 100%;
+  margin-top: 8px;
+}
+
+.home-page .like-button {
+  background: var(--momo-note);
+}
+
+.home-page .review-grid {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 16px;
+}
+
+.home-page .community-review {
+  min-width: 0;
+  padding: 18px;
+  background: var(--momo-note);
+  border: 1px solid var(--momo-note-border);
+  border-left: 4px solid var(--momo-accent);
+  border-radius: 5px 10px 10px 5px;
+  overflow-wrap: anywhere;
+}
+
+.home-page .community-review p {
+  white-space: pre-wrap;
+}
+
+.home-page .community-review small {
+  color: var(--momo-muted);
+}
+
+.home-page .modal-backdrop {
+  position: fixed;
+  inset: 0;
+  z-index: 1000;
   display: flex;
   align-items: center;
   justify-content: center;
-  gap: 10px;
+  padding: 20px;
+  background: rgb(48 46 39 / 50%);
+}
+
+.home-page .review-modal {
   width: 100%;
-  min-height: 48px;
-  margin-top: 8px;
-  padding: 12px 16px;
-  border: 1px solid #D8BC4D;
-  border-radius: 7px;
-  background: #F0D66E;
-  color: #392F22;
-  font: inherit;
-  font-size: 14px;
-  font-weight: 750;
-  cursor: pointer;
-  transition: background 0.18s ease, transform 0.18s ease;
+  max-width: 480px;
+  max-height: 90vh;
+  overflow-y: auto;
+  padding: 26px;
+  background: var(--momo-surface);
+  border: 1px solid var(--momo-border);
+  border-radius: 12px;
+  box-shadow: 0 8px 28px rgb(48 46 39 / 15%);
 }
 
-.signup-submit:hover {
-  background: #E8CB56;
-}
-
-.signup-submit:active {
-  transform: translateY(1px);
-}
-
-.signup-submit:focus-visible {
-  outline: 3px solid #8C7442;
-  outline-offset: 3px;
-}
-
-.signup-message {
-  margin: 14px 0 0;
-  color: #514632;
-  font-size: 13px;
-  line-height: 1.6;
-  text-align: center;
-}
-
-/* 로그인 링크 */
-
-.signup-footer {
+.home-page .modal-close {
   display: flex;
-  justify-content: center;
-  flex-wrap: wrap;
-  gap: 6px;
-  margin-top: 22px;
-  color: #827660;
-  font-size: 12px;
+  margin-left: auto;
 }
 
-.signup-footer a {
-  color: #514632;
-  font-weight: 700;
-  text-decoration: underline;
-  text-underline-offset: 3px;
+.home-page .review-modal form {
+  display: grid;
+  gap: 12px;
 }
 
-.signup-footer a:hover {
-  color: #8C7442;
+.home-page .review-modal label {
+  font-weight: 600;
 }
 
-/* 페이지 하단 문구 */
-
-.signup-bottom-caption {
-  margin: 22px 0 0;
-  color: #A69B84;
-  font-size: 9px;
-  font-weight: 650;
-  letter-spacing: 2px;
-  text-align: center;
+.home-page .review-modal textarea {
+  min-height: 120px;
 }
 
-/* 브라우저 자동완성 배경 */
+@media (max-width: 600px) {
+  .home-page .review-grid {
+    grid-template-columns: 1fr;
+  }
 
-.signup-field input:-webkit-autofill,
-.signup-field input:-webkit-autofill:hover,
-.signup-field input:-webkit-autofill:focus {
-  -webkit-text-fill-color: #392F22;
-  box-shadow: 0 0 0 1000px #FFFFFF inset;
-  transition: background-color 9999s ease-out;
-}
-
-
-/* MOMO 회원가입 가독성 개선 */
-.signup-page {
-  padding: 40px 32px;
+  .home-page .review-modal {
+    padding: 20px;
+  }
 }
 
 .signup-wrapper {
-  max-width: 760px;
-}
-
-.signup-brand img {
-  height: 42px;
-}
-
-.signup-brand span {
-  font-size: 12px;
-}
-
-.signup-card {
-  padding: 42px 48px;
-  border-radius: 16px;
-}
-
-.signup-card-heading {
-  padding: 30px;
-  margin-bottom: 34px;
-}
-
-.signup-eyebrow {
-  font-size: 12px;
-  margin-bottom: 16px;
-}
-
-.signup-card-heading h1 {
-  font-size: 34px;
-  line-height: 1.5;
-}
-
-.signup-card-heading > p {
-  font-size: 15px;
-  line-height: 1.9;
-}
-
-.signup-note-label {
-  font-size: 11px;
-  margin-top: 26px;
-}
-
-.signup-field {
-  margin-bottom: 24px;
-}
-
-.signup-field label {
-  font-size: 15px;
-  margin-bottom: 9px;
-}
-
-.signup-field input {
-  min-height: 54px;
-  padding: 14px 16px;
-  font-size: 15px;
-  border-radius: 8px;
-}
-
-.signup-hint {
-  font-size: 12px;
-  margin-top: 8px;
-}
-
-.signup-error {
-  font-size: 13px;
-}
-
-.signup-submit {
-  min-height: 58px;
-  margin-top: 12px;
-  font-size: 16px;
-}
-
-.signup-message {
-  font-size: 14px;
-}
-
-.signup-footer {
-  margin-top: 26px;
-  font-size: 14px;
-}
-
-.signup-bottom-caption {
-  margin-top: 28px;
-  font-size: 11px;
-}
-
-@media (max-width: 520px) {
-  .signup-page {
-    padding: 22px 16px;
-  }
-
-  .signup-card {
-    padding: 22px 18px;
-  }
-
-  .signup-card-heading {
-    padding: 20px;
-  }
-
-  .signup-card-heading h1 {
-    font-size: 27px;
-  }
-
-  .signup-field input {
-    min-height: 50px;
-  }
+  width: 100%;
+  max-width: 680px;
+  margin: 0 auto;
 }
