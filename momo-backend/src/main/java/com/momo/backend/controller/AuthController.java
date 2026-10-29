@@ -29,13 +29,15 @@ import java.util.Collections;
 @RestController
 @RequestMapping("/api/auth")
 @RequiredArgsConstructor
-@CrossOrigin(origins = "http://localhost:3000")
+@CrossOrigin(origins="http://localhost:3000")
 @Slf4j
 
 public class AuthController {
 
     // 회원가입 기능을 처리하는 Service 객체
     private final AuthService authService;
+
+
 
     // 회원가입 요청을 받아 Service에 전달
     @PostMapping("/signup")
@@ -61,10 +63,12 @@ public class AuthController {
         User user = authService.login(dto.getLoginId(), dto.getPassword());
 
         // 인증된 회원 정보를 Spring Security 인증 객체로 생성
-        UsernamePasswordAuthenticationToken authentication = new UsernamePasswordAuthenticationToken(
-                user.getLoginId(),
-                null,
-                Collections.emptyList());
+        UsernamePasswordAuthenticationToken authentication =
+                new UsernamePasswordAuthenticationToken(
+                        user.getLoginId(),
+                        null,
+                        Collections.emptyList()
+                );
 
         // 현재 요청에 사용할 인증 정보 생성
         SecurityContext context = SecurityContextHolder.createEmptyContext();
@@ -80,7 +84,8 @@ public class AuthController {
         // Spring Security 인증 정보를 세션에 저장
         session.setAttribute(
                 HttpSessionSecurityContextRepository.SPRING_SECURITY_CONTEXT_KEY,
-                context);
+                context
+        );
 
         // 로그인 성공 시 회원 정보 반환
         return ResponseEntity.ok(new UserResponse(user));
@@ -97,11 +102,6 @@ public class AuthController {
         return ResponseEntity.ok(new UserResponse(user));
     }
 
-    // 아이디 중복 확인
-    @GetMapping("/exists/id/{id}")
-    public ResponseEntity<Boolean> checkId(@PathVariable String id) {
-        return ResponseEntity.ok(authService.isMember(id));
-    }
 
     // 현재 로그인한 회원의 닉네임과 이메일 수정
     @PutMapping("/me")
@@ -138,6 +138,7 @@ public class AuthController {
         return ResponseEntity.ok("회원 탈퇴가 완료되었습니다.");
     }
 
+
     // 로그아웃 시 현재 세션을 종료
     @PostMapping("/logout")
     public ResponseEntity<Void> logout(HttpServletRequest request) {
@@ -153,5 +154,14 @@ public class AuthController {
         SecurityContextHolder.clearContext();
 
         return ResponseEntity.noContent().build();
+    }
+    // 로그인한 회원이 누른 좋아요 총개수 조회
+    @GetMapping("/me/likes/count")
+    public ResponseEntity<Long> getMyLikeCount(
+            Authentication authentication) {
+
+        long count = authService.getMyLikeCount(authentication.getName());
+
+        return ResponseEntity.ok(count);
     }
 }

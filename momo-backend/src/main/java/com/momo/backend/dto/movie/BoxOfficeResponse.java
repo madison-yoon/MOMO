@@ -7,6 +7,7 @@ public record BoxOfficeResponse(
         String title,          // 영화 제목
         String releaseDate,    // 개봉일
         String audienceCount,  // 당일 관객 수
-        String totalAudience   // 누적 관객 수
+        String totalAudience,   // 누적 관객 수
+        String posterUrl
 ) {
 }
