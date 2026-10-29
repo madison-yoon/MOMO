@@ -127,6 +127,7 @@ const ActionButton = styled.button`
 
 const Main = styled.main`
   flex: 1;
+  padding: 28px 8%;
   width: 100%;
   box-sizing: border-box;
 `;

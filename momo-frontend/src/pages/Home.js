@@ -1,4 +1,3 @@
-
 import { useEffect, useState } from "react";
 import "../App.css";
 
@@ -57,7 +56,7 @@ function Home() {
         const targetDate = getYesterdayDate();
 
         const response = await fetch(
-          `http://localhost:8111/api/boxoffice/daily?targetDate=${targetDate}`
+          `http://localhost:8111/api/boxoffice/daily?targetDate=${targetDate}`,
         );
 
         if (!response.ok) {
@@ -83,11 +82,9 @@ function Home() {
           title: movie.title || movie.movieNm || "제목 없음",
           rank: Number(movie.rank || 0),
           audience: Number(
-            movie.audienceCount || movie.audience || movie.audiCnt || 0
+            movie.audienceCount || movie.audience || movie.audiCnt || 0,
           ),
-          totalAudience: Number(
-            movie.totalAudience || movie.audiAcc || 0
-          ),
+          totalAudience: Number(movie.totalAudience || movie.audiAcc || 0),
           releaseDate: movie.releaseDate || movie.openDate || "",
           posterUrl: movie.posterUrl || "",
         }));
@@ -95,7 +92,9 @@ function Home() {
         setMovies(formattedMovies);
       } catch (err) {
         console.error(err);
-        setError("영화 정보를 불러오지 못했습니다. 백엔드 서버를 확인해 주세요.");
+        setError(
+          "영화 정보를 불러오지 못했습니다. 백엔드 서버를 확인해 주세요.",
+        );
       } finally {
         setLoading(false);
       }
@@ -106,7 +105,7 @@ function Home() {
 
   // 검색어에 맞는 영화만 골라내기
   const filteredMovies = movies.filter((movie) =>
-    movie.title.toLowerCase().includes(search.trim().toLowerCase())
+    movie.title.toLowerCase().includes(search.trim().toLowerCase()),
   );
 
   // 리뷰 작성창 열기
@@ -178,11 +177,7 @@ function Home() {
             MOMO에서 영화 이야기를 시작해 보세요.
           </p>
 
-          <button
-            type="button"
-            className="primary-button"
-            onClick={goToMovies}
-          >
+          <button type="button" className="primary-button" onClick={goToMovies}>
             영화 둘러보기 →
           </button>
         </div>
@@ -214,9 +209,7 @@ function Home() {
 
         {/* 로딩 중 */}
         {loading && (
-          <div className="state-message">
-            영화 정보를 불러오는 중입니다.
-          </div>
+          <div className="state-message">영화 정보를 불러오는 중입니다.</div>
         )}
 
         {/* 오류 발생 */}
@@ -235,9 +228,7 @@ function Home() {
 
         {/* 검색 결과가 없는 경우 */}
         {!loading && error === "" && filteredMovies.length === 0 && (
-          <div className="state-message">
-            검색 결과가 없습니다.
-          </div>
+          <div className="state-message">검색 결과가 없습니다.</div>
         )}
 
         {/* 영화 카드 */}
@@ -260,9 +251,7 @@ function Home() {
                     </div>
                   )}
 
-                  <span className="poster-rank">
-                    {movie.rank}위
-                  </span>
+                  <span className="poster-rank">{movie.rank}위</span>
                 </div>
 
                 <div className="movie-info">
@@ -274,13 +263,9 @@ function Home() {
                       : "박스오피스 상영작"}
                   </p>
 
-                  <p>
-                    오늘 관객 {formatNumber(movie.audience)}명
-                  </p>
+                  <p>오늘 관객 {formatNumber(movie.audience)}명</p>
 
-                  <p>
-                    누적 관객 {formatNumber(movie.totalAudience)}명
-                  </p>
+                  <p>누적 관객 {formatNumber(movie.totalAudience)}명</p>
 
                   <button
                     type="button"
@@ -344,11 +329,7 @@ function Home() {
       {selectedMovie !== null && (
         <div className="modal-backdrop">
           <section className="review-modal">
-            <button
-              type="button"
-              className="modal-close"
-              onClick={closeReview}
-            >
+            <button type="button" className="modal-close" onClick={closeReview}>
               닫기
             </button>
 
