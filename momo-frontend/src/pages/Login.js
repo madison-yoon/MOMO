@@ -17,11 +17,18 @@ function Login() {
     e.preventDefault();
 
     try {
+      // [수정 완료] 두 번째 인자에 inputPwd가 들어가도록 수정!
       const response = await AxiosApi.memberLogin(inputId, inputPwd);
 
-      console.log(response.data);
+      console.log("로그인 응답 데이터:", response.data);
 
-      if (response.data === true) {
+      if (response.status === 200 && response.data) {
+        const nickname = response.data.nickname || "회원";
+        const loginId = response.data.loginId || inputId.trim();
+
+        localStorage.setItem("username", loginId);
+        localStorage.setItem("nickname", nickname);
+
         alert("로그인에 성공했습니다.");
         nav("/", { replace: true });
       } else {
@@ -29,7 +36,7 @@ function Login() {
       }
     } catch (error) {
       console.error("로그인 에러:", error);
-      alert("로그인 중 오류가 발생했습니다.");
+      alert("아이디 또는 비밀번호가 올바르지 않습니다.");
     }
   };
 
@@ -37,14 +44,12 @@ function Login() {
     <main className="signup-page">
       <section className="signup-wrapper">
         <Link to="/" className="signup-brand">
-        <img src={logoImage} alt="MOMO 로고" />
+          <img src={logoImage} alt="MOMO 로고" />
         </Link>
 
         <section className="signup-card login-card">
           <div className="signup-card-heading">
-            <span className="signup-eyebrow">
-              WELCOME BACK
-            </span>
+            <span className="signup-eyebrow">WELCOME BACK</span>
 
             <h1>
               다시, 나만의 영화 메모로
@@ -87,11 +92,7 @@ function Login() {
               />
             </div>
 
-            <button
-              type="submit"
-              className="signup-submit"
-              disabled={!isValid}
-            >
+            <button type="submit" className="signup-submit" disabled={!isValid}>
               로그인
               <span>→</span>
             </button>
@@ -103,9 +104,7 @@ function Login() {
           </div>
         </section>
 
-        <p className="signup-bottom-caption">
-          YOUR MOVIES, YOUR MEMORIES.
-        </p>
+        <p className="signup-bottom-caption">YOUR MOVIES, YOUR MEMORIES.</p>
       </section>
     </main>
   );

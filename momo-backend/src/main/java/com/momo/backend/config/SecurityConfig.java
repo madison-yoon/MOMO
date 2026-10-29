@@ -3,11 +3,17 @@ package com.momo.backend.config;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.http.HttpMethod;
+import org.springframework.http.HttpStatus;
+import org.springframework.security.config.Customizer; // [추가]
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.web.SecurityFilterChain;
-import org.springframework.http.HttpStatus;
+import org.springframework.web.cors.CorsConfiguration; // [추가]
+import org.springframework.web.cors.CorsConfigurationSource; // [추가]
+import org.springframework.web.cors.UrlBasedCorsConfigurationSource; // [추가]
+
+import java.util.List; // [추가]
 
 @Configuration
 public class SecurityConfig {
@@ -22,6 +28,9 @@ public class SecurityConfig {
         public SecurityFilterChain securityFilterChain(HttpSecurity http)
                         throws Exception {
                 http
+                                // [추가] CORS 설정 활성화
+                                .cors(Customizer.withDefaults())
+
                                 // 개발 단계에서 Postman API 테스트를 위해 CSRF 보호 기능 임시 비활성화
                                 .csrf(csrf -> csrf.disable())
 
@@ -63,5 +72,24 @@ public class SecurityConfig {
                                                         response.setStatus(HttpStatus.UNAUTHORIZED.value());
                                                 }));
                 return http.build();
+        }
+
+        // [추가] CORS 정책을 설정하는 Bean 정의
+        @Bean
+        public CorsConfigurationSource corsConfigurationSource() {
+                CorsConfiguration configuration = new CorsConfiguration();
+
+                // 프론트엔드(React) 주소 허용
+                configuration.setAllowedOrigins(List.of("http://localhost:3000"));
+                // 허용할 HTTP 메서드 설정
+                configuration.setAllowedMethods(List.of("GET", "POST", "PUT", "DELETE", "OPTIONS"));
+                // 모든 헤더 허용
+                configuration.setAllowedHeaders(List.of("*"));
+                // 자격 증명(쿠키, Authorization 헤더 등)을 포함한 요청 허용
+                configuration.setAllowCredentials(true);
+
+                UrlBasedCorsConfigurationSource source = new UrlBasedCorsConfigurationSource();
+                source.registerCorsConfiguration("/**", configuration);
+                return source;
         }
 }
