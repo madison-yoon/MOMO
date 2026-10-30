@@ -1,5 +1,5 @@
 /* ========================================
-   MOMO 공통 및 변수 설정 (필요시 참조)
+   MOMO 공통 변수 설정
 ======================================== */
 :root {
   --momo-surface: #ffffff;
@@ -13,6 +13,261 @@
   --momo-note-border: #ede7d5;
   --momo-shadow: 0 4px 12px rgb(56 49 30 / 6%);
   --momo-radius: 8px;
+}
+
+/* ========================================
+   마이페이지 / 프로필 수정 / 회원 탈퇴 스타일
+======================================== */
+.profile-page {
+  width: 100%;
+  max-width: 800px;
+  margin: 0 auto;
+  padding: 20px 20px 60px;
+}
+
+.profile-container {
+  display: grid;
+  gap: 24px;
+}
+
+.profile-heading h1 {
+  margin: 0 0 6px;
+  font-size: 28px;
+  font-weight: 800;
+  color: var(--momo-text);
+}
+
+.profile-heading p {
+  margin: 0;
+  color: var(--momo-muted);
+  font-size: 14px;
+}
+
+.profile-eyebrow {
+  margin-bottom: 6px;
+  color: var(--momo-accent-ink);
+  font-size: 12px;
+  font-weight: 700;
+  letter-spacing: 1px;
+}
+
+.profile-card {
+  padding: 24px;
+  background: var(--momo-surface);
+  border: 1px solid var(--momo-border);
+  border-radius: var(--momo-radius);
+  box-shadow: var(--momo-shadow);
+}
+
+.profile-card-heading {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  margin-bottom: 20px;
+}
+
+.profile-card-heading h2 {
+  margin: 0 0 4px;
+  font-size: 18px;
+  font-weight: 700;
+  color: var(--momo-text);
+}
+
+.profile-card-heading p {
+  margin: 0;
+  color: var(--momo-muted);
+  font-size: 13px;
+}
+
+.profile-card-actions {
+  display: flex;
+  gap: 8px;
+}
+
+.profile-button {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: 9px 16px;
+  background: var(--momo-surface);
+  border: 1px solid var(--momo-border);
+  border-radius: 6px;
+  color: var(--momo-text);
+  font-size: 13px;
+  font-weight: 700;
+  text-decoration: none;
+  cursor: pointer;
+  transition: background 0.15s ease;
+}
+
+.profile-button:hover {
+  background: var(--momo-note);
+}
+
+.profile-button-secondary {
+  background: var(--momo-note);
+}
+
+.profile-delete-button {
+  background: #fff5f5;
+  border-color: #f5c6c6;
+  color: #c53030;
+  text-decoration: none;
+}
+
+.profile-delete-button:hover {
+  background: #fed7d7;
+}
+
+.profile-user {
+  display: flex;
+  align-items: center;
+  gap: 20px;
+}
+
+.profile-avatar {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 64px;
+  height: 64px;
+  background: var(--momo-note);
+  border: 1px solid var(--momo-note-border);
+  border-radius: 50%;
+  font-size: 24px;
+  font-weight: 800;
+  color: var(--momo-accent-ink);
+  flex-shrink: 0;
+}
+
+.profile-user-info {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  width: 100%;
+}
+
+.profile-user-info h3 {
+  margin: 0 0 4px;
+  font-size: 18px;
+  font-weight: 700;
+}
+
+.profile-user-info p {
+  display: flex;
+  justify-content: space-between;
+  margin: 0;
+  font-size: 13px;
+  color: var(--momo-text);
+  border-bottom: 1px solid var(--momo-bg);
+  padding-bottom: 4px;
+}
+
+.profile-user-info span {
+  color: var(--momo-muted);
+  font-weight: 600;
+}
+
+/* 영화 활동 섹션 */
+.profile-activity {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 12px;
+}
+
+.profile-activity-item {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  padding: 16px;
+  background: var(--momo-note);
+  border: 1px solid var(--momo-note-border);
+  border-radius: 6px;
+}
+
+.profile-activity-icon {
+  font-size: 18px;
+}
+
+.profile-activity-item h3 {
+  margin: 0;
+  font-size: 14px;
+  font-weight: 700;
+}
+
+.profile-activity-item p {
+  margin: 0;
+  color: var(--momo-muted);
+  font-size: 12px;
+}
+
+.profile-coming {
+  display: inline-block;
+  margin-top: auto;
+  padding: 2px 6px;
+  width: fit-content;
+  background: var(--momo-surface);
+  border: 1px solid var(--momo-border);
+  border-radius: 4px;
+  font-size: 11px;
+  color: var(--momo-muted);
+}
+
+.profile-delete-section {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+}
+
+.profile-form {
+  display: grid;
+  gap: 12px;
+}
+
+.profile-form label {
+  font-size: 13px;
+  font-weight: 700;
+}
+
+.profile-form input {
+  padding: 11px 14px;
+  border: 1px solid var(--momo-border);
+  border-radius: 6px;
+  font-size: 14px;
+  background: var(--momo-surface);
+  color: var(--momo-text);
+}
+
+.profile-form input:read-only {
+  background: var(--momo-bg);
+  color: var(--momo-muted);
+}
+
+.profile-form-buttons {
+  display: flex;
+  gap: 8px;
+  margin-top: 10px;
+}
+
+.profile-delete-check {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin: 16px 0;
+  font-size: 14px;
+  cursor: pointer;
+}
+
+@media (max-width: 600px) {
+  .profile-activity {
+    grid-template-columns: 1fr;
+  }
+  .profile-delete-section {
+    flex-direction: column;
+    align-items: flex-start;
+  }
 }
 
 /* ========================================
@@ -368,7 +623,6 @@
   cursor: pointer;
 }
 
-/* 영화 포스터 + 기본 정보 */
 .movie-detail-header {
   display: grid;
   grid-template-columns: minmax(220px, 300px) minmax(0, 1fr);
@@ -415,7 +669,6 @@
   font-size: 14px;
 }
 
-/* 평점 */
 .movie-rating-panel {
   display: flex;
   flex-direction: column;
@@ -446,7 +699,6 @@
   font-size: 12px;
 }
 
-/* 좋아요 / 싫어요 */
 .detail-reaction-counts {
   display: grid;
   grid-template-columns: repeat(2, minmax(0, 1fr));
@@ -473,7 +725,6 @@
   font-size: 17px;
 }
 
-/* 상세 페이지 공통 섹션 */
 .detail-content-section {
   margin-top: 30px;
   padding: 24px;
@@ -488,7 +739,6 @@
   font-size: 21px;
 }
 
-/* 감독 / 출연진 */
 .people-group + .people-group {
   margin-top: 25px;
   padding-top: 22px;
@@ -549,15 +799,12 @@
   line-height: 1.7;
 }
 
-/* 감독 / 배우 작품 목록 */
 .person-filmography {
   margin-top: 20px;
   padding: 22px;
   border-left: 4px solid var(--momo-accent);
   background: var(--momo-note);
-  border-top: 1px solid var(--momo-border);
-  border-right: 1px solid var(--momo-border);
-  border-bottom: 1px solid var(--momo-border);
+  border: 1px solid var(--momo-border);
   border-radius: 8px;
 }
 
@@ -592,9 +839,7 @@
   font-size: 12px;
 }
 
-/* ========================================
-   리뷰 작성 영역 및 목록 (.review-write-section)
-======================================== */
+/* 리뷰 영역 스타일 */
 .review-write-section {
   padding: 0;
   overflow: hidden;
@@ -658,16 +903,6 @@
   resize: vertical;
 }
 
-.review-write-content textarea:focus {
-  outline: 2px solid var(--momo-note-border);
-  border-color: var(--momo-accent);
-}
-
-.review-write-content textarea::placeholder {
-  color: #aaa394;
-}
-
-/* 좋아요 / 싫어요 선택 버튼 */
 .reaction-buttons {
   display: grid;
   grid-template-columns: repeat(2, minmax(0, 1fr));
@@ -689,15 +924,6 @@
   cursor: pointer;
   font: inherit;
   font-size: 13px;
-  transition: background 0.15s ease, border-color 0.15s ease;
-}
-
-.reaction-button:hover {
-  background: var(--momo-note);
-}
-
-.reaction-icon {
-  font-size: 17px;
 }
 
 .reaction-button.selected-like {
@@ -712,20 +938,12 @@
   font-weight: 700;
 }
 
-.review-character-count {
-  margin: -5px 0 5px;
-  color: var(--momo-muted);
-  font-size: 11px;
-  text-align: right;
-}
-
 .review-form-actions {
   display: flex;
   justify-content: flex-end;
   align-items: center;
   gap: 9px;
   margin-top: 8px;
-  color: var(--momo-muted);
 }
 
 .review-form-actions button {
@@ -736,11 +954,6 @@
   color: white;
   font-weight: 700;
   cursor: pointer;
-}
-
-.review-form-actions button:disabled {
-  opacity: 0.45;
-  cursor: not-allowed;
 }
 
 .detail-review-card {
@@ -757,41 +970,12 @@
   font-size: 12px;
 }
 
-.detail-review-card p {
-  line-height: 1.6;
-}
-
-.movie-detail-page .review-grid {
-  grid-template-columns: repeat(2, minmax(0, 1fr));
-}
-
-.movie-detail-page .section-heading > span {
-  flex-shrink: 0;
-  color: var(--momo-muted);
-  font-size: 13px;
-}
-
-/* ========================================
-   기타 유틸 및 회원가입 래퍼
-======================================== */
-.detail-rank,
-.section-subtitle,
-.hero-label {
-  color: var(--momo-accent);
-  font-size: 12px;
-  font-weight: 800;
-  letter-spacing: 1px;
-}
-
 .signup-wrapper {
   width: 100%;
   max-width: 680px;
   margin: 0 auto;
 }
 
-/* ========================================
-   반응형 디자인 (Media Queries)
-======================================== */
 @media (max-width: 900px) {
   .movie-grid {
     grid-template-columns: repeat(3, minmax(0, 1fr));
@@ -804,60 +988,11 @@
     gap: 20px;
     padding: 18px;
   }
-
-  .movie-detail-poster {
-    width: min(100%, 260px);
-    margin: 0 auto;
-  }
-
-  .movie-detail-info h1 {
-    font-size: 25px;
-  }
-
-  .detail-content-section {
-    padding: 18px;
-  }
-
-  .filmography-list {
-    grid-template-columns: 1fr;
-  }
-
-  .movie-detail-page .review-grid {
-    grid-template-columns: 1fr;
-  }
 }
 
 @media (max-width: 600px) {
   .movie-grid {
     grid-template-columns: repeat(2, minmax(0, 1fr));
     gap: 12px;
-  }
-
-  .movie-card {
-    padding: 10px;
-  }
-
-  .detail-reaction-counts {
-    flex-direction: column;
-    gap: 10px;
-  }
-}
-
-@media (max-width: 420px) {
-  .detail-reaction-count {
-    flex-direction: column;
-    align-items: flex-start;
-  }
-
-  .review-write-content {
-    padding: 16px;
-  }
-
-  .review-write-toggle {
-    padding: 14px 16px;
-  }
-
-  .reaction-buttons {
-    gap: 8px;
   }
 }
