@@ -1,7 +1,8 @@
-import { useEffect, useState } from "react";
+import React, { useEffect, useMemo, useState } from "react";
 import "../App.css";
 
-// 어제 날짜를 YYYYMMDD 형식으로 만들기
+const API_URL = "http://localhost:8111/api/boxoffice/daily";
+
 function getYesterdayDate() {
   const date = new Date();
   date.setDate(date.getDate() - 1);
@@ -13,120 +14,161 @@ function getYesterdayDate() {
   return `${year}${month}${day}`;
 }
 
-// 관객 수에 쉼표 표시하기
-function formatNumber(number) {
-  return Number(number || 0).toLocaleString("ko-KR");
+function formatNumber(value) {
+  return Number(value || 0).toLocaleString("ko-KR");
+}
+
+function getMovieCode(movie) {
+  return movie.movieCode || movie.movieCd || movie.id || "";
+}
+
+function normalizeMovie(movie, index) {
+  return {
+    id: getMovieCode(movie) || `movie-${index}`,
+    title: movie.title || movie.movieNm || "제목 없음",
+    rank: Number(
+      movie.rank || movie.rankNo || movie.boxOfficeRank || index + 1,
+    ),
+    audience: Number(
+      movie.audienceCount || movie.audience || movie.audiCnt || 0,
+    ),
+    totalAudience: Number(movie.totalAudience || movie.audiAcc || 0),
+    releaseDate: movie.releaseDate || movie.openDate || "",
+    posterUrl: movie.posterUrl || "",
+    directors: movie.directors || movie.director || [],
+    cast: movie.cast || movie.actors || movie.actorList || [],
+  };
+}
+
+function normalizePeople(people) {
+  if (!people) return [];
+
+  if (typeof people === "string") {
+    return people
+      .split(",")
+      .map((name) => name.trim())
+      .filter(Boolean)
+      .map((name) => ({ name, role: "", works: [] }));
+  }
+
+  if (!Array.isArray(people)) {
+    people = [people];
+  }
+
+  return people.map((person) => {
+    if (typeof person === "string") {
+      return { name: person, role: "", works: [] };
+    }
+
+    return {
+      name:
+        person.name ||
+        person.peopleNm ||
+        person.actorName ||
+        person.directorName ||
+        "이름 없음",
+      role:
+        person.role || person.cast || person.character || person.castName || "",
+      works: person.works || person.filmography || [],
+    };
+  });
 }
 
 function Home() {
-  // 영화 목록
   const [movies, setMovies] = useState([]);
-
-  // 영화 검색어
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState("");
   const [search, setSearch] = useState("");
 
-  // 영화 정보를 불러오는 상태
-  const [loading, setLoading] = useState(true);
-
-  // 오류 메시지
-  const [error, setError] = useState("");
-
-  // 최근 리뷰 목록
   const [reviews, setReviews] = useState([]);
-
-  // 좋아요 상태
   const [likes, setLikes] = useState({});
 
-  // 리뷰 작성 대상 영화
   const [selectedMovie, setSelectedMovie] = useState(null);
-
-  // 리뷰 내용
   const [reviewText, setReviewText] = useState("");
+  const [reaction, setReaction] = useState("");
+  const [isReviewOpen, setIsReviewOpen] = useState(false);
 
-  // 별점
-  const [rating, setRating] = useState(5);
+  const [selectedPerson, setSelectedPerson] = useState(null);
 
-  // 백엔드에서 영화 목록 가져오기
   useEffect(() => {
-    async function getMovies() {
-      try {
-        setLoading(true);
-        setError("");
+    const targetDate = getYesterdayDate();
 
-        const targetDate = getYesterdayDate();
-
-        const response = await fetch(
-          `http://localhost:8111/api/boxoffice/daily?targetDate=${targetDate}`,
-        );
-
+    fetch(`${API_URL}?targetDate=${targetDate}`)
+      .then((response) => {
         if (!response.ok) {
           throw new Error("영화 정보를 불러오지 못했습니다.");
         }
+        return response.json();
+      })
+      .then((data) => {
+        const list = Array.isArray(data)
+          ? data
+          : data.movies || data.dailyBoxOfficeList || data.boxOfficeList || [];
 
-        const data = await response.json();
-
-        // 백엔드 응답에서 영화 배열 찾기
-        let movieList = [];
-
-        if (Array.isArray(data)) {
-          movieList = data;
-        } else if (Array.isArray(data.movies)) {
-          movieList = data.movies;
-        } else if (Array.isArray(data.dailyBoxOfficeList)) {
-          movieList = data.dailyBoxOfficeList;
-        }
-
-        // 화면에서 사용할 영화 정보 정리
-        const formattedMovies = movieList.map((movie, index) => ({
-          id: movie.movieCode || movie.id || index,
-          title: movie.title || movie.movieNm || "제목 없음",
-          rank: Number(movie.rank || 0),
-          audience: Number(
-            movie.audienceCount || movie.audience || movie.audiCnt || 0,
-          ),
-          totalAudience: Number(movie.totalAudience || movie.audiAcc || 0),
-          releaseDate: movie.releaseDate || movie.openDate || "",
-          posterUrl: movie.posterUrl || "",
-        }));
+        const formattedMovies = list
+          .map(normalizeMovie)
+          .sort((a, b) => a.rank - b.rank)
+          .slice(0, 10);
 
         setMovies(formattedMovies);
-      } catch (err) {
-        console.error(err);
+        setError("");
+      })
+      .catch((err) => {
+        console.error("영화 데이터 오류:", err);
         setError(
           "영화 정보를 불러오지 못했습니다. 백엔드 서버를 확인해 주세요.",
         );
-      } finally {
-        setLoading(false);
-      }
-    }
-
-    getMovies();
+      })
+      .finally(() => setLoading(false));
   }, []);
 
-  // 검색어에 맞는 영화만 골라내기
-  const filteredMovies = movies.filter((movie) =>
-    movie.title.toLowerCase().includes(search.trim().toLowerCase()),
-  );
+  const filteredMovies = useMemo(() => {
+    return movies.filter((movie) =>
+      movie.title.toLowerCase().includes(search.toLowerCase()),
+    );
+  }, [movies, search]);
 
-  // 리뷰 작성창 열기
-  function openReview(movie) {
+  const movieReviews = selectedMovie
+    ? reviews.filter((review) => review.movieId === selectedMovie.id)
+    : [];
+
+  const likeCount = movieReviews.filter(
+    (review) => review.reaction === "like",
+  ).length;
+
+  const dislikeCount = movieReviews.filter(
+    (review) => review.reaction === "dislike",
+  ).length;
+
+  const totalReactions = likeCount + dislikeCount;
+
+  const rating =
+    totalReactions > 0
+      ? ((likeCount / totalReactions) * 10).toFixed(1)
+      : "평가 없음";
+
+  function openMovie(movie) {
     setSelectedMovie(movie);
+    setSelectedPerson(null);
+    setIsReviewOpen(false);
     setReviewText("");
-    setRating(5);
+    setReaction("");
   }
 
-  // 리뷰 작성창 닫기
-  function closeReview() {
+  function goBack() {
     setSelectedMovie(null);
-    setReviewText("");
-    setRating(5);
+    setSelectedPerson(null);
+    setIsReviewOpen(false);
   }
 
-  // 리뷰 등록하기
-  function addReview(event) {
-    event.preventDefault();
+  function addReview() {
+    if (!reaction) {
+      alert("좋아요 또는 싫어요를 선택해 주세요.");
+      return;
+    }
 
-    if (reviewText.trim() === "") {
+    if (!reviewText.trim()) {
+      alert("리뷰 내용을 입력해 주세요.");
       return;
     }
 
@@ -135,149 +177,303 @@ function Home() {
       movieId: selectedMovie.id,
       movieTitle: selectedMovie.title,
       text: reviewText.trim(),
-      rating: rating,
+      reaction,
       date: new Date().toLocaleDateString("ko-KR"),
     };
 
-    setReviews([newReview, ...reviews]);
-    closeReview();
+    setReviews((prev) => [newReview, ...prev]);
+    setReviewText("");
+    setReaction("");
+    setIsReviewOpen(false);
   }
 
-  // 좋아요 누르기
   function toggleLike(movieId) {
-    setLikes({
-      ...likes,
-      [movieId]: !likes[movieId],
-    });
+    setLikes((prev) => ({
+      ...prev,
+      [movieId]: !prev[movieId],
+    }));
   }
 
-  // 영화 목록으로 이동하기
-  function goToMovies() {
-    document.getElementById("movies").scrollIntoView({
-      behavior: "smooth",
-    });
+  function getPeople(list) {
+    return normalizePeople(list);
+  }
+
+  function openPerson(person, type) {
+    setSelectedPerson({ ...person, type });
+  }
+
+  if (selectedMovie) {
+    const directors = getPeople(selectedMovie.directors);
+    const actors = getPeople(selectedMovie.cast);
+
+    return (
+      <main className="movie-detail-page">
+        <button className="detail-back-button" onClick={goBack}>
+          ← 메인으로 돌아가기
+        </button>
+
+        <section className="movie-detail-header">
+          <div className="movie-detail-poster">
+            {selectedMovie.posterUrl ? (
+              <img src={selectedMovie.posterUrl} alt={selectedMovie.title} />
+            ) : (
+              <div className="poster-placeholder">
+                <span>🎬</span>
+                <p>{selectedMovie.title}</p>
+              </div>
+            )}
+          </div>
+
+          <div className="movie-detail-info">
+            <span className="detail-rank">
+              BOX OFFICE {selectedMovie.rank}위
+            </span>
+
+            <h1>{selectedMovie.title}</h1>
+
+            <p>개봉일: {selectedMovie.releaseDate || "정보 없음"}</p>
+            <p>일일 관객수: {formatNumber(selectedMovie.audience)}명</p>
+            <p>누적 관객수: {formatNumber(selectedMovie.totalAudience)}명</p>
+          </div>
+        </section>
+
+        <section className="movie-rating-panel">
+          <h2>관객 평점</h2>
+          <div className="movie-rating-number">{rating}</div>
+
+          <div className="detail-reaction-counts">
+            <div className="detail-reaction-count">
+              👍 좋아요 <strong>{likeCount}</strong>
+            </div>
+            <div className="detail-reaction-count">
+              👎 싫어요 <strong>{dislikeCount}</strong>
+            </div>
+          </div>
+        </section>
+
+        <section className="detail-content-section">
+          <h2>감독</h2>
+
+          {directors.length > 0 ? (
+            <div className="people-list">
+              {directors.map((person, index) => (
+                <button
+                  className="person-chip"
+                  key={index}
+                  onClick={() => openPerson(person, "감독")}
+                >
+                  {person.name}
+                </button>
+              ))}
+            </div>
+          ) : (
+            <p className="people-empty">
+              감독 정보가 아직 연결되지 않았습니다.
+            </p>
+          )}
+        </section>
+
+        <section className="detail-content-section">
+          <h2>출연 배우</h2>
+
+          {actors.length > 0 ? (
+            <div className="people-list">
+              {actors.map((person, index) => (
+                <button
+                  className="person-chip"
+                  key={index}
+                  onClick={() => openPerson(person, "배우")}
+                >
+                  {person.name}
+                  {person.role && (
+                    <span className="person-role">({person.role})</span>
+                  )}
+                </button>
+              ))}
+            </div>
+          ) : (
+            <p className="people-empty">
+              배우 정보가 아직 연결되지 않았습니다.
+            </p>
+          )}
+        </section>
+
+        {selectedPerson && (
+          <section className="person-filmography">
+            <h2>{selectedPerson.name} 필모그래피</h2>
+            <p>{selectedPerson.type}</p>
+
+            {selectedPerson.works?.length > 0 ? (
+              <ul className="filmography-list">
+                {selectedPerson.works.map((work, index) => (
+                  <li key={index}>
+                    {typeof work === "string"
+                      ? work
+                      : work.title || work.movieNm || "작품 정보"}
+                  </li>
+                ))}
+              </ul>
+            ) : (
+              <p>필모그래피 정보가 아직 연결되지 않았습니다.</p>
+            )}
+
+            <button onClick={() => setSelectedPerson(null)}>닫기</button>
+          </section>
+        )}
+
+        <section className="detail-content-section">
+          <h2>리뷰</h2>
+
+          <div className="review-write-section">
+            <button
+              className="review-write-toggle"
+              onClick={() => setIsReviewOpen((prev) => !prev)}
+            >
+              <span>{selectedMovie.title}</span>
+              <span className="review-toggle-arrow">
+                {isReviewOpen ? "▲" : "▼"}
+              </span>
+            </button>
+
+            {isReviewOpen && (
+              <div className="review-write-content">
+                <h3>이 영화는 어떠셨나요?</h3>
+
+                <div className="reaction-buttons">
+                  <button
+                    className={`reaction-button ${
+                      reaction === "like" ? "selected-like" : ""
+                    }`}
+                    onClick={() => setReaction("like")}
+                  >
+                    👍 좋아요
+                  </button>
+
+                  <button
+                    className={`reaction-button ${
+                      reaction === "dislike" ? "selected-dislike" : ""
+                    }`}
+                    onClick={() => setReaction("dislike")}
+                  >
+                    👎 싫어요
+                  </button>
+                </div>
+
+                <textarea
+                  value={reviewText}
+                  onChange={(e) => setReviewText(e.target.value)}
+                  placeholder="영화에 대한 리뷰를 작성해 주세요."
+                  maxLength={1000}
+                />
+
+                <div className="review-form-actions">
+                  <span>{reviewText.length}/1000</span>
+                  <button onClick={addReview}>리뷰 등록</button>
+                </div>
+              </div>
+            )}
+          </div>
+
+          {movieReviews.length > 0 ? (
+            <div className="detail-review-list">
+              {movieReviews.map((review) => (
+                <article className="detail-review-card" key={review.id}>
+                  <div>
+                    {review.reaction === "like" ? "👍 좋아요" : "👎 싫어요"}
+                    <span>{review.date}</span>
+                  </div>
+                  <p>{review.text}</p>
+                </article>
+              ))}
+            </div>
+          ) : (
+            <p className="people-empty">아직 작성된 리뷰가 없습니다.</p>
+          )}
+        </section>
+      </main>
+    );
   }
 
   return (
-    <div className="home-page">
-      {/* 1. 홈 소개 영역 */}
+    <main className="home-page">
       <section className="hero-banner">
-        <div className="hero-content">
-          <p className="eyebrow">MOVIE MEMO</p>
-
-          <h1>
-            영화를 보고 난 뒤,
-            <br />
-            당신의 생각을 기록하세요.
-          </h1>
-
-          <p className="hero-description">
-            오늘의 영화부터 다른 사람들의 감상까지.
-            <br />
-            MOMO에서 영화 이야기를 시작해 보세요.
-          </p>
-
-          <button type="button" className="primary-button" onClick={goToMovies}>
-            영화 둘러보기 →
-          </button>
+        <div>
+          <span className="hero-label">MOMO MOVIE</span>
+          <h1>오늘의 영화, 오늘의 리뷰</h1>
+          <p>영화를 보고 느낀 생각을 자유롭게 나눠보세요.</p>
         </div>
       </section>
 
-      {/* 2. 영화 목록 영역 */}
-      <section id="movies" className="section-block">
+      <section className="section-block" id="movies">
         <div className="section-heading">
           <div>
-            <p className="eyebrow">DAILY BOX OFFICE</p>
-            <h2>오늘의 박스오피스</h2>
-            <p className="section-description">
-              관객들이 많이 찾은 영화를 확인해 보세요.
-            </p>
+            <span className="section-subtitle">BOX OFFICE</span>
+            <h2>일일 박스오피스 TOP 10</h2>
           </div>
-
-          <span>총 {filteredMovies.length}편</span>
         </div>
 
-        {/* 영화 검색 */}
-        <div className="home-search">
-          <input
-            type="text"
-            value={search}
-            onChange={(event) => setSearch(event.target.value)}
-            placeholder="영화 제목 검색"
-          />
-        </div>
+        <input
+          className="movie-search-input"
+          type="text"
+          placeholder="영화 제목 검색..."
+          value={search}
+          onChange={(e) => setSearch(e.target.value)}
+        />
 
-        {/* 로딩 중 */}
-        {loading && (
-          <div className="state-message">영화 정보를 불러오는 중입니다.</div>
-        )}
-
-        {/* 오류 발생 */}
-        {!loading && error !== "" && (
-          <div className="state-message">
-            <p>{error}</p>
-            <button
-              type="button"
-              className="outline-button"
-              onClick={() => window.location.reload()}
-            >
-              다시 불러오기
-            </button>
-          </div>
-        )}
-
-        {/* 검색 결과가 없는 경우 */}
-        {!loading && error === "" && filteredMovies.length === 0 && (
-          <div className="state-message">검색 결과가 없습니다.</div>
-        )}
-
-        {/* 영화 카드 */}
-        {!loading && error === "" && filteredMovies.length > 0 && (
+        {loading ? (
+          <p className="movie-message">영화 정보를 불러오는 중입니다...</p>
+        ) : error ? (
+          <p className="movie-message error-message">{error}</p>
+        ) : filteredMovies.length === 0 ? (
+          <p className="movie-message">검색 결과가 없습니다.</p>
+        ) : (
           <div className="movie-grid">
             {filteredMovies.map((movie) => (
               <article className="movie-card" key={movie.id}>
                 <div className="poster-frame">
+                  <span className="poster-rank">{movie.rank}</span>
+
                   {movie.posterUrl ? (
                     <img
-                      className="movie-poster"
                       src={movie.posterUrl}
-                      alt={`${movie.title} 영화 포스터`}
+                      alt={movie.title}
+                      className="movie-poster-image"
                     />
                   ) : (
                     <div className="poster-placeholder">
-                      <span className="placeholder-mark">M</span>
-                      <span>{movie.title}</span>
-                      <small>포스터 준비 중</small>
+                      <span>🎬</span>
+                      <p>{movie.title}</p>
                     </div>
                   )}
-
-                  <span className="poster-rank">{movie.rank}위</span>
                 </div>
 
-                <div className="movie-info">
+                <div className="movie-card-content">
                   <h3>{movie.title}</h3>
 
-                  <p>
-                    {movie.releaseDate
-                      ? `${movie.releaseDate} 개봉`
-                      : "박스오피스 상영작"}
+                  <p className="movie-release-date">
+                    개봉일: {movie.releaseDate || "정보 없음"}
                   </p>
 
-                  <p>오늘 관객 {formatNumber(movie.audience)}명</p>
-
-                  <p>누적 관객 {formatNumber(movie.totalAudience)}명</p>
+                  <div className="movie-audience-info">
+                    <p>
+                      오늘 관객수{" "}
+                      <strong>{formatNumber(movie.audience)}</strong>
+                    </p>
+                    <p>
+                      누적 관객수{" "}
+                      <strong>{formatNumber(movie.totalAudience)}</strong>
+                    </p>
+                  </div>
 
                   <button
-                    type="button"
-                    className="outline-button"
-                    onClick={() => openReview(movie)}
+                    className="movie-review-button"
+                    onClick={() => openMovie(movie)}
                   >
-                    리뷰 작성
+                    리뷰 작성 →
                   </button>
 
                   <button
-                    type="button"
-                    className="like-button"
+                    className="movie-like-button"
                     onClick={() => toggleLike(movie.id)}
                   >
                     {likes[movie.id] ? "♥ 좋아요" : "♡ 좋아요"}
@@ -289,92 +485,33 @@ function Home() {
         )}
       </section>
 
-      {/* 3. 최근 리뷰 영역 */}
-      <section id="reviews" className="section-block">
+      <section className="section-block">
         <div className="section-heading">
           <div>
-            <p className="eyebrow">COMMUNITY</p>
-            <h2>최근 리뷰</h2>
-            <p className="section-description">
-              다른 사람들과 영화 감상을 나눠보세요.
-            </p>
+            <span className="section-subtitle">COMMUNITY</span>
+            <h2>최근 작성된 리뷰</h2>
           </div>
         </div>
 
-        {reviews.length === 0 ? (
-          <div className="empty-review-panel">
-            <h3>첫 번째 리뷰를 남겨보세요.</h3>
-            <p>영화를 보고 느낀 감상을 기록해 보세요.</p>
-          </div>
-        ) : (
+        {reviews.length > 0 ? (
           <div className="review-grid">
-            {reviews.slice(0, 3).map((review) => (
-              <article className="community-review" key={review.id}>
+            {reviews.slice(0, 6).map((review) => (
+              <article className="review-card" key={review.id}>
                 <h3>{review.movieTitle}</h3>
-
-                <p>
-                  {"★".repeat(review.rating)}
-                  {"☆".repeat(5 - review.rating)}
-                </p>
-
                 <p>{review.text}</p>
-                <small>{review.date}</small>
+                <span>
+                  {review.reaction === "like" ? "👍 좋아요" : "👎 싫어요"}
+                </span>
               </article>
             ))}
           </div>
+        ) : (
+          <p className="movie-message">
+            아직 작성된 리뷰가 없습니다. 첫 리뷰를 작성해 보세요!
+          </p>
         )}
       </section>
-
-      {/* 4. 리뷰 작성창 */}
-      {selectedMovie !== null && (
-        <div className="modal-backdrop">
-          <section className="review-modal">
-            <button type="button" className="modal-close" onClick={closeReview}>
-              닫기
-            </button>
-
-            <h2>{selectedMovie.title} 리뷰 작성</h2>
-
-            <form onSubmit={addReview}>
-              <label>별점</label>
-
-              <select
-                value={rating}
-                onChange={(event) => setRating(Number(event.target.value))}
-              >
-                <option value={1}>1점</option>
-                <option value={2}>2점</option>
-                <option value={3}>3점</option>
-                <option value={4}>4점</option>
-                <option value={5}>5점</option>
-              </select>
-
-              <label htmlFor="review-content">리뷰 내용</label>
-
-              <textarea
-                id="review-content"
-                value={reviewText}
-                onChange={(event) => setReviewText(event.target.value)}
-                placeholder="영화를 보고 어떤 생각이 들었나요?"
-                rows={5}
-                maxLength={1000}
-                required
-              />
-
-              <p>{reviewText.length} / 1000자</p>
-
-              <button
-                type="submit"
-                className="primary-button"
-                disabled={reviewText.trim() === ""}
-              >
-                리뷰 등록
-              </button>
-            </form>
-          </section>
-        </div>
-      )}
-    </div>
+    </main>
   );
 }
 
