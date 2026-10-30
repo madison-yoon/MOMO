@@ -3,13 +3,13 @@
 ======================================== */
 :root {
   --momo-surface: #ffffff;
-  --momo-bg: #f9f6ef;
+  --momo-bg: #F7F4E9;
   --momo-border: #e2dcce;
   --momo-text: #2c2925;
   --momo-muted: #787165;
-  --momo-accent: #d6ae39;
+  --momo-accent: #F0D66E;
   --momo-accent-ink: #856914;
-  --momo-note: #fdfbf7;
+  --momo-note: #FFF7CD;
   --momo-note-border: #ede7d5;
   --momo-shadow: 0 4px 12px rgb(56 49 30 / 6%);
   --momo-radius: 8px;
@@ -619,7 +619,7 @@
   margin: 10px 0 24px;
   border: 1px solid var(--momo-border);
   border-radius: 6px;
-  background: var(--momo-surface);
+  background: var(--momo-note);
   cursor: pointer;
 }
 
@@ -995,4 +995,175 @@
     grid-template-columns: repeat(2, minmax(0, 1fr));
     gap: 12px;
   }
+}
+
+/* ========================================
+   MOMO 회원가입 화면 (.signup-page)
+======================================== */
+.signup-page {
+  width: 100%;
+  max-width: 680px;
+  margin: 0 auto;
+  padding: 40px 20px 60px;
+  box-sizing: border-box;
+}
+
+.signup-wrapper {
+  display: flex;
+  flex-direction: column;
+  gap: 24px;
+  width: 100%;
+}
+
+.signup-brand {
+  display: block;
+  width: fit-content;
+}
+
+.signup-brand img {
+  height: 36px;
+  object-fit: contain;
+}
+
+.signup-card {
+  padding: 32px;
+  background: var(--momo-surface);
+  border: 1px solid var(--momo-border);
+  border-radius: 12px;
+  box-shadow: var(--momo-shadow);
+}
+
+.signup-card-heading {
+  padding: 22px;
+  margin-bottom: 24px;
+  background: var(--momo-note);
+  border: 1px solid var(--momo-note-border);
+  border-radius: 8px;
+}
+
+.signup-eyebrow {
+  display: inline-block;
+  margin-bottom: 8px;
+  color: var(--momo-accent-ink);
+  font-size: 12px;
+  font-weight: 700;
+  letter-spacing: 1.2px;
+}
+
+.signup-card-heading h1 {
+  margin: 0 0 10px;
+  font-size: clamp(24px, 3vw, 30px);
+  font-weight: 800;
+  color: var(--momo-text);
+  line-height: 1.4;
+}
+
+.signup-card-heading p {
+  margin: 0 0 16px;
+  color: var(--momo-muted);
+  font-size: 14px;
+  line-height: 1.6;
+}
+
+.signup-note-label {
+  display: flex;
+  gap: 8px;
+  font-size: 11px;
+  font-weight: 700;
+  color: var(--momo-accent-ink);
+}
+
+.signup-note-label span {
+  padding: 2px 6px;
+  background: var(--momo-surface);
+  border: 1px solid var(--momo-note-border);
+  border-radius: 4px;
+}
+
+.signup-card form {
+  display: grid;
+  gap: 18px;
+}
+
+.signup-field {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.signup-field label {
+  font-size: 13px;
+  font-weight: 700;
+  color: var(--momo-text);
+}
+
+.signup-field input {
+  padding: 12px 14px;
+  background: var(--momo-surface);
+  border: 1px solid var(--momo-border);
+  border-radius: 6px;
+  color: var(--momo-text);
+  font-size: 14px;
+  outline: none;
+  transition: border-color 0.15s ease;
+}
+
+.signup-field input:focus {
+  border-color: var(--momo-accent-ink);
+}
+
+.signup-message {
+  margin: 2px 0 0;
+  font-size: 12px;
+  font-weight: 600;
+}
+
+.signup-submit {
+  width: 100%;
+  padding: 14px;
+  margin-top: 8px;
+  background: var(--momo-accent);
+  border: 1px solid var(--momo-border);
+  border-radius: 6px;
+  color: var(--momo-text);
+  font-size: 15px;
+  font-weight: 800;
+  cursor: pointer;
+  transition: filter 0.15s ease;
+}
+
+.signup-submit:hover:not(:disabled) {
+  filter: brightness(0.95);
+}
+
+.signup-submit:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.signup-footer {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  margin-top: 24px;
+  padding-top: 20px;
+  border-top: 1px solid var(--momo-border);
+  font-size: 13px;
+  color: var(--momo-muted);
+}
+
+.signup-footer a {
+  color: var(--momo-text);
+  font-weight: 700;
+  text-decoration: underline;
+}
+
+.signup-bottom-caption {
+  margin: 0;
+  text-align: center;
+  color: var(--momo-muted);
+  font-size: 12px;
+  font-weight: 600;
+  letter-spacing: 1px;
 }

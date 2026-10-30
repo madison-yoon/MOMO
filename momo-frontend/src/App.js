@@ -2,6 +2,7 @@ import "./App.css";
 import { BrowserRouter, Routes, Route } from "react-router-dom";
 
 import Home from "./pages/Home";
+import MovieDetail from "./pages/MovieDetail"; // 영화 상세 페이지 임포트
 import Login from "./pages/Login";
 import SignUp from "./pages/SignUp";
 import Layout from "./pages/Layout";
@@ -15,6 +16,8 @@ function App() {
       <Routes>
         <Route element={<Layout />}>
           <Route path="/" element={<Home />} />
+          <Route path="/movie/:id" element={<MovieDetail />} />{" "}
+          {/* 동적 라우트 */}
           <Route path="/profile" element={<Profile />} />
           <Route path="/profile/edit" element={<ProfileEdit />} />
           <Route path="/profile/delete" element={<ProfileDelete />} />

@@ -17,7 +17,6 @@ import com.momo.backend.dto.movie.BoxOfficeResponse;
 import com.momo.backend.entity.Movie;
 import com.momo.backend.repository.MovieRepository;
 
-
 @Service
 @RequiredArgsConstructor
 public class MovieService {
@@ -30,9 +29,9 @@ public class MovieService {
     private final MovieRepository movieRepository;
 
     // 영화 제목으로 KOBIS 영화 목록 검색
-//    public String searchMovies(String keyword) {
-//        return kobisApiClient.searchMovies(keyword);
-//    }
+    // public String searchMovies(String keyword) {
+    // return kobisApiClient.searchMovies(keyword);
+    // }
 
     // 영화 검색 결과를 DTO 목록으로 변환
     public List<MovieSearchResponse> searchMovies(String keyword) {
@@ -59,8 +58,7 @@ public class MovieService {
                         movie.path("movieNm").asText(""),
                         movie.path("openDt").asText(""),
                         movie.path("genreAlt").asText(""),
-                        director
-                ));
+                        director));
             }
 
         } catch (Exception e) {
@@ -70,11 +68,10 @@ public class MovieService {
         return movies;
     }
 
-
     // 영화 코드로 상세정보 조회
-//    public String getMovieDetail(String movieCode) {
-//        return kobisApiClient.getMovieDetail(movieCode);
-//    }
+    // public String getMovieDetail(String movieCode) {
+    // return kobisApiClient.getMovieDetail(movieCode);
+    // }
 
     // 영화 상세정보를 DTO로 변환
     public MovieDetailResponse getMovieDetail(String movieCode) {
@@ -82,18 +79,17 @@ public class MovieService {
         // DB에 저장된 영화 정보가 있는지 먼저 확인
         Movie savedMovie = movieRepository.findById(movieCode).orElse(null);
 
-        if(savedMovie != null){
+        if (savedMovie != null) {
 
             // DB에 저장된 배우 문자열을 목록으로 변환
             List<String> actors = new ArrayList<>();
 
-            if (savedMovie.getActors() != null && !savedMovie.getActors().isBlank())
-            {
+            if (savedMovie.getActors() != null && !savedMovie.getActors().isBlank()) {
                 actors = Arrays.asList(savedMovie.getActors().split(","));
             }
 
             // DB에 영화 정보가 있으면 외부 API를 호출하지 않고 반환
-            return  new MovieDetailResponse(
+            return new MovieDetailResponse(
                     savedMovie.getMovieCode(),
                     savedMovie.getTitle(),
                     savedMovie.getTitleEn(),
@@ -102,8 +98,7 @@ public class MovieService {
                     savedMovie.getGenre(),
                     savedMovie.getDirector(),
                     actors,
-                    savedMovie.getWatchGrade()
-            );
+                    savedMovie.getWatchGrade());
         }
 
         // DB에 영화 정보가 없을 때만 KOBIS API 호출
@@ -124,7 +119,7 @@ public class MovieService {
 
             // 장르 정보
             String genre = StreamSupport.stream(
-                            movie.path("genres").spliterator(), false)
+                    movie.path("genres").spliterator(), false)
                     .map(node -> node.path("genreNm").asText(""))
                     .filter(name -> !name.isBlank())
                     .reduce((a, b) -> a + "," + b)
@@ -139,7 +134,7 @@ public class MovieService {
                 if (!name.isBlank()) {
                     actors.add(name);
                 }
-                if (actors.size() >=10) {
+                if (actors.size() >= 10) {
                     break;
                     // 출연 배우는 최대 10명까지만 저장
                 }
@@ -163,8 +158,7 @@ public class MovieService {
                     genre,
                     director,
                     String.join(",", actors),
-                    watchGrade
-            );
+                    watchGrade);
 
             movieRepository.save(newMovie);
 
@@ -177,8 +171,7 @@ public class MovieService {
                     genre,
                     director,
                     actors,
-                    watchGrade
-            );
+                    watchGrade);
 
         } catch (Exception e) {
             throw new IllegalStateException("영화 상세정보를 처리하지 못했습니다.", e);
@@ -186,9 +179,9 @@ public class MovieService {
     }
 
     // 날짜별 박스오피스 조회
-//    public String getDailyBoxOffice(String targetDate) {
-//        return kobisApiClient.getDailyBoxOffice(targetDate);
-//    }
+    // public String getDailyBoxOffice(String targetDate) {
+    // return kobisApiClient.getDailyBoxOffice(targetDate);
+    // }
     // 일별 박스오피스 결과를 DTO 목록으로 변환
     public List<BoxOfficeResponse> getDailyBoxOffice(String targetDate) {
 
@@ -212,8 +205,7 @@ public class MovieService {
                         movie.path("openDt").asText(""),
                         movie.path("audiCnt").asText(""),
                         movie.path("audiAcc").asText(""),
-                        posterUrl
-                ));
+                        posterUrl));
             }
 
         } catch (Exception e) {

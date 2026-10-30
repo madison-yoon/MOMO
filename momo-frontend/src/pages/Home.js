@@ -1,4 +1,5 @@
 import React, { useEffect, useMemo, useState } from "react";
+import { useNavigate } from "react-router-dom";
 import "../App.css";
 
 const API_URL = "http://localhost:8111/api/boxoffice/daily";
@@ -40,55 +41,14 @@ function normalizeMovie(movie, index) {
   };
 }
 
-function normalizePeople(people) {
-  if (!people) return [];
-
-  if (typeof people === "string") {
-    return people
-      .split(",")
-      .map((name) => name.trim())
-      .filter(Boolean)
-      .map((name) => ({ name, role: "", works: [] }));
-  }
-
-  if (!Array.isArray(people)) {
-    people = [people];
-  }
-
-  return people.map((person) => {
-    if (typeof person === "string") {
-      return { name: person, role: "", works: [] };
-    }
-
-    return {
-      name:
-        person.name ||
-        person.peopleNm ||
-        person.actorName ||
-        person.directorName ||
-        "이름 없음",
-      role:
-        person.role || person.cast || person.character || person.castName || "",
-      works: person.works || person.filmography || [],
-    };
-  });
-}
-
 function Home() {
+  const navigate = useNavigate();
   const [movies, setMovies] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
   const [search, setSearch] = useState("");
 
-  const [reviews, setReviews] = useState([]);
   const [likes, setLikes] = useState({});
-
-  const [selectedMovie, setSelectedMovie] = useState(null);
-  const [reviewText, setReviewText] = useState("");
-  const [reaction, setReaction] = useState("");
-  const [isReviewOpen, setIsReviewOpen] = useState(false);
-
-  const [selectedPerson, setSelectedPerson] = useState(null);
 
   useEffect(() => {
     const targetDate = getYesterdayDate();
@@ -128,63 +88,9 @@ function Home() {
     );
   }, [movies, search]);
 
-  const movieReviews = selectedMovie
-    ? reviews.filter((review) => review.movieId === selectedMovie.id)
-    : [];
-
-  const likeCount = movieReviews.filter(
-    (review) => review.reaction === "like",
-  ).length;
-
-  const dislikeCount = movieReviews.filter(
-    (review) => review.reaction === "dislike",
-  ).length;
-
-  const totalReactions = likeCount + dislikeCount;
-
-  const rating =
-    totalReactions > 0
-      ? ((likeCount / totalReactions) * 10).toFixed(1)
-      : "평가 없음";
-
+  // 영화를 누르면 주소창을 /movie/:id 로 이동시킵니다.
   function openMovie(movie) {
-    setSelectedMovie(movie);
-    setSelectedPerson(null);
-    setIsReviewOpen(false);
-    setReviewText("");
-    setReaction("");
-  }
-
-  function goBack() {
-    setSelectedMovie(null);
-    setSelectedPerson(null);
-    setIsReviewOpen(false);
-  }
-
-  function addReview() {
-    if (!reaction) {
-      alert("좋아요 또는 싫어요를 선택해 주세요.");
-      return;
-    }
-
-    if (!reviewText.trim()) {
-      alert("리뷰 내용을 입력해 주세요.");
-      return;
-    }
-
-    const newReview = {
-      id: Date.now(),
-      movieId: selectedMovie.id,
-      movieTitle: selectedMovie.title,
-      text: reviewText.trim(),
-      reaction,
-      date: new Date().toLocaleDateString("ko-KR"),
-    };
-
-    setReviews((prev) => [newReview, ...prev]);
-    setReviewText("");
-    setReaction("");
-    setIsReviewOpen(false);
+    navigate(`/movie/${movie.id}`, { state: { movie } });
   }
 
   function toggleLike(movieId) {
@@ -192,206 +98,6 @@ function Home() {
       ...prev,
       [movieId]: !prev[movieId],
     }));
-  }
-
-  function getPeople(list) {
-    return normalizePeople(list);
-  }
-
-  function openPerson(person, type) {
-    setSelectedPerson({ ...person, type });
-  }
-
-  if (selectedMovie) {
-    const directors = getPeople(selectedMovie.directors);
-    const actors = getPeople(selectedMovie.cast);
-
-    return (
-      <main className="movie-detail-page">
-        <button className="detail-back-button" onClick={goBack}>
-          ← 메인으로 돌아가기
-        </button>
-
-        <section className="movie-detail-header">
-          <div className="movie-detail-poster">
-            {selectedMovie.posterUrl ? (
-              <img src={selectedMovie.posterUrl} alt={selectedMovie.title} />
-            ) : (
-              <div className="poster-placeholder">
-                <span>🎬</span>
-                <p>{selectedMovie.title}</p>
-              </div>
-            )}
-          </div>
-
-          <div className="movie-detail-info">
-            <span className="detail-rank">
-              BOX OFFICE {selectedMovie.rank}위
-            </span>
-
-            <h1>{selectedMovie.title}</h1>
-
-            <p>개봉일: {selectedMovie.releaseDate || "정보 없음"}</p>
-            <p>일일 관객수: {formatNumber(selectedMovie.audience)}명</p>
-            <p>누적 관객수: {formatNumber(selectedMovie.totalAudience)}명</p>
-          </div>
-        </section>
-
-        <section className="movie-rating-panel">
-          <h2>관객 평점</h2>
-          <div className="movie-rating-number">{rating}</div>
-
-          <div className="detail-reaction-counts">
-            <div className="detail-reaction-count">
-              👍 좋아요 <strong>{likeCount}</strong>
-            </div>
-            <div className="detail-reaction-count">
-              👎 싫어요 <strong>{dislikeCount}</strong>
-            </div>
-          </div>
-        </section>
-
-        <section className="detail-content-section">
-          <h2>감독</h2>
-
-          {directors.length > 0 ? (
-            <div className="people-list">
-              {directors.map((person, index) => (
-                <button
-                  className="person-chip"
-                  key={index}
-                  onClick={() => openPerson(person, "감독")}
-                >
-                  {person.name}
-                </button>
-              ))}
-            </div>
-          ) : (
-            <p className="people-empty">
-              감독 정보가 아직 연결되지 않았습니다.
-            </p>
-          )}
-        </section>
-
-        <section className="detail-content-section">
-          <h2>출연 배우</h2>
-
-          {actors.length > 0 ? (
-            <div className="people-list">
-              {actors.map((person, index) => (
-                <button
-                  className="person-chip"
-                  key={index}
-                  onClick={() => openPerson(person, "배우")}
-                >
-                  {person.name}
-                  {person.role && (
-                    <span className="person-role">({person.role})</span>
-                  )}
-                </button>
-              ))}
-            </div>
-          ) : (
-            <p className="people-empty">
-              배우 정보가 아직 연결되지 않았습니다.
-            </p>
-          )}
-        </section>
-
-        {selectedPerson && (
-          <section className="person-filmography">
-            <h2>{selectedPerson.name} 필모그래피</h2>
-            <p>{selectedPerson.type}</p>
-
-            {selectedPerson.works?.length > 0 ? (
-              <ul className="filmography-list">
-                {selectedPerson.works.map((work, index) => (
-                  <li key={index}>
-                    {typeof work === "string"
-                      ? work
-                      : work.title || work.movieNm || "작품 정보"}
-                  </li>
-                ))}
-              </ul>
-            ) : (
-              <p>필모그래피 정보가 아직 연결되지 않았습니다.</p>
-            )}
-
-            <button onClick={() => setSelectedPerson(null)}>닫기</button>
-          </section>
-        )}
-
-        <section className="detail-content-section">
-          <h2>리뷰</h2>
-
-          <div className="review-write-section">
-            <button
-              className="review-write-toggle"
-              onClick={() => setIsReviewOpen((prev) => !prev)}
-            >
-              <span>{selectedMovie.title}</span>
-              <span className="review-toggle-arrow">
-                {isReviewOpen ? "▲" : "▼"}
-              </span>
-            </button>
-
-            {isReviewOpen && (
-              <div className="review-write-content">
-                <h3>이 영화는 어떠셨나요?</h3>
-
-                <div className="reaction-buttons">
-                  <button
-                    className={`reaction-button ${
-                      reaction === "like" ? "selected-like" : ""
-                    }`}
-                    onClick={() => setReaction("like")}
-                  >
-                    👍 좋아요
-                  </button>
-
-                  <button
-                    className={`reaction-button ${
-                      reaction === "dislike" ? "selected-dislike" : ""
-                    }`}
-                    onClick={() => setReaction("dislike")}
-                  >
-                    👎 싫어요
-                  </button>
-                </div>
-
-                <textarea
-                  value={reviewText}
-                  onChange={(e) => setReviewText(e.target.value)}
-                  placeholder="영화에 대한 리뷰를 작성해 주세요."
-                  maxLength={1000}
-                />
-
-                <div className="review-form-actions">
-                  <span>{reviewText.length}/1000</span>
-                  <button onClick={addReview}>리뷰 등록</button>
-                </div>
-              </div>
-            )}
-          </div>
-
-          {movieReviews.length > 0 ? (
-            <div className="detail-review-list">
-              {movieReviews.map((review) => (
-                <article className="detail-review-card" key={review.id}>
-                  <div>
-                    {review.reaction === "like" ? "👍 좋아요" : "👎 싫어요"}
-                    <span>{review.date}</span>
-                  </div>
-                  <p>{review.text}</p>
-                </article>
-              ))}
-            </div>
-          ) : (
-            <p className="people-empty">아직 작성된 리뷰가 없습니다.</p>
-          )}
-        </section>
-      </main>
-    );
   }
 
   return (
@@ -493,23 +199,9 @@ function Home() {
           </div>
         </div>
 
-        {reviews.length > 0 ? (
-          <div className="review-grid">
-            {reviews.slice(0, 6).map((review) => (
-              <article className="review-card" key={review.id}>
-                <h3>{review.movieTitle}</h3>
-                <p>{review.text}</p>
-                <span>
-                  {review.reaction === "like" ? "👍 좋아요" : "👎 싫어요"}
-                </span>
-              </article>
-            ))}
-          </div>
-        ) : (
-          <p className="movie-message">
-            아직 작성된 리뷰가 없습니다. 첫 리뷰를 작성해 보세요!
-          </p>
-        )}
+        <p className="movie-message">
+          아직 작성된 리뷰가 없습니다. 첫 리뷰를 작성해 보세요!
+        </p>
       </section>
     </main>
   );

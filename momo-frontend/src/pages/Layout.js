@@ -13,7 +13,7 @@ const Container = styled.div`
   min-height: 100vh;
   display: flex;
   flex-direction: column;
-  background-color: #faf9f6;
+  background-color: #fff8de;
   color: #292929;
 `;
 
@@ -45,7 +45,7 @@ const LogoImage = styled.img`
 const SearchForm = styled.form`
   display: flex;
   align-items: center;
-  background-color: #faf9f6;
+  background-color: #f7f4e9;
   border: 1px solid #e8e5df;
   border-radius: 20px;
   padding: 6px 14px;
@@ -159,11 +159,11 @@ function Layout() {
   const [keyword, setKeyword] = useState(searchParams.get("keyword") || "");
 
   const [nickname, setNickname] = useState(
-    localStorage.getItem("username") || "",
+    localStorage.getItem("nickname") || "",
   );
 
   useEffect(() => {
-    const savedNickname = localStorage.getItem("username") || "";
+    const savedNickname = localStorage.getItem("nickname") || "";
     setNickname(savedNickname);
   }, []);
 
