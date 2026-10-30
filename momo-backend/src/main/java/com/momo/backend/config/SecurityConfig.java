@@ -8,6 +8,10 @@ import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.http.HttpStatus;
+import org.springframework.web.cors.CorsConfiguration;
+import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
+import org.springframework.web.cors.CorsConfigurationSource;
+import java.util.List;
 
 @Configuration
 public class SecurityConfig {
@@ -24,6 +28,9 @@ public class SecurityConfig {
         http
                 // 개발 단계에서 Postman API 테스트를 위해 CSRF 보호 기능 임시 비활성화
                 .csrf(csrf -> csrf.disable())
+
+                // React에서 Spring Boot API 호출 허용
+                .cors(cors -> {})
 
                 // 로그인 인증 정보를 자동 저장하지 않고 Controller에서 직접 세션에 저장
                 .securityContext(context -> context.requireExplicitSave(true))
@@ -65,4 +72,25 @@ public class SecurityConfig {
                 );
         return http.build();
     }
+    // React 개발 서버에서 백엔드 API 접근 허용
+    @Bean
+    public CorsConfigurationSource corsConfigurationSource() {
+
+        CorsConfiguration config = new CorsConfiguration();
+
+        config.setAllowedOrigins(List.of("http://localhost:3000"));
+        config.setAllowedMethods(List.of("GET", "POST", "PUT", "DELETE", "OPTIONS"));
+        config.setAllowedHeaders(List.of("*"));
+
+        // 로그인 세션 쿠키를 포함한 요청 허용
+        config.setAllowCredentials(true);
+
+        UrlBasedCorsConfigurationSource source =
+                new UrlBasedCorsConfigurationSource();
+
+        source.registerCorsConfiguration("/api/**", config);
+
+        return source;
+    }
+
 }

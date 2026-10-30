@@ -20,7 +20,7 @@ import org.springframework.data.domain.Page;
 @RestController
 @RequestMapping("/api/reviews")
 @RequiredArgsConstructor
-@CrossOrigin(origins="http://localhost:3000")
+//@CrossOrigin(origins="http://localhost:3000")
 @Slf4j
 public class ReviewController {
 

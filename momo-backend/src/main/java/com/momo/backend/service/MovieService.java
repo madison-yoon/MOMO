@@ -10,10 +10,12 @@ import tools.jackson.databind.ObjectMapper;
 import com.momo.backend.dto.movie.MovieSearchResponse;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Arrays;
 import com.momo.backend.dto.movie.MovieDetailResponse;
 import java.util.stream.StreamSupport;
 import com.momo.backend.dto.movie.BoxOfficeResponse;
-
+import com.momo.backend.entity.Movie;
+import com.momo.backend.repository.MovieRepository;
 
 
 @Service
@@ -23,6 +25,9 @@ public class MovieService {
     private final KobisApiClient kobisApiClient;
     private final KmdbApiClient kmdbApiClient;
     private final ObjectMapper objectMapper;
+
+    // 영화 기본정보 DB 조회 및 저장
+    private final MovieRepository movieRepository;
 
     // 영화 제목으로 KOBIS 영화 목록 검색
 //    public String searchMovies(String keyword) {
@@ -74,6 +79,34 @@ public class MovieService {
     // 영화 상세정보를 DTO로 변환
     public MovieDetailResponse getMovieDetail(String movieCode) {
 
+        // DB에 저장된 영화 정보가 있는지 먼저 확인
+        Movie savedMovie = movieRepository.findById(movieCode).orElse(null);
+
+        if(savedMovie != null){
+
+            // DB에 저장된 배우 문자열을 목록으로 변환
+            List<String> actors = new ArrayList<>();
+
+            if (savedMovie.getActors() != null && !savedMovie.getActors().isBlank())
+            {
+                actors = Arrays.asList(savedMovie.getActors().split(","));
+            }
+
+            // DB에 영화 정보가 있으면 외부 API를 호출하지 않고 반환
+            return  new MovieDetailResponse(
+                    savedMovie.getMovieCode(),
+                    savedMovie.getTitle(),
+                    savedMovie.getTitleEn(),
+                    savedMovie.getReleaseDate(),
+                    savedMovie.getShowTime(),
+                    savedMovie.getGenre(),
+                    savedMovie.getDirector(),
+                    actors,
+                    savedMovie.getWatchGrade()
+            );
+        }
+
+        // DB에 영화 정보가 없을 때만 KOBIS API 호출
         String json = kobisApiClient.getMovieDetail(movieCode);
 
         try {
@@ -119,6 +152,21 @@ public class MovieService {
             if (audits.isArray() && !audits.isEmpty()) {
                 watchGrade = audits.get(0).path("watchGradeNm").asText("");
             }
+
+            // KOBIS에서 가져온 영화 기본정보를 DB에 저장
+            Movie newMovie = new Movie(
+                    movie.path("movieCd").asText(""),
+                    movie.path("movieNm").asText(""),
+                    movie.path("movieNmEn").asText(""),
+                    movie.path("openDt").asText(""),
+                    movie.path("showTm").asText(""),
+                    genre,
+                    director,
+                    String.join(",", actors),
+                    watchGrade
+            );
+
+            movieRepository.save(newMovie);
 
             return new MovieDetailResponse(
                     movie.path("movieCd").asText(""),

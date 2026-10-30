@@ -16,7 +16,7 @@ import com.momo.backend.dto.movie.MovieDetailResponse;
 @RestController
 @RequestMapping("/api/movies")
 @RequiredArgsConstructor
-@CrossOrigin(origins="http://localhost:3000")
+//@CrossOrigin(origins="http://localhost:3000")
 @Slf4j
 public class MovieController {
 
