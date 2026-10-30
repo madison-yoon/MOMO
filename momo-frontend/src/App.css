@@ -1,16 +1,371 @@
 /* ========================================
-   MOMO 영화 상세 페이지
+   MOMO 공통 및 변수 설정 (필요시 참조)
 ======================================== */
+:root {
+  --momo-surface: #ffffff;
+  --momo-bg: #f9f6ef;
+  --momo-border: #e2dcce;
+  --momo-text: #2c2925;
+  --momo-muted: #787165;
+  --momo-accent: #d6ae39;
+  --momo-accent-ink: #856914;
+  --momo-note: #fdfbf7;
+  --momo-note-border: #ede7d5;
+  --momo-shadow: 0 4px 12px rgb(56 49 30 / 6%);
+  --momo-radius: 8px;
+}
 
+/* ========================================
+   MOMO 홈 화면 (.home-page)
+======================================== */
+.home-page {
+  width: 100%;
+}
+
+.home-page .hero-banner {
+  padding: clamp(22px, 4vw, 38px);
+  background: var(--momo-note);
+  border: 1px solid var(--momo-note-border);
+  border-radius: 8px 16px 16px 16px;
+  box-shadow: var(--momo-shadow);
+}
+
+.home-page .hero-content h1 {
+  font-size: clamp(27px, 4vw, 38px);
+  line-height: 1.5;
+}
+
+.home-page .hero-description {
+  color: var(--momo-muted);
+  line-height: 1.8;
+}
+
+.home-page .eyebrow {
+  margin-bottom: 10px;
+  color: var(--momo-accent-ink);
+  font-size: 12px;
+  font-weight: 700;
+  letter-spacing: 1.2px;
+}
+
+.home-page .section-block {
+  margin: 36px 0;
+  scroll-margin-top: 90px;
+}
+
+.home-page .section-heading {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  margin-bottom: 20px;
+}
+
+.home-page .section-heading h2 {
+  margin-bottom: 8px;
+}
+
+.home-page .section-description {
+  margin-bottom: 0;
+  color: var(--momo-muted);
+}
+
+.home-page .home-search {
+  max-width: 420px;
+  margin-bottom: 20px;
+}
+
+.home-page .state-message,
+.home-page .empty-review-panel {
+  padding: 22px;
+  color: var(--momo-muted);
+  background: var(--momo-surface);
+  border: 1px dashed var(--momo-border);
+  border-radius: var(--momo-radius);
+  text-align: center;
+}
+
+.home-page .movie-info h3 {
+  margin: 12px 0 5px;
+  overflow-wrap: anywhere;
+}
+
+.home-page .movie-info p {
+  margin: 0;
+  color: var(--momo-muted);
+  font-size: 13px;
+}
+
+.home-page .movie-info .outline-button,
+.home-page .movie-info .like-button {
+  width: 100%;
+  margin-top: 8px;
+}
+
+.home-page .like-button {
+  background: var(--momo-note);
+}
+
+.home-page .review-grid {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 16px;
+}
+
+.home-page .community-review {
+  min-width: 0;
+  padding: 18px;
+  background: var(--momo-note);
+  border: 1px solid var(--momo-note-border);
+  border-left: 4px solid var(--momo-accent);
+  border-radius: 5px 10px 10px 5px;
+  overflow-wrap: anywhere;
+}
+
+.home-page .community-review p {
+  white-space: pre-wrap;
+}
+
+.home-page .community-review small {
+  color: var(--momo-muted);
+}
+
+.home-page .modal-backdrop {
+  position: fixed;
+  inset: 0;
+  z-index: 1000;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 20px;
+  background: rgb(48 46 39 / 50%);
+}
+
+.home-page .review-modal {
+  width: 100%;
+  max-width: 480px;
+  max-height: 90vh;
+  overflow-y: auto;
+  padding: 26px;
+  background: var(--momo-surface);
+  border: 1px solid var(--momo-border);
+  border-radius: 12px;
+  box-shadow: 0 8px 28px rgb(48 46 39 / 15%);
+}
+
+.home-page .modal-close {
+  display: flex;
+  margin-left: auto;
+}
+
+.home-page .review-modal form {
+  display: grid;
+  gap: 12px;
+}
+
+.home-page .review-modal label {
+  font-weight: 600;
+}
+
+.home-page .review-modal textarea {
+  min-height: 120px;
+}
+
+/* ========================================
+   영화 카드 및 그리드 목록 (.movie-grid, .movie-card)
+======================================== */
+.movie-search-input {
+  width: 100%;
+  max-width: 400px;
+  padding: 12px 15px;
+  margin: 20px 0;
+  border: 1px solid var(--momo-border);
+  border-radius: 7px;
+  background: var(--momo-surface);
+  color: var(--momo-text);
+  font-size: 14px;
+  outline: none;
+}
+
+.movie-search-input:focus {
+  border-color: var(--momo-accent);
+}
+
+.movie-grid {
+  display: grid;
+  grid-template-columns: repeat(5, minmax(0, 1fr));
+  gap: 16px;
+  width: 100%;
+  max-width: 1120px;
+  margin: 0 auto;
+}
+
+.movie-grid > * {
+  min-width: 0;
+  max-width: 100%;
+}
+
+.movie-card {
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+  min-width: 0;
+  padding: 13px;
+  color: inherit;
+  background: var(--momo-surface);
+  border: 1px solid var(--momo-border);
+  border-radius: 8px;
+  box-shadow: var(--momo-shadow);
+  text-decoration: none;
+  transition: transform 0.15s ease, box-shadow 0.15s ease;
+}
+
+.movie-card:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 6px 16px rgb(56 49 30 / 9%);
+}
+
+.movie-card img {
+  width: 100%;
+  aspect-ratio: 2 / 3;
+  object-fit: cover;
+  background: #eee9d9;
+  border-radius: 5px;
+}
+
+.movie-card h3 {
+  margin: 12px 0 5px;
+  font-size: 16px;
+  font-weight: 800;
+  color: var(--momo-text);
+  word-break: keep-all;
+}
+
+.movie-card p {
+  margin-bottom: 0;
+  color: var(--momo-muted);
+  font-size: 13px;
+}
+
+.movie-card .movie-info {
+  display: flex;
+  flex-direction: column;
+  flex-grow: 1;
+  gap: 5px;
+}
+
+.movie-release-date,
+.movie-audience-info p {
+  margin: 6px 0;
+  color: var(--momo-muted);
+  font-size: 12px;
+}
+
+.movie-audience-info {
+  margin: 12px 0;
+}
+
+.movie-audience-info strong {
+  color: var(--momo-text);
+}
+
+.movie-review-button,
+.movie-like-button {
+  width: 100%;
+  padding: 10px;
+  margin-top: 7px;
+  border: 1px solid var(--momo-border);
+  border-radius: 6px;
+  background: var(--momo-note);
+  color: var(--momo-text);
+  font-weight: 700;
+  cursor: pointer;
+}
+
+.movie-review-button:hover,
+.movie-like-button:hover {
+  filter: brightness(0.97);
+}
+
+.poster-frame {
+  position: relative;
+  overflow: hidden;
+  aspect-ratio: 2 / 3;
+  background: #eee9d9;
+  border-radius: 5px;
+}
+
+.poster-frame .movie-poster {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.poster-rank {
+  position: absolute;
+  z-index: 2;
+  top: 8px;
+  left: 8px;
+  padding: 4px 8px;
+  color: var(--momo-text);
+  background: var(--momo-note);
+  border: 1px solid var(--momo-note-border);
+  border-radius: 5px;
+  font-size: 12px;
+  font-weight: 700;
+}
+
+.poster-placeholder {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+  width: 100%;
+  min-height: 220px;
+  aspect-ratio: 2 / 3;
+  padding: 12px;
+  color: var(--momo-muted);
+  background: #f1eddf;
+  border: 1px dashed #d8ceaf;
+  border-radius: 5px;
+  text-align: center;
+  overflow-wrap: anywhere;
+}
+
+.placeholder-mark {
+  font-size: 36px;
+  font-weight: 800;
+}
+
+.movie-message {
+  padding: 30px 10px;
+  color: var(--momo-muted);
+  text-align: center;
+}
+
+.error-message {
+  color: #c0392b;
+}
+
+/* ========================================
+   MOMO 영화 상세 페이지 (.movie-detail-page)
+======================================== */
 .movie-detail-page {
   width: 100%;
   max-width: 1120px;
   margin: 0 auto;
   padding-bottom: 40px;
+  color: var(--momo-text);
 }
 
 .detail-back-button {
+  padding: 10px 15px;
   margin: 10px 0 24px;
+  border: 1px solid var(--momo-border);
+  border-radius: 6px;
+  background: var(--momo-surface);
+  cursor: pointer;
 }
 
 /* 영화 포스터 + 기본 정보 */
@@ -38,11 +393,6 @@
   width: 100%;
   height: 100%;
   object-fit: cover;
-}
-
-.movie-detail-poster .poster-placeholder {
-  height: 100%;
-  box-sizing: border-box;
 }
 
 .movie-detail-info {
@@ -86,8 +436,9 @@
 
 .movie-rating-number {
   color: var(--momo-text);
-  font-size: 25px;
+  font-size: 32px;
   font-weight: 800;
+  margin: 10px 0;
 }
 
 .movie-rating-panel small {
@@ -180,9 +531,11 @@
   font-size: 11px;
 }
 
-.person-chip .person-role {
+.person-role {
   padding-left: 7px;
   border-left: 1px solid var(--momo-note-border);
+  color: var(--momo-muted);
+  font-size: 12px;
 }
 
 .people-empty {
@@ -198,13 +551,21 @@
 
 /* 감독 / 배우 작품 목록 */
 .person-filmography {
+  margin-top: 20px;
+  padding: 22px;
   border-left: 4px solid var(--momo-accent);
+  background: var(--momo-note);
+  border-top: 1px solid var(--momo-border);
+  border-right: 1px solid var(--momo-border);
+  border-bottom: 1px solid var(--momo-border);
+  border-radius: 8px;
 }
 
 .filmography-list {
   display: grid;
   grid-template-columns: repeat(2, minmax(0, 1fr));
   gap: 10px;
+  padding-left: 0;
 }
 
 .filmography-item {
@@ -214,7 +575,7 @@
   gap: 12px;
   min-width: 0;
   padding: 13px;
-  background: var(--momo-note);
+  background: var(--momo-surface);
   border: 1px solid var(--momo-note-border);
   border-radius: 6px;
 }
@@ -231,7 +592,9 @@
   font-size: 12px;
 }
 
-/* 리뷰 작성 영역 */
+/* ========================================
+   리뷰 작성 영역 및 목록 (.review-write-section)
+======================================== */
 .review-write-section {
   padding: 0;
   overflow: hidden;
@@ -252,7 +615,7 @@
   text-align: left;
   font: inherit;
   font-size: 14px;
-  font-weight: 700;
+  font-weight: 800;
 }
 
 .review-write-toggle:hover {
@@ -287,7 +650,7 @@
   min-height: 120px;
   padding: 13px;
   color: var(--momo-text);
-  background: #fff;
+  background: var(--momo-surface);
   border: 1px solid var(--momo-border);
   border-radius: 6px;
   font: inherit;
@@ -304,7 +667,7 @@
   color: #aaa394;
 }
 
-/* 좋아요 / 싫어요 선택 */
+/* 좋아요 / 싫어요 선택 버튼 */
 .reaction-buttons {
   display: grid;
   grid-template-columns: repeat(2, minmax(0, 1fr));
@@ -326,9 +689,7 @@
   cursor: pointer;
   font: inherit;
   font-size: 13px;
-  transition:
-    background 0.15s ease,
-    border-color 0.15s ease;
+  transition: background 0.15s ease, border-color 0.15s ease;
 }
 
 .reaction-button:hover {
@@ -361,8 +722,20 @@
 .review-form-actions {
   display: flex;
   justify-content: flex-end;
+  align-items: center;
   gap: 9px;
   margin-top: 8px;
+  color: var(--momo-muted);
+}
+
+.review-form-actions button {
+  padding: 10px 20px;
+  border: none;
+  border-radius: 6px;
+  background: var(--momo-accent);
+  color: white;
+  font-weight: 700;
+  cursor: pointer;
 }
 
 .review-form-actions button:disabled {
@@ -370,7 +743,24 @@
   cursor: not-allowed;
 }
 
-/* 상세 페이지 리뷰 목록 */
+.detail-review-card {
+  padding: 17px;
+  margin-top: 12px;
+  border: 1px solid var(--momo-border);
+  border-radius: 7px;
+  background: var(--momo-surface);
+}
+
+.detail-review-card span {
+  margin-left: 12px;
+  color: var(--momo-muted);
+  font-size: 12px;
+}
+
+.detail-review-card p {
+  line-height: 1.6;
+}
+
 .movie-detail-page .review-grid {
   grid-template-columns: repeat(2, minmax(0, 1fr));
 }
@@ -381,7 +771,33 @@
   font-size: 13px;
 }
 
-/* 모바일 */
+/* ========================================
+   기타 유틸 및 회원가입 래퍼
+======================================== */
+.detail-rank,
+.section-subtitle,
+.hero-label {
+  color: var(--momo-accent);
+  font-size: 12px;
+  font-weight: 800;
+  letter-spacing: 1px;
+}
+
+.signup-wrapper {
+  width: 100%;
+  max-width: 680px;
+  margin: 0 auto;
+}
+
+/* ========================================
+   반응형 디자인 (Media Queries)
+======================================== */
+@media (max-width: 900px) {
+  .movie-grid {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+  }
+}
+
 @media (max-width: 700px) {
   .movie-detail-header {
     grid-template-columns: minmax(0, 1fr);
@@ -411,6 +827,22 @@
   }
 }
 
+@media (max-width: 600px) {
+  .movie-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 12px;
+  }
+
+  .movie-card {
+    padding: 10px;
+  }
+
+  .detail-reaction-counts {
+    flex-direction: column;
+    gap: 10px;
+  }
+}
+
 @media (max-width: 420px) {
   .detail-reaction-count {
     flex-direction: column;
@@ -427,416 +859,5 @@
 
   .reaction-buttons {
     gap: 8px;
-  }
-}
-
-/* =========================
-   MOMO MOVIE MAIN
-========================= */
-
-.movie-search-input {
-  width: 100%;
-  max-width: 400px;
-  padding: 12px 15px;
-  margin: 20px 0;
-  border: 1px solid var(--momo-border);
-  border-radius: 7px;
-  background: var(--momo-surface);
-  color: var(--momo-text);
-  font-size: 14px;
-  outline: none;
-}
-
-.movie-search-input:focus {
-  border-color: var(--momo-accent);
-}
-
-.movie-grid {
-  display: grid;
-  grid-template-columns: repeat(5, minmax(0, 1fr));
-  gap: 20px;
-  width: 100%;
-}
-
-.movie-card {
-  min-width: 0;
-  overflow: hidden;
-  border: 1px solid var(--momo-border);
-  border-radius: 8px;
-  background: var(--momo-surface);
-  box-shadow: var(--momo-shadow);
-}
-
-.poster-frame {
-  position: relative;
-  width: 100%;
-  aspect-ratio: 2 / 3;
-  min-height: 0;
-  overflow: hidden;
-  background: #eee8d8;
-}
-
-.movie-poster-image {
-  display: block;
-  width: 100%;
-  height: 100%;
-  object-fit: cover;
-}
-
-.poster-placeholder {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
-  width: 100%;
-  height: 100%;
-  min-height: 220px;
-  padding: 15px;
-  text-align: center;
-  color: var(--momo-muted);
-  background: #eee8d8;
-}
-
-.poster-placeholder span {
-  font-size: 35px;
-  margin-bottom: 10px;
-}
-
-.poster-placeholder p {
-  font-size: 14px;
-  font-weight: 700;
-}
-
-.poster-rank {
-  position: absolute;
-  z-index: 2;
-  top: 10px;
-  left: 10px;
-  padding: 6px 11px;
-  border-radius: 5px;
-  background: var(--momo-accent);
-  color: #fff;
-  font-weight: 800;
-}
-
-.movie-card-content {
-  padding: 14px;
-}
-
-.movie-card-content h3 {
-  margin: 0 0 10px;
-  font-size: 16px;
-  font-weight: 800;
-  color: var(--momo-text);
-  word-break: keep-all;
-}
-
-.movie-release-date,
-.movie-audience-info p {
-  margin: 6px 0;
-  color: var(--momo-muted);
-  font-size: 12px;
-}
-
-.movie-audience-info {
-  margin: 12px 0;
-}
-
-.movie-audience-info strong {
-  color: var(--momo-text);
-}
-
-.movie-review-button,
-.movie-like-button {
-  width: 100%;
-  padding: 10px;
-  margin-top: 7px;
-  border: 1px solid var(--momo-border);
-  border-radius: 6px;
-  background: var(--momo-note);
-  color: var(--momo-text);
-  font-weight: 700;
-  cursor: pointer;
-}
-
-.movie-review-button:hover,
-.movie-like-button:hover {
-  filter: brightness(0.97);
-}
-
-.movie-message {
-  padding: 30px 10px;
-  color: var(--momo-muted);
-  text-align: center;
-}
-
-.error-message {
-  color: #c0392b;
-}
-
-/* =========================
-   MOVIE DETAIL
-========================= */
-
-.movie-detail-page {
-  width: min(1100px, 92%);
-  margin: 40px auto;
-  color: var(--momo-text);
-}
-
-.detail-back-button {
-  padding: 10px 15px;
-  margin-bottom: 25px;
-  border: 1px solid var(--momo-border);
-  border-radius: 6px;
-  background: var(--momo-surface);
-  cursor: pointer;
-}
-
-.movie-detail-header {
-  display: flex;
-  gap: 30px;
-  padding: 25px;
-  border: 1px solid var(--momo-border);
-  border-radius: 8px;
-  background: var(--momo-surface);
-}
-
-.movie-detail-poster {
-  width: 210px;
-  min-width: 210px;
-  aspect-ratio: 2 / 3;
-  overflow: hidden;
-  border-radius: 6px;
-}
-
-.movie-detail-poster img {
-  width: 100%;
-  height: 100%;
-  object-fit: cover;
-}
-
-.movie-detail-info {
-  align-self: center;
-}
-
-.movie-detail-info h1 {
-  margin: 12px 0 20px;
-  font-size: 30px;
-}
-
-.movie-detail-info p {
-  color: var(--momo-muted);
-}
-
-.detail-rank,
-.section-subtitle,
-.hero-label {
-  color: var(--momo-accent);
-  font-size: 12px;
-  font-weight: 800;
-  letter-spacing: 1px;
-}
-
-.movie-rating-panel {
-  margin-top: 20px;
-  padding: 25px;
-  border: 1px solid var(--momo-border);
-  border-radius: 8px;
-  background: var(--momo-note);
-  text-align: center;
-}
-
-.movie-rating-number {
-  margin: 15px 0;
-  font-size: 38px;
-  font-weight: 900;
-}
-
-.detail-reaction-counts {
-  display: flex;
-  justify-content: center;
-  gap: 25px;
-}
-
-.detail-content-section {
-  margin-top: 30px;
-  padding: 22px;
-  border: 1px solid var(--momo-border);
-  border-radius: 8px;
-  background: var(--momo-surface);
-}
-
-.detail-content-section h2,
-.person-filmography h2 {
-  margin: 0 0 18px;
-}
-
-.people-list {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 10px;
-}
-
-.person-chip {
-  padding: 9px 13px;
-  border: 1px solid var(--momo-border);
-  border-radius: 6px;
-  background: var(--momo-note);
-  cursor: pointer;
-}
-
-.person-role {
-  margin-left: 5px;
-  color: var(--momo-muted);
-  font-size: 12px;
-}
-
-.people-empty {
-  color: var(--momo-muted);
-}
-
-.person-filmography {
-  margin-top: 20px;
-  padding: 22px;
-  border: 1px solid var(--momo-border);
-  border-radius: 8px;
-  background: var(--momo-note);
-}
-
-.filmography-list {
-  padding-left: 20px;
-  line-height: 2;
-}
-
-/* =========================
-   REVIEW
-========================= */
-
-.review-write-toggle {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  width: 100%;
-  padding: 16px;
-  border: 1px solid var(--momo-border);
-  border-radius: 7px;
-  background: var(--momo-note);
-  color: var(--momo-text);
-  font-weight: 800;
-  cursor: pointer;
-}
-
-.review-toggle-arrow {
-  font-size: 13px;
-}
-
-.review-write-content {
-  padding: 20px 0;
-}
-
-.reaction-buttons {
-  display: flex;
-  gap: 10px;
-  margin: 15px 0;
-}
-
-.reaction-button {
-  padding: 10px 18px;
-  border: 1px solid var(--momo-border);
-  border-radius: 6px;
-  background: var(--momo-surface);
-  cursor: pointer;
-}
-
-.selected-like {
-  border-color: #e3a33d;
-  background: #fff0ce;
-}
-
-.selected-dislike {
-  border-color: #8b9baa;
-  background: #e9eef2;
-}
-
-.review-write-content textarea {
-  width: 100%;
-  min-height: 130px;
-  padding: 14px;
-  border: 1px solid var(--momo-border);
-  border-radius: 7px;
-  background: var(--momo-surface);
-  color: var(--momo-text);
-  resize: vertical;
-  box-sizing: border-box;
-}
-
-.review-form-actions {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  margin-top: 12px;
-  color: var(--momo-muted);
-}
-
-.review-form-actions button {
-  padding: 10px 20px;
-  border: none;
-  border-radius: 6px;
-  background: var(--momo-accent);
-  color: white;
-  font-weight: 700;
-  cursor: pointer;
-}
-
-.detail-review-card {
-  padding: 17px;
-  margin-top: 12px;
-  border: 1px solid var(--momo-border);
-  border-radius: 7px;
-}
-
-.detail-review-card span {
-  margin-left: 12px;
-  color: var(--momo-muted);
-  font-size: 12px;
-}
-
-.detail-review-card p {
-  line-height: 1.6;
-}
-
-/* =========================
-   RESPONSIVE
-========================= */
-
-@media (max-width: 900px) {
-  .movie-grid {
-    grid-template-columns: repeat(3, minmax(0, 1fr));
-  }
-}
-
-@media (max-width: 600px) {
-  .movie-grid {
-    grid-template-columns: repeat(2, minmax(0, 1fr));
-    gap: 12px;
-  }
-
-  .movie-detail-header {
-    flex-direction: column;
-  }
-
-  .movie-detail-poster {
-    width: 160px;
-    min-width: 160px;
-  }
-
-  .movie-detail-info h1 {
-    font-size: 23px;
-  }
-
-  .detail-reaction-counts {
-    flex-direction: column;
-    gap: 10px;
   }
 }
