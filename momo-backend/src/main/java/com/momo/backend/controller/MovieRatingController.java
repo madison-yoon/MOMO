@@ -11,7 +11,7 @@ import java.util.Map;
 @RestController
 @RequestMapping("/api/movies")
 @RequiredArgsConstructor
-@CrossOrigin(origins = "http://localhost:3000")
+//@CrossOrigin(origins = "http://localhost:3000")
 public class MovieRatingController {
 
     // 영화 평가 데이터를 조회하기 위한 Service

@@ -4,15 +4,37 @@ import "../App.css";
 
 function ProfileDelete() {
   const navigate = useNavigate();
+  const [password, setPassword] = useState("");
   const [isConfirmed, setIsConfirmed] = useState(false);
 
   const handleDelete = () => {
+    if (!password.trim()) {
+      alert("비밀번호를 입력해 주세요.");
+      return;
+    }
+
+    // 로컬스토리지에 저장된 비밀번호 확인 (기본값 "1234" 또는 실제 저장된 비번)
+    const savedPassword = localStorage.getItem("password") || "1234";
+
+    if (password !== savedPassword) {
+      alert("비밀번호가 일치하지 않습니다.");
+      return;
+    }
+
     if (!isConfirmed) {
       alert("회원 탈퇴 안내를 확인해 주세요.");
       return;
     }
 
-    // 실제 DB 탈퇴 API는 아직 연결되지 않음
+    // 비밀번호가 일치하고 체크박스도 체크된 경우
+    const confirmed = window.confirm("정말 회원 탈퇴하시겠습니까?");
+    if (!confirmed) {
+      return;
+    }
+
+    // 실제 백엔드 연동 시 탈퇴 API 호출 및 로컬스토리지 초기화 등 처리
+    // localStorage.clear();
+
     alert("회원 탈퇴 API가 아직 연결되지 않았습니다.");
   };
 
@@ -20,7 +42,6 @@ function ProfileDelete() {
     <main className="profile-page">
       <section className="profile-container">
         <header className="profile-heading">
-          <p className="profile-eyebrow">MY MOMO</p>
           <h1>회원 탈퇴</h1>
           <p>탈퇴하기 전에 안내 사항을 확인해 주세요.</p>
         </header>
@@ -28,9 +49,34 @@ function ProfileDelete() {
         <section className="profile-card profile-delete-page-card">
           <h2>정말 탈퇴하시겠습니까?</h2>
           <p>
-            현재 회원 탈퇴 기능은 준비 중입니다. 실제 계정 삭제는 백엔드 API
-            연결 후 진행할 수 있습니다.
+            계정을 삭제하려면 본인 확인을 위해 현재 비밀번호를 입력해 주세요.
           </p>
+
+          {/* 비밀번호 확인 입력 필드 추가 */}
+          <div style={{ margin: "20px 0" }}>
+            <label
+              htmlFor="delete-password"
+              style={{
+                display: "block",
+                marginBottom: "8px",
+                fontWeight: "bold",
+              }}
+            >
+              현재 비밀번호
+            </label>
+            <input
+              id="delete-password"
+              type="password"
+              value={password}
+              onChange={(event) => setPassword(event.target.value)}
+              placeholder="비밀번호를 입력해 주세요."
+              style={{
+                width: "100%",
+                padding: "10px",
+                boxSizing: "border-box",
+              }}
+            />
+          </div>
 
           <label className="profile-delete-check">
             <input
@@ -41,13 +87,13 @@ function ProfileDelete() {
             회원 탈퇴 안내를 확인했습니다.
           </label>
 
-          <div className="profile-form-buttons">
+          <div className="profile-form-buttons" style={{ marginTop: "20px" }}>
             <button
               type="button"
               className="profile-button profile-delete-button"
               onClick={handleDelete}
             >
-              탈퇴 진행
+              탈퇴하기
             </button>
 
             <button

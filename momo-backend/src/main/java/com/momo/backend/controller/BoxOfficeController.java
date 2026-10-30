@@ -13,7 +13,7 @@ import java.util.List;
 @RestController
 @RequestMapping("/api/boxoffice")
 @RequiredArgsConstructor
-@CrossOrigin(origins="http://localhost:3000")
+//@CrossOrigin(origins="http://localhost:3000")
 @Slf4j
 public class BoxOfficeController {
 

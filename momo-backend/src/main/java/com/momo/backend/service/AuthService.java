@@ -73,8 +73,7 @@ public class AuthService {
                 dto.getLoginId(),
                 passwordEncoder.encode(dto.getPassword()),
                 dto.getNickname(),
-                dto.getEmail()
-        );
+                dto.getEmail());
     }
 
     // 로그인 아이디와 비밀번호가 일치하는지 확인
@@ -82,15 +81,13 @@ public class AuthService {
 
         // 로그인 아이디로 회원 조회
         User user = userRepository.findByLoginId(loginId)
-                .orElseThrow(() ->
-                        new IllegalArgumentException("아이디 또는 비밀번호가 올바르지 않습니다."));
+                .orElseThrow(() -> new IllegalArgumentException("아이디 또는 비밀번호가 올바르지 않습니다."));
 
         // 회원 조회 성공 확인
         log.info("로그인 회원 조회 성공: {}", user.getLoginId());
 
         // 비밀번호 일치 여부 확인
-        boolean passwordMatches =
-                passwordEncoder.matches(password, user.getPasswordHash());
+        boolean passwordMatches = passwordEncoder.matches(password, user.getPasswordHash());
 
         log.info("비밀번호 일치 여부: {}", passwordMatches);
 
@@ -107,10 +104,8 @@ public class AuthService {
     public User getLoginUser(String loginId) {
 
         return userRepository.findByLoginId(loginId)
-                .orElseThrow(() ->
-                        new IllegalArgumentException("회원 정보를 찾을 수 없습니다."));
+                .orElseThrow(() -> new IllegalArgumentException("회원 정보를 찾을 수 없습니다."));
     }
-
 
     // 현재 로그인한 회원의 닉네임과 이메일 수정
     public UserResponse updateMyInfo(String loginId, UserUpdateRequest dto) {
@@ -139,19 +134,20 @@ public class AuthService {
         User user = getLoginUser(loginId);
 
         // 회원이 리뷰에 누른 좋아요 개수
-        long reviewLikeCount =
-                reviewReactionRepository.countByUser_UserIdAndLiked(
-                        user.getUserId(), true);
+        long reviewLikeCount = reviewReactionRepository.countByUser_UserIdAndLiked(
+                user.getUserId(), true);
 
         // 회원이 댓글에 누른 좋아요 개수
-        long commentLikeCount =
-                commentReactionRepository.countByUser_UserIdAndLiked(
-                        user.getUserId(), true);
+        long commentLikeCount = commentReactionRepository.countByUser_UserIdAndLiked(
+                user.getUserId(), true);
 
         // 리뷰와 댓글 좋아요 개수 합산
         return reviewLikeCount + commentLikeCount;
     }
 
+    public boolean checkLoginIdExists(String loginId) {
+        return userRepository.existsByLoginId(loginId); // JpaRepository 사용 시
+    }
 
     // 회원 탈퇴 시 작성한 댓글과 리뷰, 좋아요/싫어요를 모두 삭제
     public void deleteMyAccount(String loginId) {
@@ -196,6 +192,5 @@ public class AuthService {
         // 회원 정보 삭제
         userRepository.delete(user);
     }
-
 
 }

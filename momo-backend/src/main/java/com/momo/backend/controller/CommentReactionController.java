@@ -13,7 +13,7 @@ import java.util.HashMap;
 @RestController
 @RequestMapping("/api/comments")
 @RequiredArgsConstructor
-@CrossOrigin(origins = "http://localhost:3000")
+//@CrossOrigin(origins = "http://localhost:3000")
 public class CommentReactionController {
 
     // 댓글 좋아요/싫어요 기능을 처리하는 Service
