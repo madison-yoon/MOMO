@@ -23,4 +23,4 @@ jobs:
       - uses: gradle/actions/setup-gradle@v4
       - name: Run backend tests
         working-directory: momo-backend
-        run: ./gradlew test
+        run: bash ./gradlew test
