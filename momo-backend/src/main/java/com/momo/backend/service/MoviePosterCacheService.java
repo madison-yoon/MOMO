@@ -7,6 +7,7 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import java.time.LocalDateTime;
+import java.time.temporal.ChronoUnit;
 import java.util.Collection;
 import java.util.List;
 import java.util.Optional;
@@ -31,21 +32,31 @@ public class MoviePosterCacheService {
     }
 
     @Transactional
+    public Optional<LocalDateTime> claimProcessing(String movieCode) {
+        // DB의 DATETIME 정밀도와 일치하도록 선점 토큰을 초 단위로 고정한다.
+        LocalDateTime claimedAt = LocalDateTime.now().truncatedTo(ChronoUnit.SECONDS);
+        int claimed = posterCacheRepository.tryClaim(
+                movieCode,
+                claimedAt,
+                claimedAt.minusHours(FAILED_RETRY_HOURS),
+                claimedAt.minusMinutes(PROCESSING_TIMEOUT_MINUTES)
+        );
+        return claimed == 1 ? Optional.of(claimedAt) : Optional.empty();
+    }
+
+    // 기존 호출 호환용이다. 신규 비동기 작업은 claimProcessing의 토큰을 전달해야 한다.
+    @Transactional
     public boolean tryMarkAsProcessing(String movieCode) {
-        LocalDateTime now = LocalDateTime.now();
-        return posterCacheRepository.tryClaim(movieCode, now,
-                now.minusHours(FAILED_RETRY_HOURS),
-                now.minusMinutes(PROCESSING_TIMEOUT_MINUTES)) == 1;
+        return claimProcessing(movieCode).isPresent();
     }
 
     @Transactional
-    public void updatePoster(String movieCode, String posterUrl) {
-        posterCacheRepository.findById(movieCode).ifPresent(cache -> cache.updatePoster(posterUrl));
-    }
-
-    @Transactional
-    public void markAsFailed(String movieCode) {
-        posterCacheRepository.findById(movieCode).ifPresent(MoviePosterCache::markAsFailed);
+    public boolean markAsFailed(String movieCode, LocalDateTime claimedAt) {
+        if (claimedAt == null) {
+            return false;
+        }
+        LocalDateTime failedAt = LocalDateTime.now().truncatedTo(ChronoUnit.SECONDS);
+        return posterCacheRepository.completeFailure(movieCode, claimedAt, failedAt) == 1;
     }
 
     public List<MoviePosterStatusResponse> findPosterStatuses(Collection<String> movieCodes) {
