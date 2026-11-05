@@ -42,6 +42,9 @@ public class Movie {
     // 마지막 외부 API 보완 시도 시각
     private LocalDateTime supplementAttemptedAt;
 
+    @Column(name = "kobis_detail_attempted_at")
+    private LocalDateTime kobisDetailAttemptedAt;
+
     // 포스터 정보
     @Column(length = 1000)
     private String posterUrl;
@@ -116,9 +119,18 @@ public class Movie {
                 || supplementAttemptedAt.isBefore(now.minusHours(24));
     }
 
-    // 마지막 외부 API 보완 시도 시각 저장
+    // KMDb/TMDb 외부 보완 시도 시각
     public void markSupplementAttempted(LocalDateTime attemptedAt) {
         this.supplementAttemptedAt = attemptedAt;
+    }
+
+    public boolean canAttemptKobisDetail(LocalDateTime now) {
+        return kobisDetailAttemptedAt == null
+                || kobisDetailAttemptedAt.isBefore(now.minusHours(24));
+    }
+
+    public void markKobisDetailAttempted(LocalDateTime attemptedAt) {
+        this.kobisDetailAttemptedAt = attemptedAt;
     }
 
     // 기존 값이 비어 있고 새로운 값이 존재하는지 확인

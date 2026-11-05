@@ -1,0 +1,1 @@
+ALTER TABLE movies ADD COLUMN kobis_detail_attempted_at DATETIME NULL;
