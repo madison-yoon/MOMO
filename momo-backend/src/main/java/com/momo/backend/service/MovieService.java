@@ -153,6 +153,35 @@ public class MovieService {
         }
     }
 
+    private JsonNode readRequiredMovieDetail(String json, String requestedMovieCode) {
+        try {
+            JsonNode root = objectMapper.readTree(json);
+            JsonNode detail = root.path("movieInfoResult").path("movieInfo");
+            String responseCode = detail.path("movieCd").asText("");
+            String title = detail.path("movieNm").asText("");
+            if (!detail.isObject() || isBlank(responseCode) || isBlank(title)) {
+                throw new IllegalStateException("KOBIS 상세 응답에 영화 코드 또는 제목이 없습니다.");
+            }
+            if (!requestedMovieCode.equals(responseCode)) {
+                throw new IllegalStateException("KOBIS 상세 응답의 영화 코드가 요청한 영화 코드와 일치하지 않습니다.");
+            }
+            validateOptionalArray(detail, "directors");
+            validateOptionalArray(detail, "genres");
+            validateOptionalArray(detail, "actors");
+            validateOptionalArray(detail, "audits");
+            return detail;
+        } catch (Exception e) {
+            throw new IllegalStateException("KOBIS 상세 응답 구조가 올바르지 않습니다.", e);
+        }
+    }
+
+    private void validateOptionalArray(JsonNode parent, String fieldName) {
+        JsonNode value = parent.path(fieldName);
+        if (!value.isMissingNode() && !value.isNull() && !value.isArray()) {
+            throw new IllegalStateException("KOBIS 상세 응답 필드 " + fieldName + " 형식이 배열이 아닙니다.");
+        }
+    }
+
     // =========================================================
     // 영화 검색 캐시 변환
     // =========================================================
@@ -469,15 +498,7 @@ public class MovieService {
 
         try {
 
-            JsonNode detail = objectMapper.readTree(json)
-                    .path("movieInfoResult")
-                    .path("movieInfo");
-
-            if (detail.isMissingNode() || detail.isEmpty()) {
-                throw new IllegalStateException(
-                        "KOBIS 상세정보가 존재하지 않습니다."
-                );
-            }
+            JsonNode detail = readRequiredMovieDetail(json, movie.getMovieCode());
 
             String director = "";
 
@@ -549,15 +570,7 @@ public class MovieService {
 
         try {
 
-            JsonNode detail = objectMapper.readTree(json)
-                    .path("movieInfoResult")
-                    .path("movieInfo");
-
-            if (detail.isMissingNode() || detail.isEmpty()) {
-                throw new IllegalStateException(
-                        "KOBIS 영화 상세정보가 없습니다."
-                );
-            }
+            JsonNode detail = readRequiredMovieDetail(json, movieCode);
 
             String director = "";
 
