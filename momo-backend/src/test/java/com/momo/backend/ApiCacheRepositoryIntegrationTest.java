@@ -2,14 +2,19 @@ package com.momo.backend;
 
 import com.momo.backend.entity.MovieCache;
 import com.momo.backend.entity.MoviePosterCache;
+import com.momo.backend.entity.Movie;
+import com.momo.backend.entity.PosterStatus;
 import com.momo.backend.repository.MovieCacheRepository;
 import com.momo.backend.repository.MoviePosterCacheRepository;
+import com.momo.backend.repository.MovieRepository;
+import com.momo.backend.service.MoviePosterPersistenceService;
 import jakarta.persistence.EntityManager;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.transaction.support.TransactionTemplate;
 
 import java.time.LocalDateTime;
 import java.util.UUID;
@@ -28,6 +33,15 @@ class ApiCacheRepositoryIntegrationTest {
 
     @Autowired
     private EntityManager entityManager;
+
+    @Autowired
+    private MovieRepository movieRepository;
+
+    @Autowired
+    private MoviePosterPersistenceService posterPersistenceService;
+
+    @Autowired
+    private TransactionTemplate transactionTemplate;
 
     @Test
     @Transactional
@@ -112,5 +126,28 @@ class ApiCacheRepositoryIntegrationTest {
         LocalDateTime elevenMinutesLater = now.plusMinutes(11);
         assertEquals(1, moviePosterCacheRepository.tryClaim(code, elevenMinutesLater,
                 elevenMinutesLater.minusHours(24), elevenMinutesLater.minusMinutes(10)));
+    }
+
+    @Test
+    void posterAndMovieUpdatesRollbackTogetherWhenTransactionFails() {
+        String code = UUID.randomUUID().toString().substring(0, 20);
+        movieRepository.saveAndFlush(new Movie(code, "rollback-test", "", "20260101",
+                "", "드라마", "감독", "배우", "전체관람가"));
+        moviePosterCacheRepository.saveAndFlush(new MoviePosterCache(code,
+                "rollback-test", "20260101"));
+
+        assertThrows(IllegalStateException.class, () ->
+                transactionTemplate.executeWithoutResult(status -> {
+                    posterPersistenceService.saveSuccess(code, "https://example.com/poster.jpg");
+                    throw new IllegalStateException("force rollback");
+                }));
+
+        entityManager.clear();
+        Movie savedMovie = movieRepository.findById(code).orElseThrow();
+        MoviePosterCache savedCache = moviePosterCacheRepository.findById(code).orElseThrow();
+
+        assertNull(savedMovie.getPosterUrl());
+        assertNull(savedCache.getPosterUrl());
+        assertEquals(PosterStatus.PENDING, savedCache.getStatus());
     }
 }
