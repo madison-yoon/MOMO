@@ -46,4 +46,33 @@ public interface MoviePosterCacheRepository
     int tryClaim(@Param("movieCode") String movieCode, @Param("now") LocalDateTime now,
                  @Param("failedBefore") LocalDateTime failedBefore,
                  @Param("processingBefore") LocalDateTime processingBefore);
+
+    // 현재 PROCESSING 선점 시각이 일치하는 작업만 성공으로 완료한다.
+    @Modifying
+    @Transactional
+    @Query(value = """
+            UPDATE movie_poster_cache
+               SET status = 'SUCCESS', poster_url = :posterUrl, updated_at = :completedAt
+             WHERE movie_code = :movieCode
+               AND status = 'PROCESSING'
+               AND updated_at = :claimedAt
+            """, nativeQuery = true)
+    int completeSuccess(@Param("movieCode") String movieCode,
+                        @Param("posterUrl") String posterUrl,
+                        @Param("claimedAt") LocalDateTime claimedAt,
+                        @Param("completedAt") LocalDateTime completedAt);
+
+    // 이전 작업이 새 작업의 상태를 FAILED로 덮어쓰지 못하도록 선점 시각을 확인한다.
+    @Modifying
+    @Transactional
+    @Query(value = """
+            UPDATE movie_poster_cache
+               SET status = 'FAILED', poster_url = NULL, updated_at = :failedAt
+             WHERE movie_code = :movieCode
+               AND status = 'PROCESSING'
+               AND updated_at = :claimedAt
+            """, nativeQuery = true)
+    int completeFailure(@Param("movieCode") String movieCode,
+                        @Param("claimedAt") LocalDateTime claimedAt,
+                        @Param("failedAt") LocalDateTime failedAt);
 }
