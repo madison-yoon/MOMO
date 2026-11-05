@@ -64,6 +64,8 @@ public class MovieService {
     private static final long DAILY_BOX_OFFICE_CACHE_HOURS = 1;
     private static final long GENRE_CACHE_HOURS = 24;
 
+    // 장르 수집 범위: KOBIS 목록 앞 10페이지 × 페이지당 100개, 최대 1,000개 후보.
+    // 전체 KOBIS 영화 카탈로그가 아니라 제한된 후보 집합이다.
     private static final int GENRE_SCAN_PAGES = 10;
     private static final int GENRE_SCAN_SIZE = 100;
     private static final int GENRE_PAGE_SIZE = 10;
@@ -1039,10 +1041,9 @@ public class MovieService {
              currentPage <= GENRE_SCAN_PAGES;
              currentPage++) {
 
-            String json = kobisApiClient.searchMoviesByGenre(currentPage);
-
             log.info("KOBIS 장르 목록 API 요청. page: {}, pageSize: {}",
                     currentPage, GENRE_SCAN_SIZE);
+            String json = kobisApiClient.searchMoviesByGenre(currentPage);
             JsonNode movieList = readRequiredArray(json, "movieListResult", "movieList",
                     "KOBIS 장르 검색용 영화 목록 응답이 올바르지 않습니다.");
 
