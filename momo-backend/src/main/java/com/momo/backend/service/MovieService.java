@@ -411,17 +411,17 @@ public class MovieService {
                         releaseDate
                 );
 
-                boolean started =
-                        posterCacheService.tryMarkAsProcessing(movieCode);
+                var claim = posterCacheService.claimProcessing(movieCode);
 
-                if (!started) {
+                if (claim.isEmpty()) {
                     continue;
                 }
 
                 posterAsyncService.searchPosterAsync(
                         movieCode,
                         title,
-                        releaseDate
+                        releaseDate,
+                        claim.get()
                 );
 
             } catch (Exception e) {
@@ -819,17 +819,17 @@ public class MovieService {
                     releaseDate
             );
 
-            boolean started =
-                    posterCacheService.tryMarkAsProcessing(movieCode);
+            var claim = posterCacheService.claimProcessing(movieCode);
 
-            if (!started) {
+            if (claim.isEmpty()) {
                 return;
             }
 
             posterAsyncService.searchPosterAsync(
                     movieCode,
                     title,
-                    releaseDate
+                    releaseDate,
+                    claim.get()
             );
 
         } catch (Exception e) {
@@ -883,9 +883,9 @@ public class MovieService {
         if (isBlank(movieCode) || isBlank(title)) return;
         try {
             posterCacheService.createCache(movieCode, title, releaseDate);
-            if (posterCacheService.tryMarkAsProcessing(movieCode)) {
-                posterAsyncService.searchPosterAsync(movieCode, title, releaseDate);
-            }
+            posterCacheService.claimProcessing(movieCode).ifPresent(claimedAt ->
+                    posterAsyncService.searchPosterAsync(
+                            movieCode, title, releaseDate, claimedAt));
         } catch (Exception e) {
             log.error("박스오피스 포스터 검색 등록 실패. movieCode: {}", movieCode, e);
         }
