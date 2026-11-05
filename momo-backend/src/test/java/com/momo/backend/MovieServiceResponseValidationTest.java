@@ -93,7 +93,7 @@ class MovieServiceResponseValidationTest {
 
     @Test
     void kobisDetailFailureStillRunsKmdbAndTmdbFallbacks() {
-        String code = "fallback-" + System.nanoTime();
+        String code = "fb" + (System.nanoTime() % 100000000000000L);
         Movie partialMovie = new Movie(code, "보완 테스트 영화", "", "", "",
                 "", "", "", "");
         movieRepository.saveAndFlush(partialMovie);
