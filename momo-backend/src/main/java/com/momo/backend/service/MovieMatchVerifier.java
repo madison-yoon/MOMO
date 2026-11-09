@@ -37,17 +37,18 @@ final class MovieMatchVerifier {
         String kobisYear = releaseYear(kobisReleaseDate);
         String candidateYear = releaseYear(candidateReleaseDate);
 
-        // KOBIS 개봉 연도가 있으면 후보도 같은 연도여야 한다.
-        if (!kobisYear.isBlank()) {
-            return !candidateYear.isBlank() && kobisYear.equals(candidateYear);
+        // 개봉연도가 양쪽에 있으면 반드시 같은 연도여야 한다.
+        if (!kobisYear.isBlank() && !candidateYear.isBlank()) {
+            return kobisYear.equals(candidateYear);
         }
 
-        // 개봉일이 없을 때 제목 하나만으로 승인하지 않는다. 영문·원제 또는
-        // 감독이 함께 일치할 때만 동명 영화 오매칭 위험을 감수할 수 있다.
+        // 외부 데이터에 개봉연도가 없을 때는 영문 원제 또는 감독까지 확인한다.
+        // 제목만 같은 동명 영화가 잘못 연결되는 상황을 방지한다.
         boolean originalTitleMatches = !requestedTitleEn.isBlank()
                 && matches(requestedTitleEn, foundTitle, foundOriginalTitle);
         boolean directorMatches = !normalizeTitle(kobisDirector).isBlank()
                 && normalizeTitle(kobisDirector).equals(normalizeTitle(candidateDirector));
+
         return originalTitleMatches || directorMatches;
     }
 
