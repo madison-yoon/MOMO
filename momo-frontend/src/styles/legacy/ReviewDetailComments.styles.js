@@ -341,92 +341,67 @@ const ReviewDetailCommentsStyles = createGlobalStyle`
   overflow-wrap: anywhere;
 }
 
-/* 좋아요 / 싫어요 */
+/* ==================================================
+   MOMO 공용 반응 버튼
+   리뷰와 댓글에서 동일한 버튼 스타일을 사용한다.
+================================================== */
 
-.review-detail-reactions {
-  display: flex;
-  flex-wrap: wrap;
-  align-items: center;
-  gap: 14px;
-
-  margin-top: 20px;
-}
-
-.review-like-button,
-.review-dislike-button {
+.momo-reaction-button {
   display: inline-flex;
   align-items: center;
   justify-content: center;
   gap: 7px;
-  min-width: 150px;
-  padding: 12px 20px;
-  border: 1px solid transparent;
-  border-radius: 12px;
+  min-height: 34px;
+  padding: 7px 12px;
+  background: #fff;
+  border: 1px solid #e2ddd5;
+  border-radius: 8px;
+  color: #666;
   font: inherit;
-  font-size: 15px;
-  font-weight: 800;
+  font-size: 12px;
+  font-weight: 700;
+  line-height: 1.3;
   cursor: pointer;
   transition:
-    background 0.2s ease,
-    border-color 0.2s ease,
-    color 0.2s ease,
-    transform 0.2s ease,
-    box-shadow 0.2s ease;
+    background 0.18s ease,
+    border-color 0.18s ease,
+    color 0.18s ease,
+    transform 0.18s ease;
 }
 
-.review-like-button {
-  background: var(--momo-like-bg);
-  border-color: var(--momo-like-border);
-  color: var(--momo-like-text);
+.momo-reaction-button--like:hover,
+.momo-reaction-button--like.active {
+  background: #fff6e5;
+  border-color: #d6a33b;
+  color: #8a5b00;
 }
 
-.review-like-button::before {
-  content: "👍";
+.momo-reaction-button--dislike:hover,
+.momo-reaction-button--dislike.active {
+  background: #f4f4f4;
+  border-color: #999;
+  color: #333;
 }
 
-.review-like-button:hover,
-.review-like-button.active {
-  background: var(--momo-like-bg-hover);
-}
-
-.review-dislike-button {
-  background: var(--momo-dislike-bg);
-  border-color: var(--momo-dislike-border);
-  color: var(--momo-dislike-text);
-}
-
-.review-dislike-button::before {
-  content: "👎";
-}
-
-.review-dislike-button:hover,
-.review-dislike-button.active {
-  background: var(--momo-dislike-bg-hover);
-}
-
-.review-like-button:hover,
-.review-dislike-button:hover {
-  transform: translateY(-1px);
-  box-shadow: 0 4px 12px rgba(45, 38, 26, 0.08);
-}
-
-.review-like-button:focus-visible,
-.review-dislike-button:focus-visible {
+.momo-reaction-button:focus-visible {
   outline: 3px solid rgba(89, 68, 0, 0.2);
   outline-offset: 2px;
 }
 
-.review-reaction-cancel {
-  padding: 10px 14px;
+.review-detail-reactions,
+.review-comment-reactions {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 8px;
+}
 
-  background: #fff;
-  border: 1px solid #ddd;
-  border-radius: 8px;
+.review-detail-reactions {
+  margin-top: 20px;
+}
 
-  color: #666;
-  font-size: 13px;
-
-  cursor: pointer;
+.review-comment-reactions {
+  margin-top: 12px;
 }
 
 /* ==================================================
@@ -664,51 +639,6 @@ const ReviewDetailCommentsStyles = createGlobalStyle`
   object-fit: cover;
 }
 
-/* 댓글 좋아요 / 싫어요 */
-.review-comment-reactions {
-  display: flex;
-  flex-wrap: wrap;
-  align-items: center;
-  gap: 8px;
-  margin-top: 12px;
-}
-
-.comment-like-button,
-.comment-dislike-button,
-.comment-reaction-cancel {
-  padding: 6px 10px;
-  background: #fff;
-  border: 1px solid #e2ddd5;
-  border-radius: 7px;
-  color: #666;
-  font-size: 12px;
-  font-weight: 700;
-  cursor: pointer;
-  transition: background 0.18s ease, border-color 0.18s ease, color 0.18s ease;
-}
-
-.comment-like-button:hover,
-.comment-like-button.active {
-  background: #fff6e5;
-  border-color: #d6a33b;
-  color: #8a5b00;
-}
-
-.comment-dislike-button:hover,
-.comment-dislike-button.active {
-  background: #f4f4f4;
-  border-color: #999;
-  color: #333;
-}
-
-.comment-reaction-cancel {
-  color: #888;
-}
-
-.comment-reaction-cancel:hover {
-  background: #f7f7f7;
-  border-color: #bbb;
-}
 
 `;
 
