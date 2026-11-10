@@ -117,6 +117,24 @@ public class ReviewReactionService {
     }
 
     // 로그인한 회원이 좋아요한 리뷰 목록 조회
+    // 로그인한 회원이 특정 리뷰에 남긴 반응 조회
+    @Transactional(readOnly = true)
+    public Boolean getMyReaction(String loginId, Long reviewId) {
+        if (loginId == null || loginId.isBlank()) {
+            return null;
+        }
+
+        User user = userRepository.findByLoginId(loginId).orElse(null);
+        if (user == null) {
+            return null;
+        }
+
+        return reactionRepository
+                .findByUser_UserIdAndReview_ReviewId(user.getUserId(), reviewId)
+                .map(ReviewReactions::getLiked)
+                .orElse(null);
+    }
+
     @Transactional(readOnly = true)
     public Page<ReviewResponse> getMyLikedReviews(
             String loginId,
