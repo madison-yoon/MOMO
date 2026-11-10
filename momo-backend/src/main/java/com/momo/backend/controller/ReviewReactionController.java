@@ -52,17 +52,25 @@ public class ReviewReactionController {
 
     // 특정 리뷰의 좋아요/싫어요 개수 조회
     @GetMapping("/{reviewId}/reactions")
-    public ResponseEntity<Map<String, Long>> getReactionCounts(
-            @PathVariable Long reviewId) {
+    public ResponseEntity<Map<String, Object>> getReactionCounts(
+            @PathVariable Long reviewId,
+            Authentication authentication) {
 
         // Service에서 좋아요와 싫어요 개수 조회
         long[] counts = reactionService.getReactionCounts(reviewId);
 
         // 조회한 결과를 JSON 형태로 반환
-        Map<String, Long> response = new HashMap<>();
+        Map<String, Object> response = new HashMap<>();
         response.put("reviewId", reviewId);
         response.put("likeCount", counts[0]);
         response.put("dislikeCount", counts[1]);
+        response.put(
+                "myReaction",
+                reactionService.getMyReaction(
+                        authentication == null ? null : authentication.getName(),
+                        reviewId
+                )
+        );
 
         return ResponseEntity.ok(response);
     }
