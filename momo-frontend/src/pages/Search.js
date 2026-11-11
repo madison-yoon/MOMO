@@ -547,7 +547,9 @@ function Search() {
           const item = statusMap.get(movie.movieCode);
 
           if (!item) {
-            nextStatuses[movie.movieCode] = "loading";
+            // 상태가 없는 결과도 포스터 확인 실패로 종료해 검색 결과에 남기지 않는다.
+            nextStatuses[movie.movieCode] = "failed";
+            nextUrls[movie.movieCode] = "";
             return;
           }
 
