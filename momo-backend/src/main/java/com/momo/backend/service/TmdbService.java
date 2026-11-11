@@ -549,15 +549,6 @@ public class TmdbService {
         return value.asString("").trim();
     }
 
-    // 개봉일 정규화
-    private String normalizeDate(String date) {
-
-        if (date == null || date.isBlank()) {
-            return "";
-        }
-
-        return date.replaceAll("[^0-9]", "");
-    }
 
     // 제목 정규화
     private String normalizeTitle(String title) {
