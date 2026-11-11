@@ -62,11 +62,9 @@ public class MovieService {
 
     private static final String CACHE_SEARCH = "SEARCH";
     private static final String CACHE_DAILY_BOX_OFFICE = "DAILY_BOX_OFFICE";
-    private static final String CACHE_GENRE = "GENRE";
 
     private static final long SEARCH_CACHE_HOURS = 24;
     private static final long DAILY_BOX_OFFICE_CACHE_HOURS = 1;
-    private static final long GENRE_CACHE_HOURS = 24;
 
     // KOBIS 목록은 페이지당 최대 100개씩 전체 페이지를 순회한다.
     private static final int GENRE_SCAN_SIZE = 100;
@@ -1251,34 +1249,6 @@ public class MovieService {
             case "공포" -> "공포(호러)";
             default -> genre.trim();
         };
-    }
-
-    // 장르 캐시 JSON 변환
-
-    private List<MovieSearchResponse> readCachedGenreMovies(
-            String contentJson
-    ) throws Exception {
-
-        List<MovieSearchResponse> movies = new ArrayList<>();
-
-        JsonNode root = objectMapper.readTree(contentJson);
-        if (!root.isArray()) throw new IllegalStateException("장르 캐시 구조가 배열이 아닙니다.");
-
-        for (JsonNode movie : root) {
-            if (isBlank(movie.path("movieCode").asString(""))
-                    || isBlank(movie.path("title").asString(""))) {
-                throw new IllegalStateException("장르 캐시 필수 필드가 누락되었습니다.");
-            }
-            movies.add(new MovieSearchResponse(
-                    movie.path("movieCode").asString(""),
-                    movie.path("title").asString(""),
-                    movie.path("releaseDate").asString(""),
-                    movie.path("genre").asString(""),
-                    movie.path("director").asString("")
-            ));
-        }
-
-        return movies;
     }
 
     // 장르 전체 목록 수집
