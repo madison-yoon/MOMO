@@ -17,11 +17,14 @@ test("로그인 회원은 관심 영화 버튼으로 목록을 등록하고 해�
 
   render(React.createElement(FavoriteStar, { movie }));
 
+  expect(screen.getByRole("button", { name: "관심 영화 추가" })).toHaveTextContent("☆");
+
   fireEvent.click(screen.getByRole("button", { name: "관심 영화 추가" }));
 
   expect(
     screen.getByRole("button", { name: "관심 영화 해제" }),
   ).toBeInTheDocument();
+  expect(screen.getByRole("button", { name: "관심 영화 해제" })).toHaveTextContent("★");
 
   const favorites = JSON.parse(
     localStorage.getItem("momo-favorite-movies:test-member"),
