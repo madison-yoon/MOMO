@@ -30,11 +30,10 @@ const FavoritesAndProfileOverridesStyles = createGlobalStyle`
 
   color: rgba(255, 255, 255, 0.9);
 
-  font-family: "Apple Color Emoji", "Segoe UI Emoji", sans-serif;
-  font-size: 19px;
-  font-weight: normal;
+  font-family: Arial, sans-serif;
+  font-size: 24px;
+  font-weight: 700;
   line-height: 1;
-  padding-bottom: 2.3px;
 
 
   text-align: center;
