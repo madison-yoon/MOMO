@@ -63,7 +63,7 @@ function FavoriteStar({ movie }) {
       "aria-pressed": favorite,
       title: favorite ? "관심 영화 해제" : "관심 영화 추가",
     },
-    "🎬",
+    favorite ? "★" : "☆",
   );
 }
 
