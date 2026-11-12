@@ -392,7 +392,7 @@ function Home() {
                     React.createElement(
                               "p",
                               null,
-                              "별표로 저장한 영화를 다시 만나보세요."
+                              "관심 영화로 등록한 영화를 다시 만나보세요."
                             )
                   ),
             React.createElement(
@@ -405,7 +405,7 @@ function Home() {
                 React.createElement(
             "div",
             {"className":"home-favorites-empty"},
-            "박스오피스 포스터의 별표를 눌러 관심 영화를 저장해 보세요."
+            "영화 포스터에 있는 별 모양 버튼을 눌러 관심 영화를 저장해 보세요."
           )
               ) : (
                 React.createElement(
