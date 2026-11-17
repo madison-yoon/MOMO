@@ -221,32 +221,47 @@ const MomoSpatialExperienceStyles = createGlobalStyle`
 
   /* ---------- Login / signup: split composition ---------- */
   .signup-page {
-    display: grid;
-    grid-template-columns: minmax(220px,.72fr) minmax(0,1.28fr);
+    display: flex;
     align-items: center;
-    gap: clamp(24px,4vw,56px);
+    justify-content: center;
     max-width: 1080px;
     min-height: min(760px, calc(100vh - 160px));
     padding: 36px 0 60px;
   }
-  .signup-page > .signup-wrapper { display: contents; }
+  .signup-page > .signup-wrapper {
+    display: grid;
+    grid-template-columns: minmax(220px,.82fr) minmax(0,1.18fr);
+    align-items: center;
+    gap: clamp(24px,4vw,56px);
+    width: 100%;
+  }
   .signup-page .signup-brand { grid-column: 1; grid-row: 1; align-self: end; }
-  .signup-page .signup-card-heading { grid-column: 1; grid-row: 2; padding: 0; margin: 0; background: transparent; border: 0; }
-  .signup-page .signup-card { grid-column: 2; grid-row: 1 / span 3; position: relative; padding: clamp(28px,4vw,54px); border: 1px solid rgba(255,255,255,.86); border-radius: 26px; background: rgba(255,254,250,.82); box-shadow: 0 26px 64px rgba(54,45,28,.1); backdrop-filter: blur(18px); }
+  .signup-page .signup-card {
+    grid-column: 2; grid-row: 1 / span 2;
+    display: grid; grid-template-columns: minmax(0,1fr) minmax(0,1fr); align-items: center; gap: 26px;
+    position: relative; padding: clamp(28px,4vw,54px);
+    border: 1px solid rgba(255,255,255,.86); border-radius: 26px;
+    background: rgba(255,254,250,.82); box-shadow: 0 26px 64px rgba(54,45,28,.1); backdrop-filter: blur(18px);
+  }
   .signup-page .signup-card::before { content: "M"; position: absolute; right: 24px; top: -38px; color: rgba(255,212,59,.22); font: 900 160px/1 Georgia,serif; pointer-events: none; }
-  .signup-page .signup-card-heading h1 { font-size: clamp(32px,4vw,48px); line-height: 1.13; letter-spacing: -.06em; }
+  .signup-page .signup-card-heading { grid-column: 1; grid-row: 1 / span 2; padding: 0; margin: 0; background: transparent; border: 0; }
+  .signup-page .signup-card-heading h1 { font-size: clamp(30px,3.6vw,44px); line-height: 1.13; letter-spacing: -.06em; }
   .signup-page .signup-card-heading p { max-width: 320px; line-height: 1.9; }
   .signup-page .signup-note-label { flex-wrap: wrap; }
+  .signup-page .signup-card form, .signup-page .signup-footer { grid-column: 2; }
+  .signup-page .signup-card form { grid-row: 1; }
+  .signup-page .signup-footer { grid-row: 2; align-self: start; margin-top: 0; }
   .signup-page .signup-field input { min-height: 50px; border-radius: 7px 14px 7px 14px; background: rgba(255,255,255,.88); }
   .signup-page .signup-submit { min-height: 54px; border: 1px solid #D6AD27; border-radius: 7px 16px 7px 16px; box-shadow: 0 9px 18px rgba(140,105,0,.16), inset 0 1px 0 rgba(255,255,255,.5); }
-  .signup-page .signup-bottom-caption { grid-column: 1; grid-row: 3; text-align: left; }
+  .signup-page .signup-bottom-caption { margin-top: 18px; text-align: center; }
   @media(max-width: 760px) {
-    .signup-page { display: flex; flex-direction: column; align-items: stretch; gap: 22px; min-height: 0; padding: 20px 0 48px; }
+    .signup-page { display: flex; flex-direction: column; align-items: stretch; min-height: 0; padding: 20px 0 48px; }
     .signup-page > .signup-wrapper { display: flex; flex-direction: column; gap: 20px; }
-    .signup-page .signup-card { order: 2; }
-    .signup-page .signup-card-heading { order: 1; }
-    .signup-page .signup-brand { order: 0; }
-    .signup-page .signup-bottom-caption { order: 3; text-align: center; }
+    .signup-page .signup-card { display: flex; flex-direction: column; align-items: stretch; gap: 20px; padding: 24px 18px; }
+    .signup-page .signup-card-heading { width: 100%; }
+    .signup-page .signup-card form, .signup-page .signup-footer { width: 100%; }
+    .signup-page .signup-brand { align-self: flex-start; }
+    .signup-page .signup-bottom-caption { text-align: center; }
   }
 
   /* ---------- Favorites / activity pages ---------- */
@@ -255,9 +270,16 @@ const MomoSpatialExperienceStyles = createGlobalStyle`
   .favorite-page .movie-grid { grid-template-columns: repeat(5,minmax(0,1fr)); gap: 28px 18px; }
   .favorite-page .movie-card, .favorite-page .favorite-movie-card { transition: transform .3s ease; }
   .favorite-page .movie-card:hover, .favorite-page .favorite-movie-card:hover { transform: translateY(-7px) rotate(.5deg); }
-  .my-reviews-header, .liked-reviews-heading { min-height: 190px; padding: clamp(28px,4vw,54px); border-radius: 26px; background: radial-gradient(circle at 90% 20%,rgba(255,212,59,.3),transparent 18rem), linear-gradient(120deg,#FFFDF7,#F0E6D4); box-shadow: 0 22px 48px rgba(54,45,28,.08); }
-  .my-reviews-header h1, .liked-reviews-heading h1 { font-size: clamp(34px,4.4vw,56px); letter-spacing: -.06em; }
+  .my-reviews-heading, .liked-reviews-heading { min-height: 190px; padding: clamp(28px,4vw,54px); border-radius: 26px; background: radial-gradient(circle at 90% 20%,rgba(255,212,59,.3),transparent 18rem), linear-gradient(120deg,#FFFDF7,#F0E6D4); box-shadow: 0 22px 48px rgba(54,45,28,.08); }
+  .my-reviews-heading h1, .liked-reviews-heading h1 { font-size: clamp(34px,4.4vw,56px); letter-spacing: -.06em; }
   .my-reviews-card, .liked-reviews-card { border: 0; border-radius: 22px; background: rgba(255,254,250,.8); box-shadow: 0 16px 36px rgba(54,45,28,.065); }
+  .my-reviews-page, .liked-reviews-page { max-width: 1440px; margin: 0 auto; }
+  .my-reviews-list, .liked-reviews-list { display: grid; grid-template-columns: repeat(2,minmax(0,1fr)); gap: 14px; }
+  .my-review-item, .liked-review-item { min-width: 0; padding: 20px; border: 1px solid rgba(229,222,209,.86); border-radius: 16px; background: linear-gradient(145deg,rgba(255,255,255,.9),rgba(255,250,236,.74)); box-shadow: 0 8px 20px rgba(54,45,28,.045); }
+  .my-review-item:hover, .liked-review-item:hover { background: #FFF7DF; transform: translateY(-3px); }
+  .my-review-info h3, .liked-review-title { font-size: 17px; letter-spacing: -.035em; }
+  .liked-reviews-container { max-width: 1240px; }
+  @media(max-width: 760px) { .my-reviews-list, .liked-reviews-list { grid-template-columns: 1fr; } }
 
   /* ---------- Common layered surfaces / form controls ---------- */
   .review-write-section { border: 1px solid rgba(214,166,20,.25); border-radius: 18px; background: linear-gradient(145deg,#FFF8E4,#FFFDF7); box-shadow: 0 16px 36px rgba(54,45,28,.07); }
