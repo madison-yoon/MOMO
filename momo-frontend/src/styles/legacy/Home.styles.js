@@ -1,497 +1,462 @@
 import styled from "styled-components";
 
-/* 전체 홈 화면: 포근하고 깨끗한 다이어리 미색 배경 */
+/* MOMO 홈: 12-column spatial Bento. DOM 순서는 유지하고 화면에서 정보 우선순위에 맞게 재배치한다. */
 export const HomePage = styled.div`
+  --home-gap: clamp(14px, 1.55vw, 24px);
   display: grid;
-  grid-template-columns: minmax(0, 1.18fr) minmax(320px, .82fr);
-  gap: clamp(18px, 2.4vw, 32px);
+  grid-template-columns: repeat(12, minmax(0, 1fr));
+  grid-auto-flow: dense;
+  gap: var(--home-gap);
   width: 100%;
-  padding-bottom: clamp(52px, 6vw, 88px);
+  padding: 8px 0 clamp(56px, 7vw, 104px);
   color: var(--momo-text);
 
-  > section:first-child,
-  > div:last-child {
-    grid-column: 1 / -1;
+  > section:nth-of-type(1) {
+    grid-column: 1 / span 7;
+    grid-row: 1 / span 2;
   }
 
   > section:nth-of-type(2) {
-    grid-column: 1 / -1;
+    grid-column: 8 / -1;
+    grid-row: 1;
   }
 
   > section:nth-of-type(3) {
-    grid-column: 1;
+    grid-column: 8 / -1;
+    grid-row: 2;
   }
 
   > section:nth-of-type(4) {
-    grid-column: 2;
+    grid-column: 1 / -1;
+    grid-row: 3;
+  }
+
+  > div:last-child {
+    grid-column: 1 / -1;
+    grid-row: 4;
   }
 
   > section:not(:first-child) {
+    position: relative;
     min-width: 0;
-    padding: clamp(20px, 2.6vw, 30px);
-    background: var(--momo-glass);
-    border: 1px solid var(--momo-glass-border);
+    padding: clamp(20px, 2.2vw, 30px);
+    overflow: hidden;
+    border: 1px solid rgba(229, 222, 209, .86);
     border-radius: 24px;
-    box-shadow: var(--momo-shadow-sm);
-    backdrop-filter: blur(16px) saturate(125%);
+    background:
+      linear-gradient(145deg, rgba(255,255,255,.94), rgba(255,250,236,.82));
+    box-shadow: 0 16px 38px rgba(54, 45, 28, .055), inset 0 1px 0 rgba(255,255,255,.95);
+    backdrop-filter: blur(18px) saturate(125%);
+  }
+
+  > section:nth-of-type(2) {
+    background:
+      radial-gradient(ellipse at 100% 0%, rgba(255,212,59,.19), transparent 55%),
+      linear-gradient(145deg, #FFFEFA, #F9F3E7);
+  }
+
+  > section:nth-of-type(3) {
+    background:
+      radial-gradient(ellipse at 0% 100%, rgba(214,166,20,.13), transparent 60%),
+      rgba(255,254,250,.86);
+  }
+
+  > section:nth-of-type(2) > div:nth-child(2) {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 14px 12px;
   }
 
   > section:nth-of-type(4) > div:nth-child(2) {
-    grid-template-columns: repeat(3, minmax(0, 1fr));
+    grid-template-columns: repeat(5, minmax(0, 1fr));
   }
 
-  @media (max-width: 900px) {
-    grid-template-columns: minmax(0, 1fr);
-    gap: 20px;
+  @media (max-width: 1050px) {
+    > section:nth-of-type(1) { grid-column: 1 / -1; grid-row: 1; }
+    > section:nth-of-type(2) { grid-column: 1 / span 7; grid-row: 2; }
+    > section:nth-of-type(3) { grid-column: 8 / -1; grid-row: 2; }
+    > section:nth-of-type(4) { grid-column: 1 / -1; grid-row: 3; }
+    > div:last-child { grid-row: 4; }
+    > section:nth-of-type(2) > div:nth-child(2) { grid-template-columns: repeat(3, minmax(0, 1fr)); }
+  }
 
+  @media (max-width: 700px) {
+    grid-template-columns: minmax(0, 1fr);
+    gap: 14px;
+    padding-top: 0;
+
+    > section:nth-of-type(1),
     > section:nth-of-type(2),
     > section:nth-of-type(3),
-    > section:nth-of-type(4) {
+    > section:nth-of-type(4),
+    > div:last-child {
       grid-column: 1;
+      grid-row: auto;
     }
-  }
-
-  @media (max-width: 600px) {
-    gap: 16px;
-    padding-bottom: 44px;
 
     > section:not(:first-child) {
-      padding: 18px 14px;
-      border-radius: var(--momo-radius);
+      padding: 20px 16px;
+      border-radius: 20px;
     }
+
+    > section:nth-of-type(2) > div:nth-child(2) { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+    > section:nth-of-type(4) > div:nth-child(2) { grid-template-columns: repeat(2, minmax(0, 1fr)); }
   }
 `;
 
-/* 메인 추천 영역: 배경과 부드럽게 이어지는 고급 메모지 카드 톤 */
 export const FeatureSection = styled.section`
   position: relative;
   isolation: isolate;
   display: grid;
-  grid-template-columns: minmax(300px, .78fr) minmax(0, 1.22fr);
-  min-height: clamp(440px, 42vw, 560px);
+  grid-template-columns: minmax(250px, .78fr) minmax(0, 1.22fr);
+  min-height: clamp(520px, 48vw, 690px);
   align-items: stretch;
   overflow: hidden;
-  border: 1px solid var(--momo-glass-border);
-  border-radius: 28px;
+  border: 1px solid rgba(255,255,255,.82);
+  border-radius: 30px;
   background:
-    radial-gradient(circle at 12% 8%, rgba(255, 212, 59, .18), transparent 28rem),
-    linear-gradient(135deg, #FFFEFA 0%, #FFF9E8 54%, #F8F2E5 100%);
-  box-shadow: 0 24px 64px rgba(54, 45, 28, .10);
+    radial-gradient(circle at 12% 14%, rgba(255,212,59,.28), transparent 22rem),
+    repeating-linear-gradient(0deg, rgba(126,103,55,.025) 0 1px, transparent 1px 5px),
+    linear-gradient(145deg, #FFFDF7 0%, #F4EBD8 100%);
+  box-shadow: 0 28px 70px rgba(54,45,28,.12), inset 0 1px 0 rgba(255,255,255,.9);
 
-  &::after {
+  &::before {
+    content: "M";
     position: absolute;
     z-index: -1;
-    top: -120px;
-    left: 42%;
-    width: 360px;
-    height: 360px;
-    border: 1px solid rgba(214, 166, 20, .12);
-    border-radius: 50%;
-    box-shadow: 0 0 0 28px rgba(214, 166, 20, .035), 0 0 0 58px rgba(214, 166, 20, .025);
-    content: "";
+    left: -34px;
+    bottom: -138px;
+    color: rgba(214,166,20,.075);
+    font-family: Georgia, serif;
+    font-size: clamp(260px, 32vw, 470px);
+    font-weight: 700;
+    line-height: .8;
     pointer-events: none;
   }
 
-  @media (max-width: 768px) {
+  &::after {
+    content: "";
+    position: absolute;
+    z-index: 3;
+    top: 18px;
+    left: 18px;
+    width: 9px;
+    height: 9px;
+    border-radius: 50%;
+    background: var(--momo-accent);
+    box-shadow: 0 0 0 5px rgba(255,212,59,.18), 0 0 0 10px rgba(255,212,59,.08);
+    pointer-events: none;
+  }
+
+  @media (max-width: 760px) {
     grid-template-columns: 1fr;
     min-height: auto;
-    margin-bottom: 0;
-    border-radius: 20px;
+    border-radius: 24px;
   }
 `;
 
-/* 왼쪽 소개 영역 */
 export const FeatureInfo = styled.div`
+  position: relative;
+  z-index: 2;
   display: flex;
   flex-direction: column;
   justify-content: center;
-  position: relative;
-  z-index: 1;
-  padding: clamp(34px, 4vw, 58px) clamp(28px, 4vw, 52px);
-  background: linear-gradient(135deg, rgba(255,255,255,.76), rgba(255,250,236,.46));
+  padding: clamp(36px, 4vw, 62px) clamp(24px, 3vw, 44px);
+  background: linear-gradient(115deg, rgba(255,254,250,.88), rgba(255,250,236,.38));
 
-  @media (max-width: 768px) {
-    padding: 36px 24px;
+  &::after {
+    content: "MOVIEMEMO / VOL. 01";
+    position: absolute;
+    left: clamp(24px, 3vw, 44px);
+    bottom: 24px;
+    color: rgba(81,76,64,.55);
+    font: 700 9px/1.2 ui-monospace, SFMono-Regular, Menlo, monospace;
+    letter-spacing: .18em;
   }
+
+  @media (max-width: 760px) { padding: 42px 26px 64px; }
 `;
 
-/* 상단 작은 문구 */
 export const Eyebrow = styled.span`
-  display: block;
+  display: inline-flex;
+  align-items: center;
+  gap: 9px;
   width: fit-content;
-  margin-bottom: 18px;
-  padding: 7px 11px;
+  margin-bottom: 22px;
+  padding: 9px 13px;
   color: var(--momo-accent-ink);
-  background: var(--momo-accent-soft);
-  border: 1px solid rgba(214, 166, 20, .22);
-  border-radius: var(--momo-radius-pill);
-  font-size: 12px;
-  font-weight: 800;
-  letter-spacing: 0.15em;
+  background: rgba(255,212,59,.22);
+  border: 1px solid rgba(214,166,20,.28);
+  border-radius: 6px 14px 14px 6px;
+  font: 800 10px/1 ui-monospace, SFMono-Regular, Menlo, monospace;
+  letter-spacing: .13em;
   text-transform: uppercase;
+
+  &::before { content: ""; width: 6px; height: 6px; border-radius: 50%; background: var(--momo-accent-ink); }
 `;
 
-/* 메인 제목 */
 export const FeatureTitle = styled.h1`
   margin: 0;
-  font-size: clamp(36px, 4.6vw, 64px);
-  line-height: 1.12;
-  letter-spacing: -0.04em;
-  font-weight: 800;
   color: var(--momo-text);
+  font-size: clamp(34px, 4.25vw, 62px);
+  font-weight: 850;
+  line-height: 1.08;
+  letter-spacing: -.065em;
   word-break: keep-all;
+
+  & + & { margin-top: 4px; color: #8B6A16; }
 `;
 
-/* 메인 설명 */
 export const FeatureDescription = styled.p`
-  margin: 20px 0 0;
-  color: var(--momo-muted);
-  max-width: 34rem;
-  font-size: 15px;
-  line-height: 1.85;
+  max-width: 30rem;
+  margin: 22px 0 0;
+  color: var(--momo-text-soft);
+  font-size: 14px;
+  line-height: 1.9;
   word-break: keep-all;
 `;
 
-/* 오늘의 추천작 배너 영역 */
 export const FeatureVisual = styled.div`
   position: relative;
-  width: 100%;
-  height: 100%;
   min-width: 0;
-  min-height: 440px;
-  overflow: hidden;
-  background: #E9E1D2;
+  min-height: 520px;
+  overflow: visible;
+  background: #292820;
 
-  /* 추천작 컴포넌트 전체 */
   .recommend-banner {
     position: absolute;
-    inset: 0;
-    width: 100%;
-    height: 100%;
-    min-height: 100%;
+    inset: 22px 22px 22px -30px;
+    width: auto;
+    height: auto;
+    min-height: 0;
     overflow: hidden;
-    border-radius: 0;
+    border: 8px solid rgba(255,254,250,.92);
+    border-radius: 5px;
+    background: #292820;
+    box-shadow: 0 28px 56px rgba(32,26,15,.28), 0 0 0 1px rgba(41,40,32,.12);
+    transform: rotate(1.7deg);
+    transition: transform .55s cubic-bezier(.2,.7,.2,1), box-shadow .55s ease;
   }
 
-  /* 영화 포스터 */
+  .recommend-banner::after {
+    content: "MOMO SELECT";
+    position: absolute;
+    z-index: 4;
+    top: 16px;
+    right: 16px;
+    padding: 7px 9px;
+    color: #292820;
+    background: rgba(255,250,236,.88);
+    border: 1px solid rgba(255,255,255,.7);
+    border-radius: 3px;
+    font: 800 9px/1 ui-monospace, monospace;
+    letter-spacing: .16em;
+  }
+
   .recommend-poster {
     position: absolute;
     inset: 0;
     width: 100%;
     height: 100%;
-    min-height: 100%;
-    display: block;
     object-fit: cover;
-    object-position: center 25%;
-    transition: transform 0.6s ease;
+    object-position: center 24%;
+    filter: saturate(.86) contrast(1.04);
+    transition: transform .8s cubic-bezier(.2,.7,.2,1), filter .5s ease;
   }
 
-  /* 배너 어두운 오버레이 */
   .recommend-overlay {
     position: absolute;
     inset: 0;
     z-index: 1;
-    background: linear-gradient(
-      90deg,
-      rgba(15, 14, 12, 0.88) 0%,
-      rgba(15, 14, 12, 0.55) 55%,
-      rgba(15, 14, 12, 0.15) 100%
-    );
+    background:
+      linear-gradient(0deg, rgba(16,14,10,.88) 0%, rgba(16,14,10,.35) 42%, rgba(16,14,10,.04) 75%),
+      linear-gradient(90deg, rgba(16,14,10,.28), transparent 70%);
   }
 
-  /* 추천 영화 정보 */
   .recommend-content {
     position: absolute;
     z-index: 2;
-    left: 40px;
-    bottom: 44px;
-    width: calc(100% - 80px);
-    color: var(--momo-surface);
+    left: 30px;
+    right: 26px;
+    bottom: 30px;
+    width: auto;
+    color: white;
   }
 
-  /* 오늘의 추천작 레이블 - 쨍한 노랑을 빼고 차분한 크림 옐로우로 고정 */
   .recommend-label {
-    display: inline-block;
-    margin-bottom: 8px;
-    padding: 6px 12px;
-    border-radius: 6px;
-    background: var(--momo-note-strong);
-    color: var(--momo-accent-ink);
-    border: 1px solid var(--momo-note-border);
-    font-size: 12px;
-    font-weight: 800;
-    letter-spacing: 0.02em;
-    box-shadow: 0 2px 6px rgba(0, 0, 0, 0.15);
+    display: inline-flex;
+    margin-bottom: 12px;
+    padding: 7px 10px;
+    border: 1px solid rgba(255,250,236,.42);
+    border-radius: 3px;
+    background: rgba(255,250,236,.92);
+    color: #594400;
+    font: 800 10px/1 ui-monospace, monospace;
+    letter-spacing: .12em;
   }
 
-  .recommend-title {
-    margin: 0;
-    font-size: clamp(26px, 3.2vw, 40px);
-    font-weight: 800;
-    line-height: 1.25;
-    letter-spacing: -0.03em;
-    word-break: keep-all;
-  }
-
-  .recommend-info {
-    margin: 8px 0 14px;
-    color: rgba(255, 255, 255, 0.8);
-    font-size: 14px;
-  }
-
-  /* 오늘의 추천작 버튼 - 쨍한 노랑을 빼고 차분한 크림 옐로우로 고정 */
+  .recommend-title { font-size: clamp(24px, 2.7vw, 38px); line-height: 1.15; letter-spacing: -.04em; }
+  .recommend-info { margin: 9px 0 14px; color: rgba(255,255,255,.78); font-size: 12px; }
   .recommend-button {
-    padding: 11px 20px;
-    border: 1px solid var(--momo-note-border);
-    background: var(--momo-note-strong);
-    color: var(--momo-accent-ink);
-    font-size: 13px;
-    font-weight: 800;
-    border-radius: 8px;
+    min-height: 42px;
+    padding: 0 17px;
+    border: 1px solid rgba(255,255,255,.4);
+    border-radius: 4px;
+    color: #292820;
+    background: #FFD43B;
+    font-size: 12px;
+    font-weight: 850;
     cursor: pointer;
-    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
-    transition: all 0.2s ease;
+    transition: transform .2s ease, background .2s ease;
   }
+  .recommend-button:hover { transform: translateY(-2px); background: #FFE27A; }
+  .recommend-state { position: absolute; inset: 0; display: grid; place-items: center; background: #E9E1D2; color: #514C40; }
 
-  .recommend-button:hover {
-    filter: brightness(0.95);
-    transform: translateY(-1px);
-  }
+  &:hover .recommend-banner { transform: rotate(0deg) translateY(-4px); box-shadow: 0 36px 68px rgba(32,26,15,.34); }
+  &:hover .recommend-poster { transform: scale(1.045); filter: saturate(1); }
 
-  /* 로딩 및 오류 화면 */
-  .recommend-state {
-    position: absolute;
-    inset: 0;
-    z-index: 3;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    width: 100%;
-    height: 100%;
-    background: var(--momo-bg);
-    color: var(--momo-muted);
-    font-size: 14px;
-    font-weight: 600;
-  }
-
-  /* 포스터 확대 효과 */
-  &:hover .recommend-poster {
-    transform: scale(1.025);
-  }
-
-  /* 모바일 */
-  @media (max-width: 768px) {
-    min-height: 340px;
-    height: 340px;
-
-    .recommend-content {
-      left: 24px;
-      bottom: 28px;
-      width: calc(100% - 48px);
-    }
-
-    .recommend-title {
-      font-size: 26px;
-    }
+  @media (max-width: 760px) {
+    min-height: 360px;
+    height: 360px;
+    .recommend-banner { inset: 14px 16px 20px; transform: rotate(.6deg); border-width: 6px; }
+    .recommend-content { left: 20px; right: 18px; bottom: 22px; }
   }
 `;
 
-/* 공통 섹션 */
 export const Section = styled.section`
   min-width: 0;
   margin: 0;
-
-  @media (max-width: 768px) {
-    margin: 0;
-  }
 `;
 
-/* 섹션 제목 영역 */
 export const SectionHeading = styled.div`
   display: flex;
+  align-items: flex-end;
   justify-content: space-between;
-  align-items: end;
-  gap: 20px;
-  margin-bottom: 22px;
-  padding-bottom: 16px;
-  border-bottom: 1px solid var(--momo-border);
+  gap: 14px;
+  margin-bottom: 18px;
 
-  h2 {
-    margin: 0;
-    font-size: clamp(22px, 2.5vw, 30px);
-    letter-spacing: -0.04em;
-    font-weight: 800;
-    color: var(--momo-text);
-  }
-
-  p {
-    margin: 6px 0 0;
-    color: var(--momo-muted);
-    font-size: 13px;
-  }
+  h2 { margin: 0; color: var(--momo-text); font-size: clamp(19px, 1.8vw, 25px); font-weight: 850; letter-spacing: -.05em; }
+  p { margin: 6px 0 0; color: var(--momo-muted); font-size: 12px; line-height: 1.5; }
+  &::after { content: "↗"; flex: 0 0 auto; color: rgba(118,90,10,.45); font-size: 17px; }
 `;
 
-/* 섹션 우측 설명 */
 export const MoreText = styled.span`
   color: var(--momo-muted);
-  font-size: 13px;
+  font: 700 9px/1.4 ui-monospace, monospace;
+  letter-spacing: .12em;
+  text-transform: uppercase;
   white-space: nowrap;
 `;
 
-/* 박스오피스 영화 목록 */
 export const MovieGrid = styled.div`
   display: grid;
   grid-template-columns: repeat(5, minmax(0, 1fr));
-  gap: 26px 18px;
+  gap: 24px 16px;
 
-  @media (max-width: 1000px) {
-    grid-template-columns: repeat(4, minmax(0, 1fr));
-  }
-
-  @media (max-width: 700px) {
-    grid-template-columns: repeat(3, minmax(0, 1fr));
-    gap: 20px 12px;
-  }
-
-  @media (max-width: 430px) {
-    grid-template-columns: repeat(2, minmax(0, 1fr));
-  }
+  @media (max-width: 1000px) { grid-template-columns: repeat(4, minmax(0, 1fr)); }
+  @media (max-width: 700px) { grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 18px 11px; }
+  @media (max-width: 430px) { grid-template-columns: repeat(2, minmax(0, 1fr)); }
 `;
 
-/* 영화 카드 */
 export const MovieCard = styled.div`
+  position: relative;
   min-width: 0;
   cursor: pointer;
+  transform-style: preserve-3d;
+  transition: transform .35s cubic-bezier(.2,.7,.2,1);
 
-  &:hover img {
-    transform: scale(1.035);
-  }
-
-  &:focus-visible {
-    outline: 2px solid var(--momo-link);
-    outline-offset: 5px;
-  }
+  &:hover { transform: translateY(-7px) rotateX(1.5deg); }
+  &:focus-visible { outline: 2px solid var(--momo-link); outline-offset: 5px; border-radius: 10px; }
+  &:hover img { transform: scale(1.055); }
 `;
 
-/* 영화 포스터 영역 */
 export const PosterWrap = styled.div`
   position: relative;
   width: 100%;
   aspect-ratio: 2 / 2.85;
   overflow: hidden;
-  background: var(--momo-note);
-  border-radius: 16px;
-  border: 1px solid var(--momo-border);
-  box-shadow: var(--momo-shadow-xs);
-  transition: border-color .2s ease, box-shadow .2s ease;
+  background: #E9E1D2;
+  border: 1px solid rgba(255,255,255,.9);
+  border-radius: 7px;
+  box-shadow: 0 9px 20px rgba(54,45,28,.11), 0 2px 5px rgba(54,45,28,.06);
+  transition: box-shadow .35s ease, border-color .35s ease;
 
-  img {
-    width: 100%;
-    height: 100%;
-    display: block;
-    object-fit: cover;
-    transition: transform 0.45s cubic-bezier(.2,.7,.2,1);
+  &::after {
+    content: "";
+    position: absolute;
+    inset: 0;
+    pointer-events: none;
+    border: 1px solid rgba(255,255,255,.12);
+    background: linear-gradient(145deg, rgba(255,255,255,.13), transparent 32%, transparent 72%, rgba(20,16,8,.12));
   }
 
-  &:hover {
-    border-color: var(--momo-border-strong);
-    box-shadow: var(--momo-shadow-sm);
-  }
+  img { width: 100%; height: 100%; display: block; object-fit: cover; transition: transform .6s cubic-bezier(.2,.7,.2,1); }
+  &:hover { box-shadow: 0 20px 34px rgba(54,45,28,.18); }
 `;
 
-/* 영화 순위 */
 export const Rank = styled.span`
   position: absolute;
-  left: 12px;
+  z-index: 2;
+  left: 10px;
   bottom: 8px;
-  color: var(--momo-surface);
-  font-size: 32px;
-  line-height: 1;
-  font-weight: 900;
-  font-style: italic;
-  text-shadow: 0 2px 8px rgba(0, 0, 0, 0.65);
+  color: white;
+  font: italic 900 clamp(28px, 3vw, 42px)/1 Georgia, serif;
+  text-shadow: 0 2px 12px rgba(0,0,0,.72);
 `;
 
-/* 영화 제목 및 개봉일 */
 export const MovieInfo = styled.div`
-  padding-top: 12px;
-
-  h3 {
-    margin: 0;
-    overflow: hidden;
-    color: var(--momo-text);
-    font-size: 15px;
-    font-weight: 750;
-    letter-spacing: -0.02em;
-    text-overflow: ellipsis;
-    white-space: nowrap;
-  }
-
-  p {
-    margin: 6px 0 0;
-    color: var(--momo-muted);
-    font-size: 12px;
-  }
+  padding: 10px 2px 0;
+  h3 { margin: 0; overflow: hidden; color: var(--momo-text); font-size: 13px; font-weight: 800; letter-spacing: -.025em; text-overflow: ellipsis; white-space: nowrap; }
+  p { margin: 5px 0 0; color: var(--momo-muted); font: 10px/1.4 ui-monospace, monospace; }
 `;
 
-/* 장르 목록 */
 export const GenreList = styled.div`
-  display: flex;
-  flex-wrap: wrap;
-  gap: 10px;
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 8px;
 
   button {
-    padding: 12px 18px;
-    border: 1px solid var(--momo-border);
-    border-radius: 999px;
-    background: var(--momo-surface);
-    color: var(--momo-text-soft);
-    font-size: 14px;
-    font-weight: 600;
+    position: relative;
+    min-height: 48px;
+    padding: 10px 13px;
+    overflow: hidden;
+    border: 1px solid rgba(229,222,209,.92);
+    border-radius: 5px 14px 5px 14px;
+    color: var(--momo-text);
+    background: linear-gradient(135deg, rgba(255,255,255,.94), rgba(255,250,236,.76));
+    font-size: 12px;
+    font-weight: 800;
+    text-align: left;
     cursor: pointer;
-    box-shadow: 0 2px 5px rgba(50, 44, 32, 0.02);
-    transition: all 0.2s ease;
+    transition: transform .22s ease, background .22s ease, box-shadow .22s ease;
   }
-
-  button:hover {
-    border-color: var(--momo-link);
-    background: var(--momo-accent);
-    color: var(--momo-accent-ink);
-  }
+  button::after { content: "↗"; position: absolute; right: 12px; top: 50%; transform: translateY(-50%); color: rgba(118,90,10,.55); }
+  button:hover { transform: translateY(-3px); background: #FFD43B; box-shadow: 0 8px 18px rgba(54,45,28,.1); }
 `;
 
-/* MOMO 브랜드 소개 */
 export const BrandLine = styled.div`
+  position: relative;
   display: flex;
   align-items: center;
   justify-content: space-between;
   gap: 24px;
-  padding: 28px 30px;
-  background: linear-gradient(110deg, var(--momo-note), rgba(255,255,255,.72));
-  border: 1px solid var(--momo-note-border);
-  border-radius: var(--momo-radius-lg);
+  min-height: 132px;
+  padding: 28px clamp(24px, 4vw, 54px);
+  overflow: hidden;
+  border: 1px solid rgba(255,255,255,.78);
+  border-radius: 22px;
+  background:
+    radial-gradient(circle at 85% 40%, rgba(255,212,59,.35), transparent 18rem),
+    repeating-linear-gradient(90deg, rgba(81,76,64,.035) 0 1px, transparent 1px 6px),
+    linear-gradient(115deg, #292820, #514C40);
+  box-shadow: 0 22px 46px rgba(41,40,32,.16);
+  color: #FFFAEC;
 
-  h2 {
-    margin: 0;
-    font-size: clamp(20px, 3vw, 26px);
-    letter-spacing: -0.04em;
-    font-weight: 800;
-    color: var(--momo-text);
-  }
-
-  p {
-    margin: 6px 0 0;
-    color: var(--momo-muted);
-    font-size: 13px;
-  }
-
-  @media (max-width: 600px) {
-    align-items: flex-start;
-    flex-direction: column;
-  }
+  &::after { content: "M"; position: absolute; right: 5%; bottom: -95px; color: rgba(255,212,59,.13); font: 700 230px/.8 Georgia,serif; pointer-events: none; }
+  h2 { position: relative; z-index: 1; margin: 0; color: #FFFAEC; font-size: clamp(20px, 2.6vw, 30px); letter-spacing: -.05em; }
+  p { position: relative; z-index: 1; margin: 8px 0 0; color: rgba(255,250,236,.68); font-size: 12px; }
+  @media (max-width: 600px) { align-items: flex-start; flex-direction: column; }
 `;
 
-/* 포스터가 없는 경우 */
 export const EmptyPoster = styled.div`
   display: flex;
   width: 100%;
