@@ -139,8 +139,8 @@ const MomoMaterialSystemStyles = createGlobalStyle`
     background: var(--momo-glass-button);
     color: #3D4941;
     box-shadow: 0 2px 5px rgba(34,42,37,.045), 0 7px 16px rgba(34,42,37,.065), inset 0 1px 0 rgba(255,255,255,.98);
-    -webkit-backdrop-filter: blur(20px) saturate(175%);
-    backdrop-filter: blur(20px) saturate(175%);
+    -webkit-backdrop-filter: blur(24px) saturate(180%);
+    backdrop-filter: blur(24px) saturate(180%);
     transition: color var(--momo-motion-material), background var(--momo-motion-material), border-color var(--momo-motion-material), box-shadow var(--momo-motion-material), transform var(--momo-motion-press);
   }
   #root .momo-app-header button:hover:not(:disabled) {
@@ -631,6 +631,81 @@ const MomoMaterialSystemStyles = createGlobalStyle`
     box-shadow: 0 6px 16px rgba(34,42,37,.05), inset 0 1px rgba(255,255,255,.96);
     -webkit-backdrop-filter: blur(22px) saturate(155%);
     backdrop-filter: blur(22px) saturate(155%);
+  }
+
+  /* Sub-430px: cast and crew remain a two-column gallery, never collapse to one stack. */
+  @media (max-width: 430px) {
+    #root .momo-app-main .movie-detail-page .detail-content-section.people-section .people-list.people-list-compact {
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      gap: 8px;
+    }
+  }
+
+  /* Empty list states are glass panels, not dashed paper placeholders. */
+  #root .momo-app-main .all-reviews-state,
+  #root .momo-app-main .my-reviews-state,
+  #root .momo-app-main .liked-reviews-state,
+  #root .momo-app-main .review-detail-state {
+    min-height: 190px;
+    padding: 28px;
+    border: 1px solid rgba(255,255,255,.9);
+    border-radius: 20px;
+    background: linear-gradient(140deg, rgba(255,255,255,.62), rgba(234,243,237,.38) 58%, rgba(214,231,220,.24));
+    color: #4B564D;
+    box-shadow: 0 8px 24px rgba(34,42,37,.055), inset 0 1px rgba(255,255,255,.98);
+    -webkit-backdrop-filter: blur(24px) saturate(165%);
+    backdrop-filter: blur(24px) saturate(165%);
+  }
+  #root .momo-app-main .all-reviews-error,
+  #root .momo-app-main .my-reviews-state.error,
+  #root .momo-app-main .liked-reviews-state.error,
+  #root .momo-app-main .review-detail-error {
+    border-color: rgba(255,255,255,.92);
+    background: linear-gradient(140deg, rgba(255,255,255,.68), rgba(248,232,228,.5) 58%, rgba(238,211,205,.26));
+    color: #814E47;
+  }
+  #root .momo-app-main .all-reviews-table-wrap {
+    border: 1px solid rgba(255,255,255,.88);
+    border-radius: 14px;
+    background: linear-gradient(145deg, rgba(255,255,255,.54), rgba(235,243,237,.32));
+    box-shadow: inset 0 1px rgba(255,255,255,.98), 0 7px 18px rgba(34,42,37,.04);
+    -webkit-backdrop-filter: blur(22px) saturate(155%);
+    backdrop-filter: blur(22px) saturate(155%);
+  }
+  #root .momo-app-main .all-reviews-table thead th {
+    border-bottom-color: rgba(255,255,255,.82);
+    background: rgba(219,234,224,.48);
+    color: #405348;
+  }
+  #root .momo-app-main .all-reviews-table tbody tr,
+  #root .momo-app-main .all-reviews-table tbody tr:nth-child(even) {
+    background: rgba(255,255,255,.22);
+  }
+  #root .momo-app-main .all-reviews-table tbody tr:hover {
+    background: rgba(192,220,201,.28);
+  }
+  #root .momo-app-main .all-reviews-table td {
+    border-bottom-color: rgba(255,255,255,.68);
+    color: #465248;
+  }
+  #root .momo-app-main .my-review-item,
+  #root .momo-app-main .liked-review-item,
+  #root .momo-app-main .all-reviews-mobile-item {
+    border-bottom-color: rgba(255,255,255,.72);
+    background: linear-gradient(145deg, rgba(255,255,255,.48), rgba(233,242,236,.26));
+  }
+  #root .momo-app-main .my-review-item:hover,
+  #root .momo-app-main .liked-review-item:hover,
+  #root .momo-app-main .all-reviews-mobile-item:hover {
+    background: linear-gradient(145deg, rgba(255,255,255,.72), rgba(218,236,224,.48));
+  }
+  #root .momo-app-main .all-reviews-page-info,
+  #root .momo-app-main .my-reviews-card-heading > span,
+  #root .momo-app-main .liked-reviews-toolbar > span {
+    border-color: rgba(255,255,255,.92);
+    background: linear-gradient(145deg, rgba(255,255,255,.68), rgba(223,238,227,.42));
+    color: #45574A;
+    box-shadow: inset 0 1px rgba(255,255,255,.98);
   }
 
   /* Footer is a quiet translucent panel, not a graph-paper memo. */
