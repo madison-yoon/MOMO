@@ -86,7 +86,7 @@ const SearchInput = styled.input`
   &::placeholder { color: #6A6251; }
 `;
 
-const MovieGrid = styled.div`
+const MovieGrid = styled.div.attrs({ className: "search-movie-grid" })`
   display: grid;
   grid-template-columns: repeat(5, minmax(0, 1fr));
   gap: 23px 18px;
@@ -96,7 +96,7 @@ const MovieGrid = styled.div`
   @media (max-width: 480px) { grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 16px 10px; }
 `;
 
-const MovieCard = styled.div`
+const MovieCard = styled.div.attrs({ className: "search-movie-card" })`
   position: relative;
   min-width: 0;
   padding: 7px 7px 11px;
@@ -123,7 +123,7 @@ const MovieCard = styled.div`
   @media (prefers-reduced-motion: reduce) { animation: none; transition-duration: .01ms; }
 `;
 
-const Poster = styled.div`
+const Poster = styled.div.attrs({ className: "search-poster-frame" })`
   position: relative;
   width: 100%;
   aspect-ratio: 2 / 2.86;
