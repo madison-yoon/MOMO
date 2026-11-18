@@ -1,16 +1,16 @@
 import { createGlobalStyle } from "styled-components";
 
-// MOMO 원본 브랜드 팔레트: 웜 크림, 메모지 아이보리, 형광펜 옐로
+// MOMO palette: cool mineral surfaces with a warm highlighter accent
 const GlobalTokensStyles = createGlobalStyle`
   :root {
     color-scheme: light;
 
-    /* Paper / memo */
-    --momo-bg: #F5F2EB;
-    --momo-surface: #FFFAEC;
+    /* Neutral canvas and glass surfaces */
+    --momo-bg: #EFF3EF;
+    --momo-surface: #F8FBF8;
     --momo-surface-raised: #FFFEFA;
-    --momo-note: #FFFAEC;
-    --momo-note-strong: #FFF1B2;
+    --momo-note: #EEF4EF;
+    --momo-note-strong: #E3EEE5;
 
     /* Brand accent: MOMO highlighter yellow */
     --momo-accent: #FFD43B;
@@ -26,9 +26,9 @@ const GlobalTokensStyles = createGlobalStyle`
     --momo-link: #715713;
 
     /* Borders and feedback */
-    --momo-border: #E9DFC5;
-    --momo-border-strong: #D8C99F;
-    --momo-note-border: #E9DFC5;
+    --momo-border: #DCE5DD;
+    --momo-border-strong: #C9D7CC;
+    --momo-note-border: #D8E4DA;
     --momo-focus: rgba(198, 161, 43, .45);
     --momo-like-bg: #FFF3C5;
     --momo-like-bg-hover: #FFE99A;
@@ -51,9 +51,9 @@ const GlobalTokensStyles = createGlobalStyle`
     --momo-glass-border: rgba(255, 255, 255, .86);
     --momo-header-glass: rgba(255, 253, 247, .58);
     --momo-glass-clear: rgba(255, 255, 255, .32);
-    --momo-glass-soft: rgba(255, 250, 236, .54);
+    --momo-glass-soft: rgba(238, 245, 240, .48);
     --momo-glass-highlight: rgba(255, 255, 255, .94);
-    --momo-glass-shadow: 0 14px 34px rgba(41,40,32,.075), 0 3px 8px rgba(41,40,32,.035), inset 0 1px rgba(255,255,255,.96), inset 0 -1px rgba(216,201,159,.16);
+    --momo-glass-shadow: 0 14px 34px rgba(34,42,37,.075), 0 3px 8px rgba(34,42,37,.035), inset 0 1px rgba(255,255,255,.96), inset 0 -1px rgba(207,220,210,.16);
     --momo-depth-shadow: 0 16px 34px rgba(41,40,32,.085), 0 4px 10px rgba(41,40,32,.04), inset 0 1px rgba(255,255,255,.96);
 
     /* Layout */
