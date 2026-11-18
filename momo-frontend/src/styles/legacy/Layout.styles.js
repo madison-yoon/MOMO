@@ -196,7 +196,7 @@ const ActionButton = styled.button`
   @media (max-width: 600px) { min-height: 34px; padding: 0 11px; }
 `;
 
-const Main = styled.main`
+const Main = styled.main.attrs({ className: "momo-app-main" })`
   position: relative;
   flex: 1;
   width: 100%;
