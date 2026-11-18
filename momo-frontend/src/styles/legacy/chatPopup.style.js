@@ -24,10 +24,12 @@ export const ChatPanel = styled.section`
   box-sizing: border-box;
   min-width: 0;
   min-height: 0;
-  border: 1px solid var(--momo-border-strong);
-  border-radius: 16px;
-  background: var(--momo-surface-raised);
-  box-shadow: 0 12px 36px rgba(35, 28, 18, 0.22);
+  border: 1px solid rgba(255,255,255,.9);
+  border-radius: 20px;
+  background: linear-gradient(145deg, rgba(255,255,255,.78), rgba(238,246,240,.48) 58%, rgba(220,233,224,.3));
+  box-shadow: 0 18px 48px rgba(34,42,37,.16), inset 0 1px rgba(255,255,255,.98);
+  -webkit-backdrop-filter: blur(30px) saturate(170%);
+  backdrop-filter: blur(30px) saturate(170%);
 
   @media (max-width: 600px) {
     max-width: calc(100vw - 32px);
@@ -40,8 +42,10 @@ export const ChatHeader = styled.header`
   align-items: center;
   justify-content: space-between;
   padding: 13px 14px;
-  color: var(--momo-text);
-  background: var(--momo-note);
+  color: #303B34;
+  background: linear-gradient(140deg, rgba(255,255,255,.76), rgba(231,242,234,.48));
+  border-bottom: 1px solid rgba(255,255,255,.9);
+  box-shadow: inset 0 1px rgba(255,255,255,.98);
   cursor: move;
   user-select: none;
 `;
@@ -70,13 +74,18 @@ export const WindowActions = styled.div`
 export const WindowActionButton = styled.button`
   width: 30px;
   height: 30px;
-  border: 0;
+  border: 1px solid rgba(255,255,255,.92);
   border-radius: 10px;
-  color: var(--momo-surface);
-  background: var(--momo-text-soft);
+  color: #46554A;
+  background: linear-gradient(145deg, rgba(255,255,255,.8), rgba(232,242,235,.46));
+  box-shadow: 0 3px 8px rgba(34,42,37,.045), inset 0 1px rgba(255,255,255,1);
+  -webkit-backdrop-filter: blur(16px) saturate(160%);
+  backdrop-filter: blur(16px) saturate(160%);
   cursor: pointer;
   font-size: 20px;
   line-height: 1;
+  transition: box-shadow 180ms ease, border-color 180ms ease, background 180ms ease;
+  &:hover { border-color: rgba(255,255,255,1); background: rgba(255,255,255,.92); box-shadow: 0 6px 12px rgba(34,42,37,.08), inset 0 1px rgba(255,255,255,1); }
 `;
 
 export const MessageList = styled.div`
@@ -148,8 +157,12 @@ export const MessageBubble = styled.p`
   padding: 9px 12px;
   overflow-wrap: anywhere;
   border-radius: ${({ $isOwn }) => ($isOwn ? "14px 14px 4px 14px" : "14px 14px 14px 4px")};
-  color: ${({ $isOwn, $isDeleted }) => ($isDeleted ? "var(--momo-muted)" : $isOwn ? "var(--momo-surface-raised)" : "var(--momo-text)")};
-  background: ${({ $isOwn, $isDeleted }) => ($isDeleted ? "var(--momo-note)" : $isOwn ? "var(--momo-text-soft)" : "var(--momo-note)")};
+  color: ${({ $isDeleted }) => ($isDeleted ? "#777D73" : "#344139")};
+  background: ${({ $isOwn, $isDeleted }) => ($isDeleted ? "rgba(235,239,234,.52)" : $isOwn ? "linear-gradient(140deg, rgba(255,255,255,.82), rgba(218,235,222,.5))" : "linear-gradient(140deg, rgba(255,255,255,.82), rgba(241,246,242,.5))")};
+  border: 1px solid rgba(255,255,255,.84);
+  box-shadow: 0 3px 8px rgba(34,42,37,.035), inset 0 1px rgba(255,255,255,.96);
+  -webkit-backdrop-filter: blur(14px) saturate(150%);
+  backdrop-filter: blur(14px) saturate(150%);
   line-height: 1.45;
   white-space: pre-wrap;
   font-style: ${({ $isDeleted }) => ($isDeleted ? "italic" : "normal")};
@@ -197,10 +210,13 @@ export const ImageModalContent = styled.img`
 export const ImageUploadButton = styled.button`
   flex: 0 0 auto;
   padding: 9px 10px;
-  border: 1px solid var(--momo-border-strong);
+  border: 1px solid rgba(255,255,255,.9);
   border-radius: 10px;
-  color: var(--momo-text-soft);
-  background: var(--momo-note);
+  color: #46554A;
+  background: linear-gradient(145deg, rgba(255,255,255,.8), rgba(232,242,235,.46));
+  box-shadow: 0 3px 8px rgba(34,42,37,.045), inset 0 1px rgba(255,255,255,.98);
+  -webkit-backdrop-filter: blur(18px) saturate(165%);
+  backdrop-filter: blur(18px) saturate(165%);
   cursor: pointer;
 
   &:disabled {
@@ -217,10 +233,13 @@ export const SecondaryButton = styled.button`
   width: 100%;
   margin-bottom: 10px;
   padding: 8px;
-  border: 0;
+  border: 1px solid rgba(255,255,255,.9);
   border-radius: 9px;
-  color: var(--momo-text-soft);
-  background: var(--momo-border);
+  color: #46554A;
+  background: linear-gradient(145deg, rgba(255,255,255,.76), rgba(235,243,237,.44));
+  box-shadow: 0 3px 8px rgba(34,42,37,.04), inset 0 1px rgba(255,255,255,.98);
+  -webkit-backdrop-filter: blur(18px) saturate(160%);
+  backdrop-filter: blur(18px) saturate(160%);
   cursor: pointer;
 `;
 
@@ -237,7 +256,8 @@ export const MessageForm = styled.form`
   min-height: 58px;
   box-sizing: border-box;
   padding: 12px;
-  border-top: 1px solid var(--momo-border);
+  border-top: 1px solid rgba(255,255,255,.84);
+  background: rgba(246,249,246,.36);
 `;
 
 export const MessageInput = styled.input`
@@ -250,10 +270,13 @@ export const MessageInput = styled.input`
 
 export const SendButton = styled.button`
   padding: 9px 12px;
-  border: 0;
+  border: 1px solid rgba(255,255,255,.94);
   border-radius: 10px;
-  color: var(--momo-surface);
-  background: var(--momo-text-soft);
+  color: #4D421F;
+  background: linear-gradient(140deg, rgba(255,255,255,.82), rgba(255,231,151,.6) 48%, rgba(255,212,59,.32));
+  box-shadow: 0 4px 10px rgba(92,76,29,.08), inset 0 1px rgba(255,255,255,.98);
+  -webkit-backdrop-filter: blur(18px) saturate(165%);
+  backdrop-filter: blur(18px) saturate(165%);
   cursor: pointer;
 
   &:disabled {
@@ -312,11 +335,16 @@ export const ChatLauncher = styled.button`
   bottom: 20px;
   z-index: 1001;
   padding: 13px 18px;
-  border: 0;
+  border: 1px solid rgba(255,255,255,.92);
   border-radius: 24px;
-  color: var(--momo-surface);
-  background: var(--momo-text-soft);
+  color: #3D4C41;
+  background: linear-gradient(145deg, rgba(255,255,255,.82), rgba(224,239,228,.48) 58%, rgba(210,228,215,.34));
+  box-shadow: 0 8px 20px rgba(34,42,37,.12), inset 0 1px rgba(255,255,255,1);
+  -webkit-backdrop-filter: blur(24px) saturate(175%);
+  backdrop-filter: blur(24px) saturate(175%);
   cursor: pointer;
+  transition: box-shadow 200ms ease, border-color 200ms ease, background 200ms ease;
+  &:hover { border-color: rgba(255,255,255,1); background: linear-gradient(145deg, rgba(255,255,255,.94), rgba(221,239,226,.64)); box-shadow: 0 11px 25px rgba(34,42,37,.15), inset 0 1px rgba(255,255,255,1); }
 `;
 
 export const UnreadBadge = styled.span`
