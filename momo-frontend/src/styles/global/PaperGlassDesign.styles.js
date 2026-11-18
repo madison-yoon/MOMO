@@ -1010,10 +1010,10 @@ const PaperGlassDesignStyles = createGlobalStyle`
 
   /* Chat and toast reuse the same glass material without losing contrast. */
   [aria-label="전체 회원 채팅"] {
-    border: 1px solid rgba(255,255,255,.94) !important;
-    border-radius: 19px !important;
-    background: rgba(255,254,249,.91) !important;
-    box-shadow: 0 24px 56px rgba(46,36,21,.2), inset 0 1px rgba(255,255,255,.98) !important;
+    border: 1px solid rgba(255,255,255,.94);
+    border-radius: 19px;
+    background: rgba(255,254,249,.91);
+    box-shadow: 0 24px 56px rgba(46,36,21,.2), inset 0 1px rgba(255,255,255,.98);
     backdrop-filter: blur(24px) saturate(145%);
   }
   .momo-toast {
@@ -1166,10 +1166,10 @@ const PaperGlassDesignStyles = createGlobalStyle`
   }
   @media (prefers-reduced-motion: reduce) {
     *, *::before, *::after {
-      animation-duration: .01ms !important;
-      animation-iteration-count: 1 !important;
-      transition-duration: .01ms !important;
-      scroll-behavior: auto !important;
+      animation-duration: .01ms;
+      animation-iteration-count: 1;
+      transition-duration: .01ms;
+      scroll-behavior: auto;
     }
   }
 `;
