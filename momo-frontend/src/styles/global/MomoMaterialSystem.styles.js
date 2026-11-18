@@ -424,6 +424,251 @@ const MomoMaterialSystemStyles = createGlobalStyle`
     outline: none;
   }
 
+  /* Route canvases: color belongs to the page, not to a yellow paper texture. */
+  #root .home-page {
+    border-radius: 26px;
+    background:
+      radial-gradient(ellipse at 8% 0%, rgba(255,212,59,.13), transparent 36%),
+      radial-gradient(ellipse at 92% 18%, rgba(152,166,139,.12), transparent 42%);
+  }
+  #root .search-page {
+    border-radius: 26px;
+    background:
+      radial-gradient(ellipse at 4% 0%, rgba(128,164,174,.17), transparent 42%),
+      radial-gradient(ellipse at 96% 45%, rgba(170,190,183,.13), transparent 40%);
+  }
+  #root .favorite-page {
+    border-radius: 26px;
+    background:
+      radial-gradient(ellipse at 5% 0%, rgba(117,148,111,.18), transparent 44%),
+      radial-gradient(ellipse at 100% 55%, rgba(191,207,179,.2), transparent 48%);
+  }
+  #root .profile-dashboard,
+  #root .profile-edit-page {
+    border-radius: 26px;
+    background:
+      radial-gradient(ellipse at 0% 0%, rgba(143,169,151,.16), transparent 46%),
+      radial-gradient(ellipse at 100% 38%, rgba(198,211,202,.18), transparent 48%);
+  }
+  #root .movie-detail-page {
+    border-radius: 26px;
+    background:
+      radial-gradient(ellipse at 4% 0%, rgba(117,139,145,.15), transparent 42%),
+      radial-gradient(ellipse at 96% 36%, rgba(196,203,190,.15), transparent 46%);
+  }
+  #root .all-reviews-page,
+  #root .my-reviews-page {
+    border-radius: 26px;
+    background:
+      radial-gradient(ellipse at 4% 0%, rgba(158,166,184,.15), transparent 44%),
+      radial-gradient(ellipse at 96% 34%, rgba(205,190,176,.13), transparent 48%);
+  }
+  #root .liked-reviews-page {
+    border-radius: 26px;
+    background:
+      radial-gradient(ellipse at 4% 0%, rgba(177,133,128,.15), transparent 44%),
+      radial-gradient(ellipse at 96% 34%, rgba(208,179,171,.12), transparent 48%);
+  }
+  #root .review-detail-page {
+    border-radius: 26px;
+    background:
+      radial-gradient(ellipse at 4% 0%, rgba(156,168,184,.15), transparent 44%),
+      radial-gradient(ellipse at 96% 34%, rgba(194,205,197,.14), transparent 48%);
+  }
+
+  /* The primary action is still warm MOMO yellow, but it is a translucent glass object. */
+  #root .favorite-browse-button,
+  #root .all-reviews-search-submit,
+  #root .signup-submit,
+  #root .review-form-actions button,
+  #root .recommend-button,
+  #root .profile-edit-submit,
+  #root .profile-edit-image-save,
+  #root .profile-dashboard-edit,
+  #root .profile-button:not(.profile-button-secondary):not(.profile-delete-button) {
+    position: relative;
+    isolation: isolate;
+    overflow: hidden;
+    border: 1px solid rgba(255,255,255,.94);
+    background:
+      linear-gradient(145deg, rgba(255,255,255,.78), rgba(255,241,190,.62) 48%, rgba(255,212,59,.46));
+    color: #4D401A;
+    box-shadow:
+      0 5px 12px rgba(60,49,20,.09),
+      0 13px 24px rgba(60,49,20,.07),
+      inset 0 1px 0 rgba(255,255,255,.98),
+      inset 0 -1px 0 rgba(196,157,52,.2);
+    -webkit-backdrop-filter: blur(18px) saturate(165%);
+    backdrop-filter: blur(18px) saturate(165%);
+    transition:
+      color var(--momo-motion-material),
+      background var(--momo-motion-material),
+      border-color var(--momo-motion-material),
+      box-shadow var(--momo-motion-material),
+      filter var(--momo-motion-material),
+      transform var(--momo-motion-press);
+  }
+  #root .favorite-browse-button::before,
+  #root .all-reviews-search-submit::before,
+  #root .signup-submit::before,
+  #root .review-form-actions button::before,
+  #root .recommend-button::before,
+  #root .profile-edit-submit::before,
+  #root .profile-edit-image-save::before,
+  #root .profile-dashboard-edit::before,
+  #root .profile-button:not(.profile-button-secondary):not(.profile-delete-button)::before {
+    position: absolute;
+    inset: 1px 12% auto;
+    height: 1px;
+    content: "";
+    background: linear-gradient(90deg, transparent, rgba(255,255,255,1), transparent);
+    pointer-events: none;
+  }
+  #root .favorite-browse-button:hover:not(:disabled),
+  #root .all-reviews-search-submit:hover:not(:disabled),
+  #root .signup-submit:hover:not(:disabled),
+  #root .review-form-actions button:hover:not(:disabled),
+  #root .recommend-button:hover:not(:disabled),
+  #root .profile-edit-submit:hover:not(:disabled),
+  #root .profile-edit-image-save:hover:not(:disabled),
+  #root .profile-dashboard-edit:hover,
+  #root .profile-button:not(.profile-button-secondary):not(.profile-delete-button):hover:not(:disabled) {
+    border-color: rgba(255,255,255,1);
+    background:
+      linear-gradient(145deg, rgba(255,255,255,.92), rgba(255,246,213,.76) 48%, rgba(255,219,95,.58));
+    color: #453811;
+    box-shadow:
+      0 7px 15px rgba(60,49,20,.1),
+      0 17px 28px rgba(60,49,20,.09),
+      inset 0 1px 0 rgba(255,255,255,1),
+      inset 0 -1px 0 rgba(196,157,52,.24);
+    filter: saturate(1.08) brightness(1.02);
+    transform: none;
+  }
+
+  /* Secondary navigation/actions are clear, cool glass rather than flat cream pills. */
+  #root .page-back-link,
+  #root .favorite-back-button,
+  #root .detail-back-button,
+  #root .review-detail-back,
+  #root .all-reviews-search-reset,
+  #root .review-action-button,
+  #root .people-more-button,
+  #root .person-bio-toggle,
+  #root .profile-edit-cancel,
+  #root .profile-image-remove,
+  #root .profile-button-secondary,
+  #root .all-reviews-pagination button,
+  #root .my-reviews-pagination button,
+  #root .liked-reviews-pagination button {
+    position: relative;
+    border: 1px solid rgba(255,255,255,.88);
+    background: linear-gradient(145deg, rgba(255,255,255,.72), rgba(231,239,237,.44));
+    color: #465653;
+    box-shadow:
+      0 4px 10px rgba(37,50,47,.055),
+      inset 0 1px 0 rgba(255,255,255,.98),
+      inset 0 -1px 0 rgba(135,158,151,.13);
+    -webkit-backdrop-filter: blur(18px) saturate(155%);
+    backdrop-filter: blur(18px) saturate(155%);
+  }
+  #root .page-back-link:hover,
+  #root .favorite-back-button:hover,
+  #root .detail-back-button:hover,
+  #root .review-detail-back:hover,
+  #root .all-reviews-search-reset:hover:not(:disabled),
+  #root .review-action-button:hover:not(:disabled),
+  #root .people-more-button:hover:not(:disabled),
+  #root .person-bio-toggle:hover:not(:disabled),
+  #root .profile-edit-cancel:hover:not(:disabled),
+  #root .profile-button-secondary:hover:not(:disabled),
+  #root .all-reviews-pagination button:hover:not(:disabled),
+  #root .my-reviews-pagination button:hover:not(:disabled),
+  #root .liked-reviews-pagination button:hover:not(:disabled) {
+    border-color: rgba(255,255,255,1);
+    background: linear-gradient(145deg, rgba(255,255,255,.9), rgba(229,240,237,.66));
+    color: #314541;
+    box-shadow:
+      0 7px 15px rgba(37,50,47,.085),
+      inset 0 1px 0 rgba(255,255,255,1);
+  }
+
+  /* Like/dislike and delete actions retain distinct meanings inside a glass shell. */
+  #root .movie-detail-page .rating-vote-button.is-like,
+  #root .reaction-button.selected-like,
+  #root .review-like-button,
+  #root .comment-like-button {
+    border: 1px solid rgba(255,255,255,.92);
+    background: linear-gradient(145deg, rgba(255,255,255,.72), rgba(255,242,190,.56));
+    color: #66510F;
+    box-shadow: 0 4px 10px rgba(80,63,20,.055), inset 0 1px rgba(255,255,255,.98);
+    -webkit-backdrop-filter: blur(16px) saturate(155%);
+    backdrop-filter: blur(16px) saturate(155%);
+  }
+  #root .movie-detail-page .rating-vote-button.is-dislike,
+  #root .reaction-button.selected-dislike,
+  #root .review-dislike-button,
+  #root .comment-dislike-button,
+  #root .liked-review-unlike,
+  #root .review-action-button.delete {
+    border: 1px solid rgba(255,255,255,.92);
+    background: linear-gradient(145deg, rgba(255,255,255,.76), rgba(247,229,225,.62));
+    color: #84564F;
+    box-shadow: 0 4px 10px rgba(76,43,39,.055), inset 0 1px rgba(255,255,255,.98);
+    -webkit-backdrop-filter: blur(16px) saturate(155%);
+    backdrop-filter: blur(16px) saturate(155%);
+  }
+  #root .profile-delete-button,
+  #root .profile-page .profile-container .profile-delete-page-card button.profile-button.profile-delete-button:not(:disabled),
+  #root .profile-page .profile-container .profile-delete-page-card button.profile-button.profile-delete-button:not(:disabled):hover {
+    border: 1px solid rgba(255,255,255,.92);
+    background: linear-gradient(145deg, rgba(255,255,255,.78), rgba(248,228,223,.66));
+    color: #813F39;
+    box-shadow: 0 4px 12px rgba(80,42,36,.075), inset 0 1px rgba(255,255,255,.98);
+    -webkit-backdrop-filter: blur(16px) saturate(150%);
+    backdrop-filter: blur(16px) saturate(150%);
+  }
+  #root .profile-delete-button:disabled {
+    border: 1px solid rgba(255,255,255,.82);
+    background: linear-gradient(145deg, rgba(255,255,255,.64), rgba(237,233,224,.5));
+    color: #766E62;
+    box-shadow: inset 0 1px rgba(255,255,255,.94);
+    opacity: .72;
+  }
+
+  /* Film save control: dark optical lens at rest, warm illuminated lens when selected. */
+  #root .favorite-star {
+    border: 1px solid rgba(255,255,255,.74);
+    background: linear-gradient(145deg, rgba(38,43,39,.66), rgba(27,34,31,.42));
+    color: rgba(255,255,255,.96);
+    box-shadow: 0 7px 18px rgba(16,22,19,.2), inset 0 1px 0 rgba(255,255,255,.38);
+    -webkit-backdrop-filter: blur(20px) saturate(165%);
+    backdrop-filter: blur(20px) saturate(165%);
+  }
+  #root .favorite-star.is-active {
+    border-color: rgba(255,255,255,.96);
+    background: linear-gradient(145deg, rgba(255,255,255,.86), rgba(255,225,125,.72) 55%, rgba(255,212,59,.56));
+    color: #4E4019;
+    box-shadow: 0 7px 16px rgba(65,49,13,.16), inset 0 1px 0 rgba(255,255,255,1);
+  }
+
+  /* The profile activity tiles need legible content above their glass highlight layer. */
+  #root .profile-dashboard .profile-activity-item h3,
+  #root .profile-dashboard .profile-activity-count,
+  #root .profile-dashboard .profile-activity-unit,
+  #root .profile-dashboard .profile-activity-number,
+  #root .profile-dashboard .profile-activity-footer p,
+  #root .profile-dashboard .profile-activity-arrow,
+  #root .profile-dashboard .profile-activity-icon {
+    visibility: visible;
+    opacity: 1;
+  }
+  #root .profile-dashboard .profile-activity-body,
+  #root .profile-dashboard .profile-activity-footer {
+    position: relative;
+    z-index: 2;
+  }
+
   @media (prefers-reduced-motion: reduce) {
     #root .momo-app-header *,
     #root .profile-dashboard *,
