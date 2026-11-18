@@ -132,7 +132,7 @@ const PersonDetailStyles = createGlobalStyle`
   }
 
   .movie-detail-page > .detail-content-section > .people-list {
-    grid-template-columns: repeat(auto-fill, minmax(145px, 1fr));
+    grid-template-columns: repeat(2, minmax(0, 1fr));
     gap: 12px;
   }
 
