@@ -49,7 +49,7 @@ const FavoritesAndProfileOverridesStyles = createGlobalStyle`
 
 .favorite-star:hover {
   background: rgba(30, 30, 30, 0.7);
-  transform: scale(1.08);
+  transform: none;
 }
 
 .favorite-star.is-active {
@@ -262,7 +262,8 @@ const FavoritesAndProfileOverridesStyles = createGlobalStyle`
 }
 
 .favorite-page-poster:hover img {
-  transform: scale(1.035);
+  transform: none;
+  filter: saturate(1.04);
 }
 
 .favorite-page-no-poster {
