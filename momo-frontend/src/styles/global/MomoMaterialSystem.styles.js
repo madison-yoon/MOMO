@@ -243,6 +243,9 @@ const MomoMaterialSystemStyles = createGlobalStyle`
   }
 
   #root .home-feature-section {
+    border-color: rgba(255,255,255,.92);
+    -webkit-backdrop-filter: blur(28px) saturate(175%);
+    backdrop-filter: blur(28px) saturate(175%);
     background:
       radial-gradient(ellipse at 8% 0%, rgba(255,255,255,.78), transparent 50%),
       linear-gradient(135deg, rgba(255,255,255,.62), rgba(231,241,234,.32) 56%, rgba(255,255,255,.22));
