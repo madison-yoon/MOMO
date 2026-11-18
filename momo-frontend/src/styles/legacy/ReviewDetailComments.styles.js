@@ -40,7 +40,7 @@ const ReviewDetailCommentsStyles = createGlobalStyle`
 
 .review-detail-card {
   padding: clamp(20px, 3vw, 32px);
-  background: linear-gradient(145deg, var(--momo-surface), var(--momo-surface-raised));
+  background: linear-gradient(140deg, rgba(255,255,255,.7), rgba(241,247,242,.38));
   border: 1px solid var(--momo-border);
   border-radius: var(--momo-radius-lg);
   box-shadow: var(--momo-shadow-sm);
@@ -211,9 +211,9 @@ const ReviewDetailCommentsStyles = createGlobalStyle`
   padding: 20px;
   margin: 20px 0;
 
-  background: var(--momo-note);
-  border: 1px solid var(--momo-note-border);
-  border-radius: 12px;
+  background: linear-gradient(145deg, rgba(255,255,255,.68), rgba(239,246,241,.38));
+  border: 1px solid rgba(255,255,255,.88);
+  border-radius: 15px;
 }
 
 .review-detail-movie-poster {
@@ -327,7 +327,7 @@ const ReviewDetailCommentsStyles = createGlobalStyle`
 
   padding: 26px;
 
-  background: linear-gradient(135deg, var(--momo-note), #FFFDF6);
+  background: linear-gradient(140deg, rgba(255,255,255,.66), rgba(242,247,243,.34));
   border: 1px solid var(--momo-note-border);
   border-radius: 18px;
 
