@@ -28,13 +28,13 @@ const MomoMaterialSystemStyles = createGlobalStyle`
       inset 0 2px 5px rgba(34,42,37,.075),
       inset 0 1px 0 rgba(255,255,255,.88);
     --momo-glass-button:
-      linear-gradient(145deg, rgba(255,255,255,.76), rgba(244,248,245,.42) 54%, rgba(222,232,225,.28)),
+      linear-gradient(145deg, rgba(255,255,255,.58), rgba(229,241,233,.34) 54%, rgba(202,224,210,.24)),
       rgba(255,255,255,.16);
     --momo-glass-button-hover:
       linear-gradient(145deg, rgba(255,255,255,.9), rgba(241,248,243,.58) 54%, rgba(218,232,222,.38)),
       rgba(255,255,255,.2);
     --momo-glass-button-primary:
-      linear-gradient(140deg, rgba(255,255,255,.82), rgba(255,231,151,.64) 48%, rgba(255,212,59,.36)),
+      linear-gradient(140deg, rgba(255,255,255,.66), rgba(255,231,151,.48) 48%, rgba(255,212,59,.26)),
       rgba(255,255,255,.18);
     --momo-glass-button-primary-hover:
       linear-gradient(140deg, rgba(255,255,255,.94), rgba(255,230,132,.72) 48%, rgba(255,212,59,.46)),
@@ -45,65 +45,79 @@ const MomoMaterialSystemStyles = createGlobalStyle`
 
   /* A neutral canvas. Yellow is reserved for actions and selected states. */
   body {
-    background-color: #F5F2EB;
+    background-color: #EEF2EE;
     background-image:
-      radial-gradient(ellipse at 8% 0%, rgba(255,255,255,.86), transparent 46rem),
-      radial-gradient(ellipse at 92% 16%, rgba(183,200,188,.22), transparent 42rem),
-      radial-gradient(ellipse at 8% 88%, rgba(218,211,196,.2), transparent 36rem),
-      linear-gradient(140deg, #F5F3EE 0%, #EEF1EC 54%, #F2EFE8 100%);
+      radial-gradient(ellipse at 8% 0%, rgba(255,255,255,.9), transparent 46rem),
+      radial-gradient(ellipse at 92% 16%, rgba(157,184,165,.25), transparent 42rem),
+      radial-gradient(ellipse at 8% 88%, rgba(188,204,191,.22), transparent 36rem),
+      linear-gradient(140deg, #EEF3EF 0%, #E9F0EB 54%, #EFF3EE 100%);
     background-attachment: fixed;
   }
 
   /* Route-specific colour fields. These sit behind the glass, not on top of it. */
   #root .momo-app-main > .home-page {
     background:
-      radial-gradient(ellipse at 82% 0%, rgba(151,174,159,.22), transparent 35rem),
-      radial-gradient(ellipse at 4% 48%, rgba(220,210,187,.2), transparent 31rem);
+      radial-gradient(ellipse at 84% 2%, rgba(121,163,137,.34), transparent 37rem),
+      radial-gradient(ellipse at 2% 52%, rgba(212,229,214,.62), transparent 32rem),
+      linear-gradient(145deg, rgba(223,238,226,.72), rgba(238,244,235,.54) 58%, rgba(224,235,226,.64));
     border-radius: 26px;
   }
   #root .momo-app-main > .search-page {
     background:
-      radial-gradient(ellipse at 5% 0%, rgba(151,177,181,.23), transparent 34rem),
-      radial-gradient(ellipse at 96% 58%, rgba(199,211,204,.2), transparent 38rem);
+      radial-gradient(ellipse at 5% 0%, rgba(116,166,178,.3), transparent 36rem),
+      radial-gradient(ellipse at 96% 58%, rgba(199,222,225,.56), transparent 38rem),
+      linear-gradient(145deg, rgba(222,239,241,.76), rgba(235,244,242,.54) 58%, rgba(218,235,237,.62));
     border-radius: 26px;
   }
   #root .momo-app-main > .favorite-page {
     background:
-      radial-gradient(ellipse at 4% 0%, rgba(155,176,139,.24), transparent 34rem),
-      radial-gradient(ellipse at 96% 62%, rgba(204,215,194,.19), transparent 40rem);
+      radial-gradient(ellipse at 4% 0%, rgba(130,164,112,.32), transparent 36rem),
+      radial-gradient(ellipse at 96% 62%, rgba(203,224,186,.56), transparent 40rem),
+      linear-gradient(145deg, rgba(227,239,219,.78), rgba(239,245,232,.56) 58%, rgba(223,237,216,.64));
     border-radius: 26px;
   }
   #root .momo-app-main > .movie-detail-page {
     background:
-      radial-gradient(ellipse at 8% 0%, rgba(142,169,158,.21), transparent 36rem),
-      radial-gradient(ellipse at 96% 68%, rgba(201,211,194,.18), transparent 40rem);
+      radial-gradient(ellipse at 8% 0%, rgba(113,157,163,.3), transparent 36rem),
+      radial-gradient(ellipse at 96% 68%, rgba(194,218,213,.5), transparent 40rem),
+      linear-gradient(145deg, rgba(221,237,235,.78), rgba(236,243,237,.54) 58%, rgba(218,232,229,.62));
     border-radius: 26px;
   }
   #root .momo-app-main > .all-reviews-page {
     background:
-      radial-gradient(ellipse at 4% 0%, rgba(191,155,143,.19), transparent 34rem),
-      radial-gradient(ellipse at 96% 60%, rgba(220,204,190,.2), transparent 40rem);
+      radial-gradient(ellipse at 4% 0%, rgba(163,150,180,.28), transparent 36rem),
+      radial-gradient(ellipse at 96% 60%, rgba(218,207,229,.5), transparent 40rem),
+      linear-gradient(145deg, rgba(234,229,241,.76), rgba(243,240,246,.54) 58%, rgba(228,224,239,.62));
     border-radius: 26px;
   }
-  #root .momo-app-main > .my-reviews-page,
+  #root .momo-app-main > .my-reviews-page {
+    background:
+      radial-gradient(ellipse at 4% 0%, rgba(153,168,143,.3), transparent 36rem),
+      radial-gradient(ellipse at 96% 60%, rgba(218,226,204,.5), transparent 40rem),
+      linear-gradient(145deg, rgba(230,237,220,.78), rgba(243,245,235,.54) 58%, rgba(225,235,216,.62));
+    border-radius: 26px;
+  }
   #root .momo-app-main > .liked-reviews-page {
     background:
-      radial-gradient(ellipse at 4% 0%, rgba(183,154,132,.19), transparent 34rem),
-      radial-gradient(ellipse at 96% 60%, rgba(219,207,186,.18), transparent 40rem);
+      radial-gradient(ellipse at 4% 0%, rgba(187,139,145,.28), transparent 36rem),
+      radial-gradient(ellipse at 96% 60%, rgba(230,204,209,.5), transparent 40rem),
+      linear-gradient(145deg, rgba(244,229,232,.76), rgba(248,239,240,.54) 58%, rgba(237,220,225,.62));
     border-radius: 26px;
   }
   #root .momo-app-main > .profile-dashboard,
   #root .momo-app-main > .profile-edit-page,
   #root .momo-app-main > .profile-page {
     background:
-      radial-gradient(ellipse at 6% 0%, rgba(195,176,139,.2), transparent 34rem),
-      radial-gradient(ellipse at 96% 64%, rgba(208,216,199,.18), transparent 40rem);
+      radial-gradient(ellipse at 6% 0%, rgba(140,170,157,.3), transparent 36rem),
+      radial-gradient(ellipse at 96% 64%, rgba(199,220,208,.5), transparent 40rem),
+      linear-gradient(145deg, rgba(225,238,230,.78), rgba(239,245,240,.56) 58%, rgba(216,233,223,.62));
     border-radius: 26px;
   }
   #root .momo-app-main > .review-detail-page {
     background:
-      radial-gradient(ellipse at 4% 0%, rgba(188,152,143,.2), transparent 34rem),
-      radial-gradient(ellipse at 96% 65%, rgba(220,203,192,.18), transparent 40rem);
+      radial-gradient(ellipse at 4% 0%, rgba(130,159,177,.28), transparent 36rem),
+      radial-gradient(ellipse at 96% 65%, rgba(203,220,230,.5), transparent 40rem),
+      linear-gradient(145deg, rgba(225,237,243,.76), rgba(240,245,247,.54) 58%, rgba(216,231,238,.62));
     border-radius: 26px;
   }
   #root .signup-page {
