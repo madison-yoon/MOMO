@@ -12,10 +12,25 @@ const ProfileWorkspaceStyles = createGlobalStyle`
   }
   #root .profile-dashboard .profile-dashboard-container { display: grid; gap: 18px; }
   #root .profile-dashboard .profile-dashboard-heading {
+    position: relative; isolation: isolate;
     display: flex; align-items: flex-end; justify-content: space-between;
-    gap: 24px; min-height: 84px; margin: 0 0 4px; padding: 0 2px 8px;
-    border: 0; background: transparent; box-shadow: none;
+    gap: 24px; min-height: 132px; margin: 0 0 4px;
+    padding: clamp(24px, 3.4vw, 36px);
+    overflow: hidden;
+    border: 1px solid rgba(255,255,255,.94); border-radius: 22px;
+    background:
+      radial-gradient(ellipse at 94% 0%, rgba(255,212,59,.22), transparent 42%),
+      linear-gradient(135deg, rgba(255,255,255,.74), rgba(255,250,236,.48));
+    box-shadow: 0 2px 5px rgba(68,55,27,.035), 0 18px 38px rgba(68,55,27,.09), inset 0 1px rgba(255,255,255,1), inset 0 -1px rgba(216,201,159,.2);
+    backdrop-filter: blur(28px) saturate(150%);
+    -webkit-backdrop-filter: blur(28px) saturate(150%);
   }
+  #root .profile-dashboard .profile-dashboard-heading::before {
+    position: absolute; inset: 0; content: "";
+    background: linear-gradient(112deg, transparent 20%, rgba(255,255,255,.34) 48%, transparent 72%);
+    pointer-events: none;
+  }
+  #root .profile-dashboard .profile-dashboard-heading > * { position: relative; z-index: 1; }
   #root .profile-dashboard .profile-heading-main { min-width: 0; }
   #root .profile-dashboard .profile-heading-eyebrow,
   #root .profile-edit-page .profile-heading-eyebrow {
@@ -48,15 +63,29 @@ const ProfileWorkspaceStyles = createGlobalStyle`
   }
 
   #root .profile-dashboard .profile-card {
-    position: relative; min-width: 0; padding: clamp(22px, 2.8vw, 30px);
-    overflow: hidden; border: 1px solid rgba(233,223,197,.88);
-    border-radius: 20px; background: rgba(255,254,250,.88);
-    box-shadow: 0 12px 32px rgba(75,61,31,.055), inset 0 1px rgba(255,255,255,.98);
-    backdrop-filter: blur(22px) saturate(125%);
-    -webkit-backdrop-filter: blur(22px) saturate(125%);
+    position: relative; isolation: isolate; min-width: 0; padding: clamp(22px, 2.8vw, 30px);
+    overflow: hidden; border: 1px solid rgba(255,255,255,.94);
+    border-radius: 22px;
+    background:
+      radial-gradient(ellipse at 92% 0%, rgba(255,255,255,.76), transparent 46%),
+      linear-gradient(145deg, rgba(255,255,255,.66), rgba(255,250,236,.44) 60%, rgba(255,246,218,.36));
+    box-shadow: 0 2px 5px rgba(75,61,31,.035), 0 18px 38px rgba(75,61,31,.09), 0 30px 60px rgba(75,61,31,.035), inset 0 1px rgba(255,255,255,1), inset 0 -1px rgba(216,201,159,.22);
+    backdrop-filter: blur(28px) saturate(148%);
+    -webkit-backdrop-filter: blur(28px) saturate(148%);
+    transition: transform 240ms cubic-bezier(.2,.72,.2,1), box-shadow 240ms ease, border-color 240ms ease;
   }
-  #root .profile-dashboard .profile-card::before,
-  #root .profile-dashboard .profile-card::after { content: none; display: none; }
+  #root .profile-dashboard .profile-card::before {
+    position: absolute; inset: 0; content: "";
+    border-radius: inherit;
+    background: linear-gradient(118deg, rgba(255,255,255,.46), transparent 30%, transparent 72%, rgba(255,255,255,.16));
+    pointer-events: none;
+  }
+  #root .profile-dashboard .profile-card > * { position: relative; z-index: 1; }
+  #root .profile-dashboard .profile-card:hover {
+    border-color: rgba(214,180,63,.52);
+    box-shadow: 0 5px 10px rgba(75,61,31,.045), 0 25px 48px rgba(75,61,31,.12), inset 0 1px rgba(255,255,255,1);
+    transform: perspective(1200px) translateY(-3px) rotateX(.3deg);
+  }
   #root .profile-dashboard .profile-card-heading {
     display: flex; align-items: flex-start; justify-content: space-between;
     gap: 16px; margin: 0 0 21px;
@@ -133,11 +162,11 @@ const ProfileWorkspaceStyles = createGlobalStyle`
     display: flex; position: relative; isolation: isolate; min-width: 0; min-height: 178px;
     flex-direction: column; align-items: stretch; gap: 0; padding: 17px 18px 14px;
     overflow: hidden; border: 1px solid rgba(233,223,197,.9); border-radius: 15px;
-    background: linear-gradient(155deg, rgba(255,254,250,.96), rgba(255,250,236,.86));
-    box-shadow: 0 5px 16px rgba(75,61,31,.045), inset 0 1px rgba(255,255,255,.98);
+    background: linear-gradient(145deg, rgba(255,255,255,.72), rgba(255,250,236,.48));
+    box-shadow: 0 2px 4px rgba(75,61,31,.04), 0 10px 22px rgba(75,61,31,.08), inset 0 1px rgba(255,255,255,1);
     color: #292820; text-align: left; text-decoration: none;
-    backdrop-filter: blur(18px) saturate(120%);
-    -webkit-backdrop-filter: blur(18px) saturate(120%);
+    backdrop-filter: blur(22px) saturate(148%);
+    -webkit-backdrop-filter: blur(22px) saturate(148%);
     transition: border-color 180ms ease, background 180ms ease, transform 180ms ease, box-shadow 180ms ease;
   }
   #root .profile-dashboard .profile-activity-item::before,
@@ -146,7 +175,7 @@ const ProfileWorkspaceStyles = createGlobalStyle`
     border-color: rgba(214,180,63,.74);
     background: linear-gradient(155deg, #FFFEFA, #FFF8E4);
     box-shadow: 0 11px 22px rgba(75,61,31,.085), inset 0 1px rgba(255,255,255,1);
-    transform: translateY(-3px);
+    transform: perspective(900px) translateY(-4px) rotateX(.45deg);
   }
   #root .profile-dashboard .profile-activity-item:focus-visible {
     outline: 3px solid rgba(198,161,43,.5); outline-offset: 3px;
@@ -249,10 +278,10 @@ const ProfileWorkspaceStyles = createGlobalStyle`
   #root .profile-edit-page .profile-edit-photo-card,
   #root .profile-edit-page .profile-edit-details {
     min-width: 0; border: 1px solid rgba(233,223,197,.9); border-radius: 18px;
-    background: rgba(255,254,250,.9);
-    box-shadow: 0 12px 30px rgba(75,61,31,.055), inset 0 1px rgba(255,255,255,.98);
-    backdrop-filter: blur(22px) saturate(125%);
-    -webkit-backdrop-filter: blur(22px) saturate(125%);
+    background: linear-gradient(145deg, rgba(255,255,255,.72), rgba(255,250,236,.48));
+    box-shadow: 0 2px 5px rgba(75,61,31,.035), 0 16px 34px rgba(75,61,31,.09), inset 0 1px rgba(255,255,255,1);
+    backdrop-filter: blur(28px) saturate(148%);
+    -webkit-backdrop-filter: blur(28px) saturate(148%);
   }
   #root .profile-edit-page .profile-edit-photo-card {
     display: flex; align-items: center; flex-direction: column; padding: 24px 20px 20px;
@@ -406,9 +435,9 @@ const ProfileWorkspaceStyles = createGlobalStyle`
 
   /* Standalone member deletion uses the same account surface. */
   #root .profile-delete-page-card {
-    border: 1px solid rgba(229,184,173,.72); border-radius: 18px;
-    background: rgba(255,254,250,.92);
-    box-shadow: 0 12px 30px rgba(75,61,31,.055), inset 0 1px rgba(255,255,255,.98);
+    border: 1px solid rgba(255,255,255,.9); border-radius: 20px;
+    background: linear-gradient(145deg, rgba(255,255,255,.68), rgba(255,250,236,.52));
+    box-shadow: 0 2px 5px rgba(75,61,31,.035), 0 16px 34px rgba(75,61,31,.09), inset 0 1px rgba(255,255,255,1);
   }
   #root .profile-delete-page-card h2 { color: #292820; font-size: 19px; font-weight: 850; }
   #root .profile-delete-page-card > p { color: #6A6251; line-height: 1.7; }
