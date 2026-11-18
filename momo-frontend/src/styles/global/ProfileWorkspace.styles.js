@@ -45,7 +45,7 @@ const ProfileWorkspaceStyles = createGlobalStyle`
     width: 3px;
     content: "";
     border-radius: 0 3px 3px 0;
-    background: #D6B43F;
+    background: #829A85;
   }
   #root .profile-dashboard .profile-heading-main { position: relative; z-index: 1; min-width: 0; }
   #root .profile-dashboard .profile-heading-eyebrow,
@@ -476,7 +476,7 @@ const ProfileWorkspaceStyles = createGlobalStyle`
     width: 3px;
     content: "";
     border-radius: 0 3px 3px 0;
-    background: #D6B43F;
+    background: #829A85;
     pointer-events: none;
   }
   #root .profile-edit-page .profile-edit-heading::after {
