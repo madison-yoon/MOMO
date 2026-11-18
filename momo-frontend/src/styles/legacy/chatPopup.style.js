@@ -326,7 +326,7 @@ export const ResizeHandle = styled.button`
   }
 `;
 
-export const ChatLauncher = styled.button`
+export const ChatLauncher = styled.button.attrs({ className: "momo-chat-launcher" })`
   display: flex;
   align-items: center;
   gap: 8px;
