@@ -120,6 +120,23 @@ const MomoMaterialSystemStyles = createGlobalStyle`
     -webkit-backdrop-filter: blur(32px) saturate(175%);
     backdrop-filter: blur(32px) saturate(175%);
   }
+  #root .momo-app-header button {
+    border: 1px solid rgba(255,255,255,.9);
+    background: var(--momo-glass-button);
+    color: #3D4941;
+    box-shadow: 0 2px 5px rgba(34,42,37,.045), 0 7px 16px rgba(34,42,37,.065), inset 0 1px 0 rgba(255,255,255,.98);
+    -webkit-backdrop-filter: blur(20px) saturate(175%);
+    backdrop-filter: blur(20px) saturate(175%);
+    transition: color var(--momo-motion-material), background var(--momo-motion-material), border-color var(--momo-motion-material), box-shadow var(--momo-motion-material), transform var(--momo-motion-press);
+  }
+  #root .momo-app-header button:hover:not(:disabled) {
+    border-color: rgba(255,255,255,1);
+    background: var(--momo-glass-button-hover);
+    color: #29382F;
+    box-shadow: var(--momo-glass-depth-hover);
+    transform: none;
+  }
+
   #root .momo-app-header nav a {
     border: 1px solid rgba(255,255,255,.54);
     background: linear-gradient(145deg, rgba(255,255,255,.46), rgba(235,242,237,.18));
@@ -254,7 +271,7 @@ const MomoMaterialSystemStyles = createGlobalStyle`
 
   /* Compact cards also need transparency, a highlight rim and real depth. */
   #root .home-movie-card,
-  #root .search-page .movie-card,
+  #root .search-page .search-movie-card,
   #root .favorite-page-card,
   #root .profile-activity-item,
   #root .my-review-item,
@@ -270,7 +287,7 @@ const MomoMaterialSystemStyles = createGlobalStyle`
     backdrop-filter: blur(22px) saturate(160%);
   }
   #root .home-movie-card:hover,
-  #root .search-page .movie-card:hover,
+  #root .search-page .search-movie-card:hover,
   #root .favorite-page-card:hover,
   #root .profile-activity-item:hover,
   #root .my-review-item:hover,
@@ -286,6 +303,7 @@ const MomoMaterialSystemStyles = createGlobalStyle`
 
   /* Poster frame optics. Images do not jump when hovered. */
   #root .momo-home-poster-frame,
+  #root .search-poster-frame,
   #root .favorite-page-poster,
   #root .movie-detail-poster {
     border: 1px solid rgba(255,255,255,.9);
@@ -308,7 +326,8 @@ const MomoMaterialSystemStyles = createGlobalStyle`
   }
 
   /* One consistent glass treatment for all controls inside every app route. */
-  #root .momo-app-main button {
+  #root .momo-app-main button,
+  #root .signup-page button {
     appearance: none;
     border: 1px solid rgba(255,255,255,.9);
     background: var(--momo-glass-button);
@@ -328,7 +347,8 @@ const MomoMaterialSystemStyles = createGlobalStyle`
       filter var(--momo-motion-material),
       transform var(--momo-motion-press);
   }
-  #root .momo-app-main button:hover:not(:disabled) {
+  #root .momo-app-main button:hover:not(:disabled),
+  #root .signup-page button:hover:not(:disabled) {
     border-color: rgba(255,255,255,1);
     background: var(--momo-glass-button-hover);
     color: #29382F;
@@ -336,7 +356,8 @@ const MomoMaterialSystemStyles = createGlobalStyle`
     filter: saturate(1.1) brightness(1.02);
     transform: none;
   }
-  #root .momo-app-main button:active:not(:disabled) {
+  #root .momo-app-main button:active:not(:disabled),
+  #root .signup-page button:active:not(:disabled) {
     background: linear-gradient(145deg, rgba(234,242,236,.74), rgba(214,228,218,.48));
     box-shadow: var(--momo-glass-depth-active);
     filter: none;
@@ -344,12 +365,14 @@ const MomoMaterialSystemStyles = createGlobalStyle`
     transition-duration: var(--momo-motion-press);
   }
   #root .momo-app-main button:focus-visible,
+  #root .signup-page button:focus-visible,
   #root .momo-app-header button:focus-visible,
   #root .momo-app-header a:focus-visible {
     outline: 3px solid rgba(94,125,104,.56);
     outline-offset: 3px;
   }
-  #root .momo-app-main button:disabled {
+  #root .momo-app-main button:disabled,
+  #root .signup-page button:disabled {
     opacity: .58;
     cursor: not-allowed;
     filter: saturate(.72);
@@ -363,7 +386,8 @@ const MomoMaterialSystemStyles = createGlobalStyle`
   #root .momo-app-main .recommend-button,
   #root .momo-app-main .profile-edit-submit,
   #root .momo-app-main .profile-edit-image-save,
-  #root .momo-app-main .home-favorites-more {
+  #root .momo-app-main .home-favorites-more,
+  #root .signup-page .signup-submit {
     border: 1px solid rgba(255,255,255,.94);
     background: var(--momo-glass-button-primary);
     color: #4D421F;
@@ -378,11 +402,34 @@ const MomoMaterialSystemStyles = createGlobalStyle`
   #root .momo-app-main .recommend-button:hover:not(:disabled),
   #root .momo-app-main .profile-edit-submit:hover:not(:disabled),
   #root .momo-app-main .profile-edit-image-save:hover:not(:disabled),
-  #root .momo-app-main .home-favorites-more:hover:not(:disabled) {
+  #root .momo-app-main .home-favorites-more:hover:not(:disabled),
+  #root .signup-page .signup-submit:hover:not(:disabled) {
     border-color: rgba(255,255,255,1);
     background: var(--momo-glass-button-primary-hover);
     box-shadow: 0 6px 12px rgba(92,76,29,.085), 0 15px 27px rgba(92,76,29,.12), inset 0 1px 0 rgba(255,255,255,1);
     color: #3F3519;
+  }
+
+  /* Text-link controls have the same refractive surface as buttons. */
+  #root .momo-app-main .page-back-link,
+  #root .momo-app-main .detail-back-button,
+  #root .momo-app-main .favorite-back-button,
+  #root .momo-app-main .review-detail-back {
+    border: 1px solid rgba(255,255,255,.9);
+    border-radius: 999px;
+    background: var(--momo-glass-button);
+    color: #465148;
+    box-shadow: 0 3px 8px rgba(34,42,37,.045), 0 7px 15px rgba(34,42,37,.055), inset 0 1px rgba(255,255,255,.98);
+    -webkit-backdrop-filter: blur(20px) saturate(170%);
+    backdrop-filter: blur(20px) saturate(170%);
+  }
+  #root .momo-app-main .page-back-link:hover,
+  #root .momo-app-main .detail-back-button:hover,
+  #root .momo-app-main .favorite-back-button:hover,
+  #root .momo-app-main .review-detail-back:hover {
+    border-color: rgba(255,255,255,1);
+    background: var(--momo-glass-button-hover);
+    box-shadow: var(--momo-glass-depth-hover);
   }
 
   /* Selected, destructive and saved states use tinted glass without hiding depth. */
