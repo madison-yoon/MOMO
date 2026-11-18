@@ -207,7 +207,7 @@ const Main = styled.main.attrs({ className: "momo-app-main" })`
   @media (max-width: 600px) { padding-top: 22px; padding-bottom: 48px; }
 `;
 
-const Footer = styled.footer`
+const Footer = styled.footer.attrs({ className: "momo-app-footer" })`
   position: relative;
   width: 100%;
   padding: 42px var(--momo-page-gutter) 24px;
