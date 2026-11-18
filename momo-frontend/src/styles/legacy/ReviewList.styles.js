@@ -288,7 +288,7 @@ const ReviewListStyles = createGlobalStyle`
 .review-author-cell,
 .review-date-cell {
   color: var(--momo-muted);
-  font-size: 12px !important;
+  font-size: 12px;
 }
 
 .all-reviews-table tbody tr {
