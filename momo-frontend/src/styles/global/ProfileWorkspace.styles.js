@@ -169,8 +169,13 @@ const ProfileWorkspaceStyles = createGlobalStyle`
     -webkit-backdrop-filter: blur(22px) saturate(148%);
     transition: border-color 180ms ease, background 180ms ease, transform 180ms ease, box-shadow 180ms ease;
   }
-  #root .profile-dashboard .profile-activity-item::before,
-  #root .profile-dashboard .profile-activity-item::after { content: none; display: none; }
+  #root .profile-dashboard .profile-activity-item::before {
+    position: absolute; inset: 0; content: "";
+    border-radius: inherit;
+    background: linear-gradient(118deg, rgba(255,255,255,.42), transparent 42%, transparent 76%, rgba(255,255,255,.12));
+    pointer-events: none;
+  }
+  #root .profile-dashboard .profile-activity-item > * { position: relative; z-index: 1; }
   #root .profile-dashboard .profile-activity-item:hover {
     border-color: rgba(214,180,63,.74);
     background: linear-gradient(155deg, #FFFEFA, #FFF8E4);
@@ -259,12 +264,22 @@ const ProfileWorkspaceStyles = createGlobalStyle`
   }
   #root .profile-edit-page .profile-container { display: grid; gap: 18px; }
   #root .profile-edit-page .profile-edit-heading {
-    position: relative; isolation: auto; display: block; min-height: 0;
-    margin: 0 0 4px; padding: 0 2px 8px; overflow: visible;
-    border: 0; border-radius: 0; background: transparent; box-shadow: none;
+    position: relative; isolation: isolate; display: block; min-height: 132px;
+    margin: 0 0 4px; padding: clamp(24px, 3.4vw, 36px); overflow: hidden;
+    border: 1px solid rgba(255,255,255,.94); border-radius: 22px;
+    background:
+      radial-gradient(ellipse at 94% 0%, rgba(255,212,59,.2), transparent 42%),
+      linear-gradient(135deg, rgba(255,255,255,.74), rgba(255,250,236,.48));
+    box-shadow: 0 2px 5px rgba(68,55,27,.035), 0 18px 38px rgba(68,55,27,.09), inset 0 1px rgba(255,255,255,1), inset 0 -1px rgba(216,201,159,.2);
+    backdrop-filter: blur(28px) saturate(150%);
+    -webkit-backdrop-filter: blur(28px) saturate(150%);
   }
-  #root .profile-edit-page .profile-edit-heading::before,
-  #root .profile-edit-page .profile-edit-heading::after { content: none; display: none; }
+  #root .profile-edit-page .profile-edit-heading::before {
+    position: absolute; inset: 0; content: "";
+    background: linear-gradient(112deg, transparent 20%, rgba(255,255,255,.34) 48%, transparent 72%);
+    pointer-events: none;
+  }
+  #root .profile-edit-page .profile-edit-heading > * { position: relative; z-index: 1; }
   #root .profile-edit-page .profile-edit-card {
     position: relative; padding: 0; overflow: visible; border: 0; border-radius: 0;
     background: transparent; box-shadow: none; backdrop-filter: none; -webkit-backdrop-filter: none;
