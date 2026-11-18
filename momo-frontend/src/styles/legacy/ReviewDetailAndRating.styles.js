@@ -162,9 +162,9 @@ const ReviewDetailAndRatingStyles = createGlobalStyle`
   min-height: 180px;
   padding: 28px;
   margin: 0;
-  background: var(--momo-note);
-  border: 1px solid var(--momo-note-border);
-  border-radius: 10px;
+  background: linear-gradient(140deg, rgba(255,255,255,.64), rgba(242,247,243,.34));
+  border: 1px solid rgba(255,255,255,.88);
+  border-radius: 14px;
   color: var(--momo-text);
   font-size: 15px;
   line-height: 2.05;
@@ -242,9 +242,12 @@ const ReviewDetailAndRatingStyles = createGlobalStyle`
   gap: 14px;
   margin-top: 18px;
   padding: 20px;
-  background: var(--momo-note);
-  border: 1px solid var(--momo-note-border);
-  border-radius: 10px;
+  background: linear-gradient(140deg, rgba(255,255,255,.68), rgba(241,247,242,.38));
+  border: 1px solid rgba(255,255,255,.88);
+  border-radius: 16px;
+  box-shadow: 0 8px 20px rgba(34,42,37,.055), inset 0 1px rgba(255,255,255,.98);
+  -webkit-backdrop-filter: blur(22px) saturate(155%);
+  backdrop-filter: blur(22px) saturate(155%);
 }
 
 .rating-label {
