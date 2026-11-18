@@ -204,7 +204,7 @@ const PaperGlassDetailPolishStyles = createGlobalStyle`
     border-top: 1px dashed rgba(158,139,103,.42);
   }
   #root .profile-page .profile-activity-footer p {
-    display: block !important;
+    display: block;
     margin: 0;
     color: #655B4B;
     font-size: 11px;
@@ -766,8 +766,8 @@ const PaperGlassDetailPolishStyles = createGlobalStyle`
     #root .profile-page .profile-activity-arrow,
     #root .favorite-star,
     #root .recommend-content .recommend-label {
-      animation: none !important;
-      transition: none !important;
+      animation: none;
+      transition: none;
     }
   }
 `;
