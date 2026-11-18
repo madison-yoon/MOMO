@@ -62,6 +62,24 @@ test("회원가입, 로그인, 로그아웃이 브라우저에서 이어진다",
   expect(homeHeroMaterial.background).toContain("linear-gradient");
   expect(homeHeroMaterial.blur).toContain("blur(28px)");
   expect(homeHeroMaterial.border).toBe("rgba(255, 255, 255, 0.92)");
+  const appMain = page.locator("main.momo-app-main");
+  await expect(appMain).toBeVisible();
+  const homePrimary = page.locator(".home-feature-visual .recommend-button").first();
+  await expect(homePrimary).toBeVisible();
+  const primaryGlass = await homePrimary.evaluate((element) => {
+    const style = getComputedStyle(element);
+    return { image: style.backgroundImage, border: style.borderColor, blur: style.backdropFilter };
+  });
+  expect(primaryGlass.image).toContain("linear-gradient");
+  expect(primaryGlass.border).toBe("rgba(255, 255, 255, 0.94)");
+  expect(primaryGlass.blur).toContain("blur(22px)");
+  const headerSearch = await page.locator(".momo-app-header .momo-search-button").evaluate((element) => {
+    const style = getComputedStyle(element);
+    return { image: style.backgroundImage, border: style.borderColor, blur: style.backdropFilter };
+  });
+  expect(headerSearch.image).toContain("linear-gradient");
+  expect(headerSearch.border).toBe("rgba(255, 255, 255, 0.9)");
+  expect(headerSearch.blur).toContain("blur(20px)");
   await page.screenshot({ path: "test-results/home-cinema-desktop.png", fullPage: true });
   await page.setViewportSize({ width: 390, height: 844 });
   const mobileHomeColumns = await homeHero.evaluate(
@@ -104,7 +122,7 @@ test("회원가입, 로그인, 로그아웃이 브라우저에서 이어진다",
     });
     expect(visual.background).toContain("linear-gradient");
     expect(visual.blur).toContain("blur(26px)");
-    expect(visual.border).toBe("rgba(233, 223, 197, 0.9)");
+    expect(visual.border).toBe("rgba(255, 255, 255, 0.9)");
     expect(visual.title).toBe("rgb(41, 40, 32)");
 
     const routeSurface = page.locator(route.surface).first();
@@ -137,6 +155,12 @@ test("회원가입, 로그인, 로그아웃이 브라우저에서 이어진다",
   await page.goto("/profile");
   const profileActivityCards = page.locator(".profile-activity-item");
   await expect(profileActivityCards).toHaveCount(3);
+  for (let index = 0; index < 3; index += 1) {
+    await expect(profileActivityCards.nth(index).locator("h3")).toBeVisible();
+    await expect(profileActivityCards.nth(index).locator(".profile-activity-count")).toBeVisible();
+    await expect(profileActivityCards.nth(index).locator(".profile-activity-icon svg")).toBeVisible();
+    await expect(profileActivityCards.nth(index).locator(".profile-activity-footer p")).toBeVisible();
+  }
   await expect(profileActivityCards.nth(0).locator(".profile-activity-count-row")).toBeVisible();
   await expect(profileActivityCards.nth(1).locator(".profile-activity-footer")).toBeVisible();
   await expect(profileActivityCards.nth(2).getByRole("heading", { name: "관심 영화" })).toBeVisible();
@@ -147,7 +171,8 @@ test("회원가입, 로그인, 로그아웃이 브라우저에서 이어진다",
     return { background: style.backgroundColor, image: style.backgroundImage };
   });
   expect(dashboardCanvas.background).toBe("rgba(0, 0, 0, 0)");
-  expect(dashboardCanvas.image).toBe("none");
+  expect(dashboardCanvas.image).toContain("radial-gradient");
+  expect(dashboardCanvas.image).not.toContain("repeating-linear-gradient");
 
   const overviewSurface = await page.locator(".profile-overview-card").evaluate((element) => {
     const style = getComputedStyle(element);
@@ -188,7 +213,7 @@ test("회원가입, 로그인, 로그아웃이 브라우저에서 이어진다",
       leftBorder: style.borderLeftColor,
     };
   });
-  expect(activityGlass.blur).toContain("blur(24px)");
+  expect(activityGlass.blur).toContain("blur(22px)");
   expect(activityGlass.background).toContain("linear-gradient");
   expect(activityGlass.background).not.toContain("repeating-linear-gradient");
   expect(activityGlass.radius).toBe("15px");
@@ -238,11 +263,12 @@ test("회원가입, 로그인, 로그아웃이 브라우저에서 이어진다",
   // Logout stays visually secondary; footer text remains readable on the warm paper surface.
   const logoutStyle = await page.getByRole("button", { name: "로그아웃" }).evaluate((element) => {
     const style = getComputedStyle(element);
-    return { background: style.backgroundColor, border: style.borderColor, color: style.color };
+    return { background: style.backgroundColor, image: style.backgroundImage, border: style.borderColor, color: style.color, blur: style.backdropFilter };
   });
-  expect(logoutStyle.background).toBe("rgba(255, 254, 250, 0.34)");
-  expect(logoutStyle.border).toBe("rgba(216, 201, 159, 0.58)");
-  expect(logoutStyle.color).toBe("rgb(106, 98, 81)");
+  expect(logoutStyle.image).toContain("linear-gradient");
+  expect(logoutStyle.border).toBe("rgba(255, 255, 255, 0.9)");
+  expect(logoutStyle.color).toBe("rgb(61, 73, 65)");
+  expect(logoutStyle.blur).toContain("blur(20px)");
 
   const footerStyle = await page.locator("footer").evaluate((element) => {
     const style = getComputedStyle(element);
@@ -274,17 +300,19 @@ test("회원가입, 로그인, 로그아웃이 브라우저에서 이어진다",
     const style = getComputedStyle(element);
     return { background: style.backgroundColor, color: style.color };
   });
-  expect(disabledDeleteStyle.background).toBe("rgb(241, 234, 223)");
-  expect(disabledDeleteStyle.color).toBe("rgb(119, 111, 98)");
+  expect(disabledDeleteStyle.background).toBe("rgba(0, 0, 0, 0)");
+  expect(disabledDeleteStyle.color).toBe("rgb(140, 81, 73)");
   await page.locator(".profile-delete-check input").check();
   await expect(deleteButton).toBeEnabled();
   const enabledDeleteStyle = await deleteButton.evaluate((element) => {
     const style = getComputedStyle(element);
-    return { disabled: element.disabled, background: style.backgroundColor, color: style.color };
+    return { disabled: element.disabled, background: style.backgroundColor, image: style.backgroundImage, color: style.color, blur: style.backdropFilter };
   });
   expect(enabledDeleteStyle.disabled).toBe(false);
-  expect(enabledDeleteStyle.background).toBe("rgb(255, 241, 236)");
-  expect(enabledDeleteStyle.color).toBe("rgb(140, 63, 56)");
+  expect(enabledDeleteStyle.background).toBe("rgba(0, 0, 0, 0)");
+  expect(enabledDeleteStyle.image).toContain("linear-gradient");
+  expect(enabledDeleteStyle.color).toBe("rgb(140, 81, 73)");
+  expect(enabledDeleteStyle.blur).toContain("blur(20px)");
   await page.screenshot({
     path: "test-results/profile-delete-desktop.png",
     fullPage: true,
@@ -314,7 +342,7 @@ test("회원가입, 로그인, 로그아웃이 브라우저에서 이어진다",
     return { background: style.backgroundColor, image: style.backgroundImage };
   });
   expect(profileEditCanvas.background).toBe("rgba(0, 0, 0, 0)");
-  expect(profileEditCanvas.image).toBe("none");
+  expect(profileEditCanvas.image).toContain("radial-gradient");
 
   const brandTokens = await page.evaluate(() => {
     const root = getComputedStyle(document.documentElement);
@@ -382,9 +410,11 @@ test("회원가입, 로그인, 로그아웃이 브라우저에서 이어진다",
     const style = getComputedStyle(element);
     return { background: style.backgroundColor, color: style.color, radius: style.borderRadius };
   });
-  expect(saveButton.background).toBe("rgb(255, 212, 59)");
-  expect(saveButton.color).toBe("rgb(41, 40, 32)");
+  expect(saveButton.background).toBe("rgba(0, 0, 0, 0)");
+  expect(saveButton.color).toBe("rgb(77, 66, 31)");
   expect(saveButton.radius).toBe("10px");
+  const saveGlass = await page.locator(".profile-edit-submit").evaluate((element) => getComputedStyle(element).backdropFilter);
+  expect(saveGlass).toContain("blur(22px)");
 
   // 입력 필드에 포커스를 주며 바뀐 스크롤 위치를 초기화해 sticky nav와 제목이 겹치지 않는지 확인한다.
   await page.evaluate(() => window.scrollTo(0, 0));
@@ -470,7 +500,7 @@ test("회원가입, 로그인, 로그아웃이 브라우저에서 이어진다",
     };
   });
   expect(favoriteHeroGlass.blur).toContain("blur(26px)");
-  expect(favoriteHeroGlass.background).not.toContain("radial-gradient");
+  expect(favoriteHeroGlass.background).toContain("linear-gradient");
   expect(favoriteHeroGlass.radius).toBe("22px");
   const favoritePageBackground = await page.locator(".favorite-page").evaluate((element) => {
     const style = getComputedStyle(element);
@@ -481,7 +511,7 @@ test("회원가입, 로그인, 로그아웃이 브라우저에서 이어진다",
     const style = getComputedStyle(element);
     return { blur: style.backdropFilter, background: style.backgroundImage };
   });
-  expect(favoriteGlassCard.blur).toContain("blur(24px)");
+  expect(favoriteGlassCard.blur).toContain("blur(22px)");
   expect(favoriteGlassCard.background).toContain("linear-gradient");
 
   const favoriteCardStyle = await page.locator(".favorite-page-card").evaluate((element) => {
@@ -491,7 +521,7 @@ test("회원가입, 로그인, 로그아웃이 브라우저에서 이어진다",
   });
   expect(favoriteCardStyle.background).toBe("rgba(0, 0, 0, 0)");
   expect(favoriteCardStyle.backgroundImage).toContain("linear-gradient");
-  expect(favoriteCardStyle.border).toBe("rgb(233, 223, 197)");
+  expect(favoriteCardStyle.border).toBe("rgba(255, 255, 255, 0.84)");
   expect(favoriteCardStyle.title).toBe("rgb(41, 40, 32)");
   await page.screenshot({
     path: "test-results/favorite-gallery-desktop.png",
@@ -511,6 +541,13 @@ test("회원가입, 로그인, 로그아웃이 브라우저에서 이어진다",
     response.ok(),
   );
   await expect(page.getByRole("button", { name: "관심 영화 해제" }).locator(".favorite-film-ticket-icon")).toBeVisible();
+  const savedFilmGlass = await page.getByRole("button", { name: "관심 영화 해제" }).evaluate((element) => {
+    const style = getComputedStyle(element);
+    return { image: style.backgroundImage, blur: style.backdropFilter, border: style.borderColor };
+  });
+  expect(savedFilmGlass.image).toContain("linear-gradient");
+  expect(savedFilmGlass.blur).toContain("blur(20px)");
+  expect(savedFilmGlass.border).toContain("255");
   await page.getByRole("button", { name: "관심 영화 해제" }).click();
   await favoriteDelete;
   await expect(page.getByText("아직 등록한 관심 영화가 없습니다.")).toBeVisible();
@@ -652,7 +689,7 @@ test("인물 ID와 필모그래피 영화 ID가 통합 영화 상세로 정확�
     return { background: style.backgroundImage, border: style.borderTopColor };
   });
   expect(personHeroStyle.background).toContain("linear-gradient");
-  expect(personHeroStyle.border).toBe("rgba(255, 255, 255, 0.88)");
+  expect(personHeroStyle.border).toBe("rgba(255, 255, 255, 0.9)");
   await page.screenshot({ path: "test-results/route-person-detail-mobile.png", fullPage: true });
   await page.setViewportSize({ width: 1280, height: 900 });
   await page.screenshot({ path: "test-results/route-person-detail-desktop.png", fullPage: true });
@@ -694,7 +731,7 @@ test("인물 ID와 필모그래피 영화 ID가 통합 영화 상세로 정확�
     return { background: style.backgroundImage, border: style.borderTopColor };
   });
   expect(movieHeroStyle.background).toContain("linear-gradient");
-  expect(movieHeroStyle.border).toBe("rgba(255, 255, 255, 0.88)");
+  expect(movieHeroStyle.border).toBe("rgba(255, 255, 255, 0.9)");
   await page.screenshot({ path: "test-results/route-movie-detail-mobile.png", fullPage: true });
   await page.setViewportSize({ width: 1280, height: 900 });
   await page.screenshot({ path: "test-results/route-movie-detail-desktop.png", fullPage: true });
@@ -750,14 +787,14 @@ test("인물 ID와 필모그래피 영화 ID가 통합 영화 상세로 정확�
     };
   });
   expect(ratingVisual.panelBackground).toBe("rgba(0, 0, 0, 0)");
-  expect(ratingVisual.panelBorder).toBe("rgba(255, 255, 255, 0.82)");
+  expect(ratingVisual.panelBorder).toBe("rgba(255, 255, 255, 0.9)");
   expect(ratingVisual.title).toBe("rgb(41, 40, 32)");
   expect(ratingVisual.score).toBe("rgb(41, 40, 32)");
   expect(ratingVisual.progress).toContain("linear-gradient");
-  expect(ratingVisual.likeBackground).toBe("rgb(255, 243, 197)");
+  expect(ratingVisual.likeBackground).toBe("rgba(0, 0, 0, 0)");
   expect(ratingVisual.likeText).toBe("rgb(102, 81, 15)");
-  expect(ratingVisual.dislikeBackground).toBe("rgb(255, 241, 236)");
-  expect(ratingVisual.dislikeText).toBe("rgb(139, 79, 71)");
+  expect(ratingVisual.dislikeBackground).toBe("rgba(0, 0, 0, 0)");
+  expect(ratingVisual.dislikeText).toBe("rgb(132, 86, 79)");
   expect(ratingVisual.height).toBeGreaterThan(240);
   expect(ratingVisual.contentWidth).toBeGreaterThan(ratingVisual.panelContentWidth * 0.95);
   await page.screenshot({
