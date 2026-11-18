@@ -523,6 +523,38 @@ const MomoMaterialSystemStyles = createGlobalStyle`
     box-shadow: 0 5px 15px rgba(67,53,22,.16), inset 0 1px rgba(255,255,255,1);
   }
 
+  /* Rating and review reactions keep their semantic tint, with glass translucency. */
+  #root .momo-app-main .movie-detail-page .rating-vote-button.is-like,
+  #root .momo-app-main .review-detail-page .review-like-button,
+  #root .momo-app-main .review-detail-page .comment-like-button {
+    border: 1px solid rgba(255,255,255,.94);
+    background: linear-gradient(145deg, rgba(255,255,255,.8), rgba(255,239,184,.54) 58%, rgba(255,212,59,.22));
+    color: #66510F;
+    box-shadow: 0 5px 12px rgba(75,59,16,.06), inset 0 1px 0 rgba(255,255,255,1);
+    -webkit-backdrop-filter: blur(18px) saturate(165%);
+    backdrop-filter: blur(18px) saturate(165%);
+  }
+  #root .momo-app-main .movie-detail-page .rating-vote-button.is-dislike,
+  #root .momo-app-main .review-detail-page .review-dislike-button,
+  #root .momo-app-main .review-detail-page .comment-dislike-button {
+    border: 1px solid rgba(255,255,255,.94);
+    background: linear-gradient(145deg, rgba(255,255,255,.82), rgba(246,228,225,.56) 58%, rgba(228,184,171,.22));
+    color: #84564F;
+    box-shadow: 0 5px 12px rgba(76,43,39,.055), inset 0 1px 0 rgba(255,255,255,1);
+    -webkit-backdrop-filter: blur(18px) saturate(165%);
+    backdrop-filter: blur(18px) saturate(165%);
+  }
+  #root .momo-app-main .rating-vote-button:hover:not(:disabled),
+  #root .momo-app-main .review-like-button:hover:not(:disabled),
+  #root .momo-app-main .review-dislike-button:hover:not(:disabled),
+  #root .momo-app-main .comment-like-button:hover:not(:disabled),
+  #root .momo-app-main .comment-dislike-button:hover:not(:disabled) {
+    border-color: rgba(255,255,255,1);
+    filter: saturate(1.08);
+    box-shadow: 0 8px 16px rgba(50,55,47,.09), inset 0 1px 0 rgba(255,255,255,1);
+    transform: none;
+  }
+
   /* Fields are frosted too; placeholder and typed values remain distinct. */
   #root .momo-app-main input:not([type="checkbox"]):not([type="radio"]),
   #root .momo-app-main textarea,
