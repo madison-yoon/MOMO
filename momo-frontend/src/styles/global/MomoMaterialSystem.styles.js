@@ -14,7 +14,7 @@ const MomoMaterialSystemStyles = createGlobalStyle`
     --momo-glass-edge: rgba(233, 223, 197, .9);
     --momo-glass-edge-warm: rgba(214, 180, 63, .28);
     --momo-glass-surface:
-      linear-gradient(138deg, rgba(255,255,255,.78), rgba(255,250,236,.48) 58%, rgba(255,245,214,.35));
+      linear-gradient(138deg, rgba(255,255,255,.76), rgba(242,247,243,.54) 56%, rgba(226,237,231,.38));
     --momo-glass-depth:
       0 2px 5px rgba(41,40,32,.035),
       0 12px 28px rgba(41,40,32,.075),
@@ -125,7 +125,7 @@ const MomoMaterialSystemStyles = createGlobalStyle`
   }
   #root .movie-detail-page .movie-rating-panel {
     border-color: rgba(255,255,255,.82);
-    background: radial-gradient(ellipse at 8% 0%, rgba(255,255,255,.82), transparent 48%), linear-gradient(140deg, rgba(255,255,255,.74), rgba(255,250,236,.5));
+    background: radial-gradient(ellipse at 8% 0%, rgba(255,255,255,.82), transparent 48%), linear-gradient(140deg, rgba(255,255,255,.7), rgba(239,246,243,.52));
   }
   #root .profile-edit-page .profile-edit-photo-card {
     backdrop-filter: blur(24px) saturate(145%);
@@ -669,6 +669,172 @@ const MomoMaterialSystemStyles = createGlobalStyle`
     z-index: 2;
   }
 
+  /* Every page control uses a translucent shell; semantic variants are layered below it. */
+  #root .home-page button,
+  #root .search-page button,
+  #root .favorite-page button,
+  #root .profile-dashboard button,
+  #root .profile-edit-page button,
+  #root .profile-page button,
+  #root .movie-detail-page button,
+  #root .all-reviews-page button,
+  #root .my-reviews-page button,
+  #root .liked-reviews-page button,
+  #root .review-detail-page button,
+  #root .signup-page button {
+    border-color: rgba(255,255,255,.9);
+    background: linear-gradient(145deg, rgba(255,255,255,.7), rgba(233,241,237,.48));
+    color: #465653;
+    box-shadow:
+      0 4px 10px rgba(37,50,47,.055),
+      inset 0 1px 0 rgba(255,255,255,.98),
+      inset 0 -1px 0 rgba(135,158,151,.12);
+    -webkit-backdrop-filter: blur(16px) saturate(155%);
+    backdrop-filter: blur(16px) saturate(155%);
+    transition:
+      background var(--momo-motion-material),
+      border-color var(--momo-motion-material),
+      color var(--momo-motion-material),
+      box-shadow var(--momo-motion-material),
+      filter var(--momo-motion-material);
+  }
+  #root .home-page button:hover:not(:disabled),
+  #root .search-page button:hover:not(:disabled),
+  #root .favorite-page button:hover:not(:disabled),
+  #root .profile-dashboard button:hover:not(:disabled),
+  #root .profile-edit-page button:hover:not(:disabled),
+  #root .profile-page button:hover:not(:disabled),
+  #root .movie-detail-page button:hover:not(:disabled),
+  #root .all-reviews-page button:hover:not(:disabled),
+  #root .my-reviews-page button:hover:not(:disabled),
+  #root .liked-reviews-page button:hover:not(:disabled),
+  #root .review-detail-page button:hover:not(:disabled),
+  #root .signup-page button:hover:not(:disabled) {
+    border-color: rgba(255,255,255,1);
+    background: linear-gradient(145deg, rgba(255,255,255,.9), rgba(231,241,236,.66));
+    color: #314541;
+    box-shadow:
+      0 7px 15px rgba(37,50,47,.085),
+      inset 0 1px 0 rgba(255,255,255,1),
+      inset 0 -1px 0 rgba(135,158,151,.14);
+    filter: saturate(1.06);
+    transform: none;
+  }
+
+  /* Primary actions intentionally glow warm; they remain translucent and refractive. */
+  #root .favorite-page .favorite-browse-button,
+  #root .all-reviews-page .all-reviews-search-submit,
+  #root .signup-page .signup-submit,
+  #root .movie-detail-page .recommend-button,
+  #root .movie-detail-page .movie-review-button,
+  #root .movie-detail-page .movie-like-button,
+  #root .profile-edit-page .profile-edit-submit,
+  #root .profile-edit-page .profile-edit-image-save,
+  #root .profile-dashboard .profile-dashboard-edit,
+  #root .profile-edit-page .profile-button:not(.profile-button-secondary):not(.profile-delete-button),
+  #root .profile-page .profile-button:not(.profile-button-secondary):not(.profile-delete-button),
+  #root .movie-detail-page .review-form-actions button {
+    border: 1px solid rgba(255,255,255,.94);
+    background: linear-gradient(145deg, rgba(255,255,255,.8), rgba(255,242,193,.66) 48%, rgba(255,212,59,.48));
+    color: #4D401A;
+    box-shadow:
+      0 5px 12px rgba(60,49,20,.09),
+      0 13px 24px rgba(60,49,20,.07),
+      inset 0 1px 0 rgba(255,255,255,.98),
+      inset 0 -1px 0 rgba(196,157,52,.2);
+    -webkit-backdrop-filter: blur(18px) saturate(165%);
+    backdrop-filter: blur(18px) saturate(165%);
+  }
+  #root .favorite-page .favorite-browse-button:hover:not(:disabled),
+  #root .all-reviews-page .all-reviews-search-submit:hover:not(:disabled),
+  #root .signup-page .signup-submit:hover:not(:disabled),
+  #root .movie-detail-page .recommend-button:hover:not(:disabled),
+  #root .movie-detail-page .movie-review-button:hover:not(:disabled),
+  #root .movie-detail-page .movie-like-button:hover:not(:disabled),
+  #root .profile-edit-page .profile-edit-submit:hover:not(:disabled),
+  #root .profile-edit-page .profile-edit-image-save:hover:not(:disabled),
+  #root .profile-dashboard .profile-dashboard-edit:hover,
+  #root .profile-edit-page .profile-button:not(.profile-button-secondary):not(.profile-delete-button):hover:not(:disabled),
+  #root .profile-page .profile-button:not(.profile-button-secondary):not(.profile-delete-button):hover:not(:disabled),
+  #root .movie-detail-page .review-form-actions button:hover:not(:disabled) {
+    border-color: rgba(255,255,255,1);
+    background: linear-gradient(145deg, rgba(255,255,255,.94), rgba(255,247,218,.8) 48%, rgba(255,219,95,.62));
+    color: #453811;
+    box-shadow:
+      0 8px 17px rgba(60,49,20,.11),
+      0 18px 29px rgba(60,49,20,.085),
+      inset 0 1px 0 rgba(255,255,255,1),
+      inset 0 -1px 0 rgba(196,157,52,.24);
+    filter: saturate(1.08) brightness(1.02);
+    transform: none;
+  }
+
+  /* The review composer is a glass workspace, not a lined memo pad. */
+  #root .movie-detail-page .review-write-section {
+    border-color: rgba(255,255,255,.88);
+    border-radius: 18px;
+    background: linear-gradient(140deg, rgba(255,255,255,.64), rgba(235,243,239,.48));
+    box-shadow: 0 8px 24px rgba(37,50,47,.055), inset 0 1px rgba(255,255,255,.98);
+    -webkit-backdrop-filter: blur(24px) saturate(150%);
+    backdrop-filter: blur(24px) saturate(150%);
+  }
+  #root .movie-detail-page .review-write-toggle {
+    border: 0;
+    border-bottom: 1px solid rgba(255,255,255,.66);
+    border-radius: 17px 17px 0 0;
+    background: linear-gradient(140deg, rgba(255,255,255,.72), rgba(231,240,235,.5));
+    color: #344944;
+  }
+  #root .movie-detail-page .review-write-toggle:hover {
+    background: linear-gradient(140deg, rgba(255,255,255,.88), rgba(226,239,232,.7));
+  }
+  #root .movie-detail-page .review-write-content {
+    border-top-color: rgba(255,255,255,.66);
+  }
+
+  /* Remove the last analog ruled-paper cues from profile rows and review content. */
+  #root .profile-dashboard .profile-user-details {
+    border-top-color: rgba(255,255,255,.72);
+  }
+  #root .profile-dashboard .profile-user-details > div {
+    border-left-color: rgba(255,255,255,.72);
+  }
+  #root .review-detail-page .review-detail-content {
+    background: linear-gradient(145deg, rgba(255,255,255,.52), rgba(238,244,240,.38));
+    border-color: rgba(255,255,255,.78);
+    box-shadow: inset 0 1px rgba(255,255,255,.96);
+    -webkit-backdrop-filter: blur(16px) saturate(140%);
+    backdrop-filter: blur(16px) saturate(140%);
+  }
+
+  /* Profile tiles have a visible hierarchy even in loading/empty data states. */
+  #root .profile-dashboard .profile-activity-item {
+    display: grid;
+    grid-template-rows: auto 1fr auto;
+    min-height: 184px;
+    background: linear-gradient(145deg, rgba(255,255,255,.68), rgba(232,241,235,.44));
+    border-color: rgba(255,255,255,.9);
+    box-shadow:
+      0 6px 14px rgba(37,50,47,.055),
+      0 15px 28px rgba(37,50,47,.045),
+      inset 0 1px rgba(255,255,255,.98);
+  }
+  #root .profile-dashboard .profile-activity-item[data-tone="writing"] {
+    border-left-color: #B99A43;
+    background: linear-gradient(145deg, rgba(255,255,255,.72), rgba(248,240,211,.48));
+  }
+  #root .profile-dashboard .profile-activity-item[data-tone="liked"] {
+    border-left-color: #B98778;
+    background: linear-gradient(145deg, rgba(255,255,255,.72), rgba(245,231,228,.48));
+  }
+  #root .profile-dashboard .profile-activity-item[data-tone="saved"] {
+    border-left-color: #829276;
+    background: linear-gradient(145deg, rgba(255,255,255,.72), rgba(229,239,229,.5));
+  }
+  #root .profile-dashboard .profile-activity-item h3 { display: block; color: #292820; }
+  #root .profile-dashboard .profile-activity-count-row { display: inline-flex; }
+  #root .profile-dashboard .profile-activity-footer { display: flex; }
+  #root .profile-dashboard .profile-activity-footer p { display: block; color: #514C40; }
   @media (prefers-reduced-motion: reduce) {
     #root .momo-app-header *,
     #root .profile-dashboard *,
