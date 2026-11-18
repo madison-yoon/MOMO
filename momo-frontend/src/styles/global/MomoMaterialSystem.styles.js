@@ -341,6 +341,7 @@ const MomoMaterialSystemStyles = createGlobalStyle`
   #root .search-page .search-movie-card,
   #root .favorite-page-card,
   #root .profile-activity-item,
+  #root .momo-app-main .profile-dashboard .profile-activity-item,
   #root .my-review-item,
   #root .liked-review-item,
   #root .all-reviews-mobile-item,
@@ -357,6 +358,7 @@ const MomoMaterialSystemStyles = createGlobalStyle`
   #root .search-page .search-movie-card:hover,
   #root .favorite-page-card:hover,
   #root .profile-activity-item:hover,
+  #root .momo-app-main .profile-dashboard .profile-activity-item:hover,
   #root .my-review-item:hover,
   #root .liked-review-item:hover,
   #root .all-reviews-mobile-item:hover,
@@ -367,6 +369,11 @@ const MomoMaterialSystemStyles = createGlobalStyle`
     filter: saturate(1.045);
     transform: none;
   }
+
+  /* Keep the three profile destinations identifiable above the shared glass border. */
+  #root .momo-app-main .profile-dashboard .profile-reviews-link { border-left-color: #B79C67; }
+  #root .momo-app-main .profile-dashboard .profile-liked-reviews-link { border-left-color: #C18A7E; }
+  #root .momo-app-main .profile-dashboard .profile-favorites-link { border-left-color: #829B87; }
 
   /* Poster frame optics. Images do not jump when hovered. */
   #root .momo-home-poster-frame,
@@ -631,6 +638,31 @@ const MomoMaterialSystemStyles = createGlobalStyle`
     box-shadow: 0 6px 16px rgba(34,42,37,.05), inset 0 1px rgba(255,255,255,.96);
     -webkit-backdrop-filter: blur(22px) saturate(155%);
     backdrop-filter: blur(22px) saturate(155%);
+  }
+
+  /* Preserve the homepage's stronger hero glass above shared surface defaults. */
+  #root .momo-app-main .home-feature-section {
+    border-color: rgba(255,255,255,.92);
+    -webkit-backdrop-filter: blur(28px) saturate(175%);
+    backdrop-filter: blur(28px) saturate(175%);
+  }
+
+  /* Selected reactions remain visibly selected after the shared control treatment. */
+  #root .momo-app-main .movie-detail-page .rating-vote-button.is-like.selected-like,
+  #root .momo-app-main .review-detail-page .review-like-button:is(.selected-like, .active),
+  #root .momo-app-main .review-detail-page .comment-like-button:is(.selected-like, .active) {
+    border-color: rgba(190,162,82,.82);
+    background: linear-gradient(145deg, rgba(255,255,255,.88), rgba(255,228,141,.66) 58%, rgba(255,212,59,.38));
+    color: #5A4815;
+    box-shadow: 0 5px 13px rgba(92,76,29,.11), inset 0 1px rgba(255,255,255,1);
+  }
+  #root .momo-app-main .movie-detail-page .rating-vote-button.is-dislike.selected-dislike,
+  #root .momo-app-main .review-detail-page .review-dislike-button:is(.selected-dislike, .active),
+  #root .momo-app-main .review-detail-page .comment-dislike-button:is(.selected-dislike, .active) {
+    border-color: rgba(190,132,121,.76);
+    background: linear-gradient(145deg, rgba(255,255,255,.88), rgba(247,222,215,.64) 58%, rgba(228,184,171,.34));
+    color: #814F49;
+    box-shadow: 0 5px 13px rgba(97,53,47,.1), inset 0 1px rgba(255,255,255,1);
   }
 
   /* Sub-430px: cast and crew remain a two-column gallery, never collapse to one stack. */
