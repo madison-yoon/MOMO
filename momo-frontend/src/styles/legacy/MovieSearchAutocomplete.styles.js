@@ -18,8 +18,7 @@ const MovieSearchAutocompleteStyles = createGlobalStyle`
     min-height: 44px;
     padding: 6px 16px;
     background:
-      linear-gradient(90deg, transparent 0 16px, rgba(201,117,104,.12) 16px 17px, transparent 17px),
-      linear-gradient(145deg, rgba(255,255,255,.82), rgba(255,250,236,.72));
+      linear-gradient(145deg, rgba(255,255,255,.72), rgba(239,244,240,.38) 54%, rgba(255,255,255,.34));
     border: 1px solid rgba(255,255,255,.96);
     border-radius: 16px;
     box-shadow: 0 7px 18px rgba(54,45,28,.07), inset 0 1px rgba(255,255,255,.98), inset 0 -1px rgba(190,172,135,.12);
