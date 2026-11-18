@@ -89,7 +89,7 @@ test("회원가입, 로그인, 로그아웃이 브라우저에서 이어진다",
   await page.screenshot({ path: "test-results/home-cinema-mobile.png", fullPage: true });
   await page.setViewportSize({ width: 1280, height: 800 });
 
-  // Requested routes must use one shared warm-paper visual system on desktop and mobile.
+  // Each route has a distinct low-saturation color field behind translucent surfaces.
   const brandRoutes = [
     { path: "/profile/reviews", heading: ".my-reviews-heading", surface: ".my-reviews-card" },
     { path: "/profile/liked-reviews", heading: ".liked-reviews-heading", surface: ".liked-reviews-card" },
@@ -260,7 +260,7 @@ test("회원가입, 로그인, 로그아웃이 브라우저에서 이어진다",
   await page.setViewportSize({ width: 1280, height: 800 });
 
 
-  // Logout stays visually secondary; footer text remains readable on the warm paper surface.
+  // Logout stays visually secondary; the footer remains a clean translucent plane.
   const logoutStyle = await page.getByRole("button", { name: "로그아웃" }).evaluate((element) => {
     const style = getComputedStyle(element);
     return { background: style.backgroundColor, image: style.backgroundImage, border: style.borderColor, color: style.color, blur: style.backdropFilter };
@@ -506,7 +506,8 @@ test("회원가입, 로그인, 로그아웃이 브라우저에서 이어진다",
     const style = getComputedStyle(element);
     return { image: style.backgroundImage, color: style.backgroundColor };
   });
-  expect(favoritePageBackground.image).toContain("linear-gradient");
+  expect(favoritePageBackground.image).toContain("radial-gradient");
+  expect(favoritePageBackground.image).not.toContain("repeating-linear-gradient");
   const favoriteGlassCard = await page.locator(".favorite-page-card").evaluate((element) => {
     const style = getComputedStyle(element);
     return { blur: style.backdropFilter, background: style.backgroundImage };
