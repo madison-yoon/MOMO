@@ -25,7 +25,22 @@ const RouteBrandSystemStyles = createGlobalStyle`
     --momo-route-glass: rgba(255, 250, 236, .78);
   }
 
-  /* Canvas and route width */
+  /*
+   * Restore the MOMO graph-paper desk underneath every route.
+   * Route containers stay translucent so the grid remains visible through them.
+   */
+  html, body {
+    min-height: 100%;
+    background-color: var(--momo-route-bg) !important;
+    background-image:
+      linear-gradient(rgba(116, 145, 178, .075) 1px, transparent 1px),
+      linear-gradient(90deg, rgba(116, 145, 178, .075) 1px, transparent 1px),
+      radial-gradient(ellipse at 12% 0%, rgba(255,255,255,.78), transparent 38%),
+      radial-gradient(ellipse at 92% 28%, rgba(255,212,59,.12), transparent 42%) !important;
+    background-size: 32px 32px, 32px 32px, auto, auto !important;
+    background-attachment: fixed !important;
+  }
+
   #root .my-reviews-page,
   #root .liked-reviews-page,
   #root .all-reviews-page,
@@ -35,8 +50,9 @@ const RouteBrandSystemStyles = createGlobalStyle`
     box-sizing: border-box;
     color: var(--momo-route-ink);
     background:
-      radial-gradient(ellipse at 50% 0%, rgba(255,212,59,.105), transparent 38rem),
-      var(--momo-route-bg) !important;
+      radial-gradient(ellipse at 50% 0%, rgba(255,212,59,.11), transparent 38rem),
+      linear-gradient(180deg, rgba(255,250,236,.10), rgba(255,250,236,.025)) !important;
+    background-color: transparent !important;
   }
 
   #root .my-reviews-page,
@@ -81,9 +97,12 @@ const RouteBrandSystemStyles = createGlobalStyle`
     overflow: hidden;
     border: 1px solid var(--momo-route-line) !important;
     border-radius: 20px;
-    background: linear-gradient(125deg, var(--momo-route-white), var(--momo-route-paper)) !important;
-    box-shadow: var(--momo-route-shadow) !important;
-    backdrop-filter: blur(22px) saturate(125%);
+    background:
+      linear-gradient(135deg, rgba(255,255,255,.72), rgba(255,250,236,.58)),
+      rgba(255,250,236,.56) !important;
+    box-shadow: 0 14px 38px rgba(75,61,31,.085), inset 0 1px rgba(255,255,255,.94), inset 0 -1px rgba(216,201,159,.16) !important;
+    backdrop-filter: blur(26px) saturate(138%);
+    -webkit-backdrop-filter: blur(26px) saturate(138%);
     -webkit-backdrop-filter: blur(22px) saturate(125%);
   }
 
@@ -108,8 +127,20 @@ const RouteBrandSystemStyles = createGlobalStyle`
   #root .all-reviews-heading::after,
   #root .favorite-page-heading::after,
   #root .search-page-heading::after {
-    content: none !important;
-    display: none !important;
+    position: absolute;
+    z-index: 0;
+    top: -45%;
+    left: -35%;
+    width: 42%;
+    height: 190%;
+    content: "";
+    display: block;
+    border-radius: 50%;
+    background: linear-gradient(90deg, transparent, rgba(255,255,255,.42), transparent);
+    filter: blur(12px);
+    transform: rotate(18deg);
+    pointer-events: none;
+    opacity: .7;
   }
 
   #root .my-reviews-heading > *,
@@ -167,9 +198,12 @@ const RouteBrandSystemStyles = createGlobalStyle`
     box-sizing: border-box;
     border: 1px solid var(--momo-route-line) !important;
     border-radius: 17px !important;
-    background: var(--momo-route-paper) !important;
-    box-shadow: var(--momo-route-shadow) !important;
-    backdrop-filter: blur(18px) saturate(118%);
+    background:
+      linear-gradient(145deg, rgba(255,255,255,.68), rgba(255,250,236,.56)),
+      rgba(255,250,236,.48) !important;
+    box-shadow: 0 12px 32px rgba(75,61,31,.075), inset 0 1px rgba(255,255,255,.94), inset 0 -1px rgba(216,201,159,.14) !important;
+    backdrop-filter: blur(24px) saturate(132%);
+    -webkit-backdrop-filter: blur(24px) saturate(132%);
     -webkit-backdrop-filter: blur(18px) saturate(118%);
   }
 
@@ -355,8 +389,12 @@ const RouteBrandSystemStyles = createGlobalStyle`
   #root .favorite-page .favorite-page-card:nth-child(3n) {
     border: 1px solid var(--momo-route-line) !important;
     border-radius: 15px !important;
-    background: rgba(255,250,236,.92) !important;
-    box-shadow: 0 10px 24px rgba(75,61,31,.075), inset 0 1px rgba(255,255,255,.96) !important;
+    background:
+      linear-gradient(145deg, rgba(255,255,255,.66), rgba(255,250,236,.54)),
+      rgba(255,250,236,.46) !important;
+    box-shadow: 0 10px 26px rgba(75,61,31,.075), inset 0 1px rgba(255,255,255,.94) !important;
+    backdrop-filter: blur(22px) saturate(132%);
+    -webkit-backdrop-filter: blur(22px) saturate(132%);
   }
 
   #root .favorite-page .favorite-page-card:hover {
@@ -411,9 +449,10 @@ const RouteBrandSystemStyles = createGlobalStyle`
   #root .movie-detail-page .movie-rating-panel {
     border: 1px solid var(--momo-route-line) !important;
     border-radius: 17px !important;
-    background: rgba(255,250,236,.9) !important;
-    box-shadow: 0 12px 28px rgba(75,61,31,.07), inset 0 1px rgba(255,255,255,.96) !important;
-    backdrop-filter: blur(18px) saturate(118%);
+    background: linear-gradient(145deg, rgba(255,255,255,.68), rgba(255,250,236,.58)) !important;
+    box-shadow: 0 12px 30px rgba(75,61,31,.075), inset 0 1px rgba(255,255,255,.95) !important;
+    backdrop-filter: blur(24px) saturate(136%);
+    -webkit-backdrop-filter: blur(24px) saturate(136%);
   }
 
   #root .movie-detail-page .rating-panel-heading {
