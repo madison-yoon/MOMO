@@ -92,7 +92,10 @@ const GlobalTokensStyles = createGlobalStyle`
   body {
     margin: 0;
     background-color: var(--momo-bg);
-    background-image: radial-gradient(ellipse at 10% 0%, rgba(255,255,255,.86), transparent 36rem), radial-gradient(ellipse at 92% 18%, rgba(255,212,59,.10), transparent 40rem), linear-gradient(135deg, rgba(233,223,197,.12), transparent 48%);
+    background-image:
+      radial-gradient(ellipse at 8% 0%, rgba(255,255,255,.72), transparent 42rem),
+      radial-gradient(ellipse at 92% 16%, rgba(145,166,154,.075), transparent 44rem),
+      linear-gradient(140deg, rgba(226,230,221,.12), transparent 54%);
     background-size: auto, auto, auto;
     background-attachment: fixed;
     color: var(--momo-text);
