@@ -125,7 +125,8 @@ const MomoLiquidGlassPageStyles = createGlobalStyle`
     background: currentColor;
     box-shadow: 0 0 0 3px rgba(255,212,59,.2);
   }
-  #root .my-reviews-heading { --route-accent: #80600E; }
+  #root .all-reviews-heading { --route-accent: #768C80; }
+  #root .my-reviews-heading { --route-accent: #88734D; }
   #root .liked-reviews-heading { --route-accent: #9A6258; }
   #root .favorite-page-heading { --route-accent: #596A4E; }
 
