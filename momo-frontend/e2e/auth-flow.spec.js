@@ -220,11 +220,11 @@ test("회원가입, 로그인, 로그아웃이 브라우저에서 이어진다",
       leftBorder: style.borderLeftColor,
     };
   });
-  expect(activityGlass.blur).toContain("blur(24px)");
+  expect(activityGlass.blur).toContain("blur(22px)");
   expect(activityGlass.background).toContain("linear-gradient");
   expect(activityGlass.background).not.toContain("repeating-linear-gradient");
   expect(activityGlass.radius).toBe("15px");
-  expect(activityGlass.leftBorder).toBe("rgb(214, 180, 63)");
+  expect(activityGlass.leftBorder).toBe("rgb(183, 156, 103)");
   await expect(profileActivityCards.locator(".profile-activity-icon svg")).toHaveCount(3);
 
   const activityPseudo = await profileActivityCards.first().evaluate((element) => ({
