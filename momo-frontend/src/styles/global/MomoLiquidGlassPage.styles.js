@@ -1387,7 +1387,7 @@ const MomoLiquidGlassPageStyles = createGlobalStyle`
   @media (max-width: 430px) {
     #root .favorite-page .favorite-page-grid { grid-template-columns: repeat(2,minmax(0,1fr)); gap: 15px 11px; }
     #root .movie-detail-page .detail-reaction-counts { grid-template-columns: 1fr; }
-    #root .movie-detail-page .people-list-compact { grid-template-columns: 1fr; }
+    #root .movie-detail-page .people-list-compact { grid-template-columns: repeat(2,minmax(0,1fr)); }
     #root .all-reviews-card,
     #root .my-reviews-card,
     #root .liked-reviews-card { padding: 16px 12px; }
