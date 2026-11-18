@@ -264,8 +264,8 @@ const ProfileWorkspaceStyles = createGlobalStyle`
     color: #292820;
     text-align: left;
     text-decoration: none;
-    -webkit-backdrop-filter: blur(24px) saturate(148%);
-    backdrop-filter: blur(24px) saturate(148%);
+    -webkit-backdrop-filter: blur(22px) saturate(160%);
+    backdrop-filter: blur(22px) saturate(160%);
     transition: border-color 200ms ease, background 200ms ease, box-shadow 200ms ease;
   }
   #root .profile-dashboard .profile-reviews-link { --activity-color: #88734D; border-left-color: #B79C67; }
