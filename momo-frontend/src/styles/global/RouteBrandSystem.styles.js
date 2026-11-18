@@ -739,6 +739,164 @@ const RouteBrandSystemStyles = createGlobalStyle`
       transform: none;
     }
   }
-`;
+
+  /* MOMO Glass + Soft 3D material layer */
+  :root {
+    --momo-glass-clear: rgba(255,252,242,.56);
+    --momo-glass-frost: rgba(255,250,236,.70);
+    --momo-glass-edge: rgba(255,255,255,.92);
+    --momo-glass-depth: 0 2px 5px rgba(68,55,27,.035), 0 14px 30px rgba(68,55,27,.085), 0 28px 58px rgba(68,55,27,.045), inset 0 1px rgba(255,255,255,1), inset 0 -1px rgba(216,201,159,.2);
+    --momo-glass-depth-hover: 0 5px 10px rgba(68,55,27,.045), 0 22px 42px rgba(68,55,27,.14), 0 36px 68px rgba(68,55,27,.07), inset 0 1px rgba(255,255,255,1);
+    --momo-glass-radius: 21px;
+    --momo-glass-motion: 240ms cubic-bezier(.2,.72,.2,1);
+  }
+
+  #root .favorite-page .favorite-page-heading,
+  #root .search-page-heading,
+  #root .all-reviews-heading,
+  #root .my-reviews-heading,
+  #root .liked-reviews-heading {
+    border: 1px solid var(--momo-glass-edge);
+    background:
+      radial-gradient(ellipse at 92% 0%, rgba(255,212,59,.18), transparent 38%),
+      linear-gradient(135deg, rgba(255,255,255,.76), rgba(255,250,236,.48));
+    box-shadow: var(--momo-glass-depth);
+    backdrop-filter: blur(30px) saturate(155%);
+    -webkit-backdrop-filter: blur(30px) saturate(155%);
+  }
+
+  #root .favorite-page-empty,
+  #root .all-reviews-card,
+  #root .my-reviews-card,
+  #root .liked-reviews-card,
+  #root .review-detail-card,
+  #root .review-comment-card,
+  #root .detail-content-section,
+  #root .movie-rating-panel,
+  #root .movie-detail-page .movie-detail-header,
+  #root .profile-card {
+    border: 1px solid var(--momo-glass-edge);
+    background:
+      radial-gradient(ellipse at 90% 0%, rgba(255,255,255,.78), transparent 48%),
+      linear-gradient(145deg, rgba(255,255,255,.68), rgba(255,250,236,.44) 62%, rgba(255,246,218,.34));
+    box-shadow: var(--momo-glass-depth);
+    backdrop-filter: blur(28px) saturate(150%);
+    -webkit-backdrop-filter: blur(28px) saturate(150%);
+    transition: transform var(--momo-glass-motion), box-shadow var(--momo-glass-motion), border-color var(--momo-glass-motion);
+  }
+
+  #root .favorite-page-empty,
+  #root .all-reviews-card,
+  #root .my-reviews-card,
+  #root .liked-reviews-card,
+  #root .review-detail-card,
+  #root .review-comment-card,
+  #root .detail-content-section,
+  #root .movie-rating-panel {
+    position: relative;
+    isolation: isolate;
+    overflow: hidden;
+  }
+
+  #root .favorite-page-empty::before,
+  #root .all-reviews-card::before,
+  #root .my-reviews-card::before,
+  #root .liked-reviews-card::before,
+  #root .review-detail-card::before,
+  #root .review-comment-card::before,
+  #root .detail-content-section::before,
+  #root .movie-rating-panel::before {
+    position: absolute;
+    inset: 0;
+    content: "";
+    border-radius: inherit;
+    background: linear-gradient(116deg, rgba(255,255,255,.42), transparent 32%, transparent 72%, rgba(255,255,255,.13));
+    pointer-events: none;
+  }
+
+  #root .favorite-page-card,
+  #root .search-page .movie-card,
+  #root .search-page .movie-item {
+    border: 1px solid rgba(255,255,255,.94);
+    background:
+      radial-gradient(ellipse at 82% 0%, rgba(255,255,255,.8), transparent 46%),
+      linear-gradient(145deg, rgba(255,255,255,.67), rgba(255,250,236,.42));
+    box-shadow: var(--momo-glass-depth);
+    backdrop-filter: blur(25px) saturate(152%);
+    -webkit-backdrop-filter: blur(25px) saturate(152%);
+    transition: transform var(--momo-glass-motion), box-shadow var(--momo-glass-motion), border-color var(--momo-glass-motion);
+  }
+
+  #root .favorite-page-card:hover,
+  #root .search-page .movie-card:hover,
+  #root .search-page .movie-item:hover {
+    border-color: rgba(214,180,63,.64);
+    box-shadow: var(--momo-glass-depth-hover);
+    transform: perspective(1100px) translateY(-5px) rotateX(.55deg);
+  }
+
+  #root .movie-detail-page .movie-detail-header {
+    position: relative;
+    isolation: isolate;
+    overflow: hidden;
+    border: 1px solid rgba(255,255,255,.94);
+    border-radius: 25px;
+    background:
+      radial-gradient(ellipse at 88% 4%, rgba(255,212,59,.22), transparent 38%),
+      linear-gradient(132deg, rgba(255,255,255,.72), rgba(255,250,236,.44));
+    box-shadow: 0 4px 10px rgba(68,55,27,.045), 0 24px 52px rgba(68,55,27,.13), inset 0 1px rgba(255,255,255,1);
+    backdrop-filter: blur(30px) saturate(155%);
+    -webkit-backdrop-filter: blur(30px) saturate(155%);
+  }
+  #root .movie-detail-page .movie-detail-header::after {
+    position: absolute;
+    inset: 0;
+    content: "";
+    background: linear-gradient(116deg, transparent 18%, rgba(255,255,255,.36) 47%, transparent 72%);
+    pointer-events: none;
+  }
+
+  #root .favorite-page-poster,
+  #root .search-page .poster-frame,
+  #root .search-page .movie-poster,
+  #root .search-page .poster-placeholder,
+  #root .movie-detail-page .movie-detail-poster {
+    border: 1px solid rgba(255,255,255,.96);
+    border-radius: 13px;
+    box-shadow: 0 3px 7px rgba(42,35,20,.08), 0 14px 25px rgba(42,35,20,.16), inset 0 1px rgba(255,255,255,.9);
+  }
+
+  #root .page-back-link,
+  #root .favorite-back-button,
+  #root .review-detail-back,
+  #root .detail-back-button {
+    border: 1px solid rgba(255,255,255,.94);
+    background: linear-gradient(145deg, rgba(255,255,255,.78), rgba(255,250,236,.56));
+    box-shadow: 0 3px 7px rgba(68,55,27,.045), 0 8px 18px rgba(68,55,27,.08), inset 0 1px rgba(255,255,255,1);
+    backdrop-filter: blur(18px) saturate(145%);
+    -webkit-backdrop-filter: blur(18px) saturate(145%);
+    transition: transform var(--momo-glass-motion), box-shadow var(--momo-glass-motion);
+  }
+  #root .page-back-link:hover,
+  #root .favorite-back-button:hover,
+  #root .review-detail-back:hover,
+  #root .detail-back-button:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 5px 9px rgba(68,55,27,.05), 0 13px 22px rgba(68,55,27,.11), inset 0 1px rgba(255,255,255,1);
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    #root .favorite-page-card,
+    #root .search-page .movie-card,
+    #root .search-page .movie-item,
+    #root .page-back-link,
+    #root .favorite-back-button,
+    #root .review-detail-back,
+    #root .detail-back-button {
+      transition-duration: .01ms;
+      transform: none;
+    }
+  }
+
 
 export default RouteBrandSystemStyles;
