@@ -1193,8 +1193,8 @@ const MomoLiquidGlassPageStyles = createGlobalStyle`
     border: 1px solid rgba(233,223,197,.84);
     border-radius: 15px;
     background:
-      linear-gradient(90deg, transparent 0 25px, rgba(198,118,98,.1) 25px 26px, transparent 26px),
-      repeating-linear-gradient(180deg, rgba(255,254,250,.85) 0 31px, rgba(214,201,159,.18) 32px, rgba(255,254,250,.85) 33px);
+      radial-gradient(ellipse at 8% 0%, rgba(255,255,255,.82), transparent 58%),
+      linear-gradient(145deg, rgba(255,255,255,.46), rgba(245,247,242,.28) 52%, rgba(232,238,231,.38));
     color: #3F3A31;
     font-size: 14px;
     line-height: 2;
@@ -1219,7 +1219,7 @@ const MomoLiquidGlassPageStyles = createGlobalStyle`
   }
   #root .review-detail-page .review-comment-content { color: #514C40; font-size: 12px; line-height: 1.75; }
 
-  /* Signup and login share a centered, illuminated glass notebook. */
+  /* Signup and login share a centered, illuminated glass entry panel. */
   #root .signup-page {
     min-height: calc(100vh - 220px);
     display: grid;
