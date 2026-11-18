@@ -173,7 +173,7 @@ export const FeatureVisual = styled.div.attrs({ className: "home-feature-visual"
   }
 `;
 
-export const Section = styled.section`
+export const Section = styled.section.attrs({ className: "home-section" })`
   min-width: 0; margin: 0; animation: momo-section-in 420ms cubic-bezier(.2,.7,.2,1) both;
   @keyframes momo-section-in { from { opacity: 0; transform: translate3d(0, 7px, 0); } to { opacity: 1; transform: translate3d(0, 0, 0); } }
   &:nth-of-type(2) { animation-delay: 45ms; }
@@ -182,7 +182,7 @@ export const Section = styled.section`
   @media (prefers-reduced-motion: reduce) { animation: none; }
 `;
 
-export const SectionHeading = styled.div`
+export const SectionHeading = styled.div.attrs({ className: "home-section-heading" })`
   display: flex; align-items: end; justify-content: space-between; gap: 20px;
   margin-bottom: 20px; padding-bottom: 14px; border-bottom: 1px solid rgba(154,138,101,.24);
   h2 { margin: 0; color: #292820; font-size: clamp(21px, 2.2vw, 27px); font-weight: 850; letter-spacing: -.045em; }
@@ -195,14 +195,14 @@ export const MoreText = styled.span`
   border-left: 2px solid rgba(214,180,63,.72); color: #6A6251; font-size: 11px; font-weight: 700; white-space: nowrap;
 `;
 
-export const MovieGrid = styled.div`
+export const MovieGrid = styled.div.attrs({ className: "home-movie-grid" })`
   display: grid; grid-template-columns: repeat(5, minmax(0, 1fr)); gap: 22px 18px;
   @media (max-width: 1100px) { grid-template-columns: repeat(4, minmax(0, 1fr)); }
   @media (max-width: 760px) { grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 18px 12px; }
   @media (max-width: 480px) { grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 18px 11px; }
 `;
 
-export const MovieCard = styled.div`
+export const MovieCard = styled.div.attrs({ className: "home-movie-card" })`
   position: relative; min-width: 0; cursor: pointer; border-radius: 15px; outline-offset: 4px;
   transition: filter 240ms ease;
   &:hover { filter: drop-shadow(0 9px 12px rgba(41,40,32,.13)); }
@@ -241,7 +241,7 @@ export const MovieInfo = styled.div`
   p { margin: 5px 0 0; color: #6A6251; font-size: 11px; font-weight: 550; }
 `;
 
-export const GenreList = styled.div`
+export const GenreList = styled.div.attrs({ className: "home-genre-list" })`
   display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 10px;
   button {
     position: relative; display: flex; align-items: center; justify-content: space-between; gap: 10px;
@@ -263,7 +263,7 @@ export const GenreList = styled.div`
   @media (max-width: 360px) { gap: 8px; button { min-height: 52px; padding: 0 12px; font-size: 12px; } }
 `;
 
-export const BrandLine = styled.div`
+export const BrandLine = styled.div.attrs({ className: "home-brand-line" })`
   position: relative; display: flex; align-items: center; justify-content: space-between; gap: 24px;
   padding: clamp(22px, 3vw, 32px); overflow: hidden; border: 1px solid rgba(255,255,255,.92); border-radius: 22px;
   background: radial-gradient(ellipse at 8% 0%, rgba(255,255,255,.9), transparent 55%), linear-gradient(125deg, rgba(255,250,236,.72), rgba(255,255,255,.52));
