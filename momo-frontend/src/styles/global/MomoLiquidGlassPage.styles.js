@@ -21,15 +21,15 @@ const MomoLiquidGlassPageStyles = createGlobalStyle`
 
   /* Quiet canvas: remove notebook grid and ambient bubble gradients. */
   html, body {
-    background: var(--momo-bg) !important;
-    background-image: none !important;
+    background: var(--momo-bg);
+    background-image: none;
   }
   body {
     color: var(--momo-glass-ink);
   }
   #root > div::before {
-    content: none !important;
-    display: none !important;
+    content: none;
+    display: none;
   }
 
   /* The app header is a restrained sheet of glass, not another decoration panel. */
@@ -41,8 +41,8 @@ const MomoLiquidGlassPageStyles = createGlobalStyle`
     -webkit-backdrop-filter: blur(24px) saturate(112%);
   }
   #root .momo-app-header::after {
-    content: none !important;
-    display: none !important;
+    content: none;
+    display: none;
   }
   #root .momo-app-header::before {
     background: linear-gradient(90deg, transparent, rgba(255,255,255,.92), transparent);
@@ -113,8 +113,8 @@ const MomoLiquidGlassPageStyles = createGlobalStyle`
   #root .review-detail-card::after,
   #root .signup-card::before,
   #root .signup-card::after {
-    content: none !important;
-    display: none !important;
+    content: none;
+    display: none;
   }
   #root .profile-card,
   #root .all-reviews-card,
@@ -180,9 +180,9 @@ const MomoLiquidGlassPageStyles = createGlobalStyle`
   #root .liked-reviews-heading::after,
   #root .search-page-heading::after,
   #root .favorite-page-heading::after {
-    content: none !important;
-    display: none !important;
-    animation: none !important;
+    content: none;
+    display: none;
+    animation: none;
   }
   #root .all-reviews-heading > div,
   #root .my-reviews-heading > div,
@@ -437,8 +437,8 @@ const MomoLiquidGlassPageStyles = createGlobalStyle`
   }
   #root .profile-page .profile-card:has(.profile-activity-grid)::before,
   #root .profile-page .profile-card:has(.profile-activity-grid)::after {
-    content: none !important;
-    display: none !important;
+    content: none;
+    display: none;
   }
   #root .profile-page .profile-card:has(.profile-activity-grid) > .profile-card-heading {
     margin-bottom: 22px;
@@ -496,8 +496,8 @@ const MomoLiquidGlassPageStyles = createGlobalStyle`
   }
   #root .profile-page .profile-activity-item::before,
   #root .profile-page .profile-activity-item::after {
-    content: none !important;
-    display: none !important;
+    content: none;
+    display: none;
   }
   #root .profile-page .profile-activity-item:hover {
     border-color: rgba(255,255,255,.98);
@@ -577,7 +577,7 @@ const MomoLiquidGlassPageStyles = createGlobalStyle`
     border-top: 1px solid rgba(79,91,81,.14);
   }
   #root .profile-page .profile-activity-footer p {
-    display: block !important;
+    display: block;
     margin: 0;
     color: #5B635D;
     font-size: 11px;
@@ -617,8 +617,8 @@ const MomoLiquidGlassPageStyles = createGlobalStyle`
     -webkit-backdrop-filter: blur(28px) saturate(114%);
   }
   #root .movie-detail-page .movie-detail-header::before {
-    content: none !important;
-    display: none !important;
+    content: none;
+    display: none;
   }
   #root .movie-detail-page .movie-detail-header::after {
     position: absolute;
@@ -681,8 +681,8 @@ const MomoLiquidGlassPageStyles = createGlobalStyle`
     backdrop-filter: blur(12px);
   }
   #root .movie-detail-page .movie-detail-info .detail-rank::before {
-    content: none !important;
-    display: none !important;
+    content: none;
+    display: none;
   }
   #root .movie-detail-page .movie-detail-info h1 {
     flex: 0 0 100%;
@@ -751,8 +751,8 @@ const MomoLiquidGlassPageStyles = createGlobalStyle`
     -webkit-backdrop-filter: blur(22px) saturate(110%);
   }
   #root .movie-detail-page .movie-rating-panel::before {
-    content: none !important;
-    display: none !important;
+    content: none;
+    display: none;
   }
   #root .movie-detail-page .rating-panel-eyebrow,
   #root .movie-detail-page .rating-panel-stamp {
@@ -893,8 +893,8 @@ const MomoLiquidGlassPageStyles = createGlobalStyle`
   }
   #root .recommend-content::before,
   #root .recommend-content .recommend-label::after {
-    content: none !important;
-    display: none !important;
+    content: none;
+    display: none;
   }
   #root .recommend-content .recommend-info,
   #root .recommend-content .recommend-description {
@@ -1338,8 +1338,8 @@ const MomoLiquidGlassPageStyles = createGlobalStyle`
     -webkit-backdrop-filter: blur(18px) saturate(108%);
   }
   #root .profile-edit-page .profile-edit-card::before {
-    content: none !important;
-    display: none !important;
+    content: none;
+    display: none;
   }
   #root .profile-edit-page .profile-edit-form {
     display: grid;
@@ -1482,26 +1482,26 @@ const MomoLiquidGlassPageStyles = createGlobalStyle`
   }
   #root .profile-edit-page .profile-edit-divider {
     height: 2px;
-    margin: 26px 0 13px !important;
-    border: 0 !important;
+    margin: 26px 0 13px;
+    border: 0;
     background: linear-gradient(90deg, #FFD43B 0%, #E9DFC5 56%, rgba(233,223,197,0) 100%);
   }
   #root .profile-edit-page .profile-edit-section-title {
     position: relative;
-    margin: 0 0 4px !important;
+    margin: 0 0 4px;
     padding: 13px 16px;
     border-left: 4px solid #FFD43B;
     border-radius: 0 8px 8px 0;
     background: #F5F2EB;
     color: #292820;
-    font-size: 16px !important;
+    font-size: 16px;
     font-weight: 900;
     letter-spacing: -.025em;
   }
   #root .profile-edit-page .profile-edit-section-description {
-    margin: 0 0 10px !important;
-    color: #6A6251 !important;
-    font-size: 12px !important;
+    margin: 0 0 10px;
+    color: #6A6251;
+    font-size: 12px;
     line-height: 1.6;
   }
   #root .profile-edit-page .profile-form-buttons {
@@ -1509,7 +1509,7 @@ const MomoLiquidGlassPageStyles = createGlobalStyle`
     justify-content: flex-end;
     flex-wrap: wrap;
     gap: 10px;
-    margin-top: 20px !important;
+    margin-top: 20px;
     padding-top: 18px;
     border-top: 1px solid #E9DFC5;
   }
@@ -1600,9 +1600,9 @@ const MomoLiquidGlassPageStyles = createGlobalStyle`
     #root *,
     #root *::before,
     #root *::after {
-      animation-duration: .01ms !important;
-      animation-iteration-count: 1 !important;
-      transition-duration: .01ms !important;
+      animation-duration: .01ms;
+      animation-iteration-count: 1;
+      transition-duration: .01ms;
     }
   }
 
@@ -1718,7 +1718,7 @@ const MomoLiquidGlassPageStyles = createGlobalStyle`
 
   /* Favorites gallery: one consistent ivory surface, without gray/green variants. */
   #root .favorite-page {
-    background: linear-gradient(180deg, rgba(255,212,59,.13), rgba(255,212,59,.035) 320px, transparent 620px), var(--momo-bg) !important;
+    background: linear-gradient(180deg, rgba(255,212,59,.13), rgba(255,212,59,.035) 320px, transparent 620px), var(--momo-bg);
   }
   #root .favorite-page-heading {
     border-color: rgba(233,223,197,.92);
@@ -1736,7 +1736,7 @@ const MomoLiquidGlassPageStyles = createGlobalStyle`
   #root .favorite-page .favorite-page-card:nth-child(3n + 2),
   #root .favorite-page .favorite-page-card:nth-child(3n) {
     border-color: #E9DFC5;
-    background: rgba(255,250,236,.9) !important;
+    background: rgba(255,250,236,.9);
     box-shadow: 0 8px 20px rgba(75,61,31,.065), inset 0 1px rgba(255,255,255,.98);
   }
   #root .favorite-page .favorite-page-card:hover {
@@ -1801,8 +1801,8 @@ const MomoLiquidGlassPageStyles = createGlobalStyle`
   }
   #root .profile-page .profile-activity-item::before,
   #root .profile-page .profile-activity-item::after {
-    content: "" !important;
-    display: block !important;
+    content: "";
+    display: block;
   }
   #root .profile-page .profile-activity-item:hover {
     border-color: rgba(214,180,63,.7);
@@ -1908,7 +1908,7 @@ const MomoLiquidGlassPageStyles = createGlobalStyle`
   #root .movie-detail-page > .detail-content-section > h2 { color: #292820; }
   #root .movie-detail-page > .detail-content-section > p { color: #514833; }
   #root .movie-detail-page .movie-rating-panel {
-    display: flex !important;
+    display: flex;
     flex-direction: column;
     gap: 18px;
     min-height: 240px;
@@ -1920,8 +1920,8 @@ const MomoLiquidGlassPageStyles = createGlobalStyle`
     -webkit-backdrop-filter: blur(22px) saturate(125%);
   }
   #root .movie-detail-page .movie-rating-panel::before {
-    content: "" !important;
-    display: block !important;
+    content: "";
+    display: block;
     top: 8px;
     right: 34px;
     background: rgba(255,212,59,.5);
@@ -2273,10 +2273,10 @@ const MomoLiquidGlassPageStyles = createGlobalStyle`
     opacity: .62;
   }
   #root .profile-page .profile-delete-button:not(:disabled) {
-    border-color: #E5B8AD !important;
-    background: #FFF1EC !important;
-    color: #8C3F38 !important;
-    opacity: 1 !important;
+    border-color: #E5B8AD;
+    background: #FFF1EC;
+    color: #8C3F38;
+    opacity: 1;
     cursor: pointer;
   }
 
