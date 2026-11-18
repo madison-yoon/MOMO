@@ -356,20 +356,20 @@ const ProductExperienceStyles = createGlobalStyle`
   /* Chat popup: the floating lounge follows the same glass language. */
   [aria-label="전체 회원 채팅"] {
     overflow: hidden;
-    border: 1px solid rgba(255,255,255,.94) !important;
-    border-radius: 20px !important;
-    background: rgba(255,254,250,.9) !important;
-    box-shadow: 0 26px 68px rgba(32,27,18,.24), inset 0 1px rgba(255,255,255,.96) !important;
+    border: 1px solid rgba(255,255,255,.94);
+    border-radius: 20px;
+    background: rgba(255,254,250,.9);
+    box-shadow: 0 26px 68px rgba(32,27,18,.24), inset 0 1px rgba(255,255,255,.96);
     backdrop-filter: blur(24px) saturate(150%);
   }
   [aria-label="공용 채팅 열기"] {
-    border: 1px solid rgba(255,255,255,.8) !important;
-    box-shadow: 0 12px 28px rgba(53,43,24,.2), inset 0 1px rgba(255,255,255,.38) !important;
-    transition: transform 220ms var(--momo-ease-out), box-shadow 220ms ease !important;
+    border: 1px solid rgba(255,255,255,.8);
+    box-shadow: 0 12px 28px rgba(53,43,24,.2), inset 0 1px rgba(255,255,255,.38);
+    transition: transform 220ms var(--momo-ease-out), box-shadow 220ms ease;
   }
   [aria-label="공용 채팅 열기"]:hover {
     transform: translateY(-4px) scale(1.035);
-    box-shadow: 0 18px 36px rgba(53,43,24,.25), inset 0 1px rgba(255,255,255,.48) !important;
+    box-shadow: 0 18px 36px rgba(53,43,24,.25), inset 0 1px rgba(255,255,255,.48);
   }
 
   /* Chat popup, modal, toast and dialogs */
@@ -407,10 +407,10 @@ const ProductExperienceStyles = createGlobalStyle`
   }
   @media (prefers-reduced-motion: reduce) {
     *, *::before, *::after {
-      animation-duration: .01ms !important;
-      animation-iteration-count: 1 !important;
-      transition-duration: .01ms !important;
-      scroll-behavior: auto !important;
+      animation-duration: .01ms;
+      animation-iteration-count: 1;
+      transition-duration: .01ms;
+      scroll-behavior: auto;
     }
   }
 `;
