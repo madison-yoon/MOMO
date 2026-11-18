@@ -64,7 +64,7 @@ test("회원가입, 로그인, 로그아웃이 브라우저에서 이어진다",
   expect(homeHeroMaterial.border).toBe("rgba(255, 255, 255, 0.92)");
   const appMain = page.locator("main.momo-app-main");
   await expect(appMain).toBeVisible();
-  const homePrimary = page.locator(".home-feature-visual .recommend-button").first();
+  const homePrimary = page.locator(".home-favorites-more").first();
   await expect(homePrimary).toBeVisible();
   const primaryGlass = await homePrimary.evaluate((element) => {
     const style = getComputedStyle(element);
@@ -759,7 +759,7 @@ test("인물 ID와 필모그래피 영화 ID가 통합 영화 상세로 정확�
     return { blur: style.backdropFilter, background: style.backgroundImage };
   });
   expect(audienceGlass.blur).toContain("blur(26px)");
-  expect(audienceGlass.background).toContain("radial-gradient");
+  expect(audienceGlass.background).toContain("linear-gradient");
 
   const ratingVisual = await page.locator(".movie-rating-panel").evaluate((element) => {
     const panel = getComputedStyle(element);
