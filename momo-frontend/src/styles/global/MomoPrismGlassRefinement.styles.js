@@ -23,15 +23,7 @@ const MomoPrismGlassRefinementStyles = createGlobalStyle`
     --momo-prism-blur: blur(28px) saturate(155%);
   }
 
-  /* A quiet mineral-grey canvas replaces the ruled memo-paper background. */
-  body {
-    background-color: #E8E8E4 !important;
-    background-image:
-      radial-gradient(ellipse at 12% 0%, rgba(255,255,255,.52), transparent 42rem),
-      radial-gradient(ellipse at 88% 12%, rgba(214,220,218,.24), transparent 40rem),
-      linear-gradient(145deg, #ECECE8 0%, #E7E8E4 52%, #E2E4E0 100%) !important;
-    background-attachment: fixed !important;
-  }
+  /* Keep the existing MOMO page canvas from GlobalTokensStyles visible underneath the glass. */
 
   #root .momo-app-main {
     background: transparent !important;
@@ -259,16 +251,89 @@ const MomoPrismGlassRefinementStyles = createGlobalStyle`
     opacity: 1 !important;
   }
 
+  /* The section heading is a separate glass layer, not plain text on a divider. */
   #root main.momo-app-main > .home-page > .home-section .home-section-heading {
-    border-bottom-color: rgba(255,255,255,.36) !important;
+    position: relative !important;
+    isolation: isolate !important;
+    display: flex !important;
+    align-items: center !important;
+    justify-content: space-between !important;
+    gap: 18px !important;
+    min-height: 76px !important;
+    margin: 0 0 22px !important;
+    padding: 16px 19px 15px !important;
+    overflow: hidden !important;
+    border: 1px solid rgba(255,255,255,.62) !important;
+    border-bottom: 1px solid rgba(255,255,255,.62) !important;
+    border-radius: 17px !important;
+    background:
+      linear-gradient(118deg,
+        rgba(255,255,255,.27) 0%,
+        rgba(224,232,228,.16) 42%,
+        rgba(211,215,231,.13) 72%,
+        rgba(238,226,214,.12) 100%
+      ) !important;
+    box-shadow:
+      0 3px 9px rgba(43,48,46,.035),
+      0 10px 22px rgba(43,48,46,.045),
+      inset 0 1px 0 rgba(255,255,255,.78),
+      inset 0 -1px 0 rgba(112,126,121,.09) !important;
+    -webkit-backdrop-filter: blur(24px) saturate(160%) !important;
+    backdrop-filter: blur(24px) saturate(160%) !important;
+  }
+
+  #root main.momo-app-main > .home-page > .home-section .home-section-heading::after {
+    position: absolute !important;
+    z-index: 0 !important;
+    inset: 0 !important;
+    content: "" !important;
+    border-radius: inherit !important;
+    background:
+      linear-gradient(108deg,
+        transparent 4%,
+        rgba(255,255,255,.24) 22%,
+        transparent 41%,
+        rgba(190,211,220,.13) 61%,
+        rgba(216,196,224,.12) 77%,
+        transparent 94%
+      ),
+      radial-gradient(ellipse at 96% 0%, rgba(255,255,255,.17), transparent 42%) !important;
+    pointer-events: none !important;
+  }
+
+  #root main.momo-app-main > .home-page > .home-section .home-section-heading > * {
+    position: relative !important;
+    z-index: 1 !important;
   }
 
   #root main.momo-app-main > .home-page > .home-section .home-section-heading h2 {
     color: #343936 !important;
+    text-shadow: 0 1px 0 rgba(255,255,255,.34) !important;
   }
 
   #root main.momo-app-main > .home-page > .home-section .home-section-heading p {
     color: #69716D !important;
+  }
+
+  #root main.momo-app-main > .home-page > .home-section .home-section-heading > span,
+  #root main.momo-app-main > .home-page > .home-section .home-section-heading .home-more-text {
+    border: 1px solid rgba(255,255,255,.54) !important;
+    border-radius: 999px !important;
+    background: linear-gradient(135deg, rgba(255,255,255,.24), rgba(211,222,218,.13)) !important;
+    box-shadow: inset 0 1px 0 rgba(255,255,255,.68) !important;
+    color: #68716D !important;
+    padding: 7px 11px !important;
+  }
+
+  @media (max-width: 520px) {
+    #root main.momo-app-main > .home-page > .home-section .home-section-heading {
+      align-items: flex-start !important;
+      flex-direction: column !important;
+      gap: 9px !important;
+      min-height: 0 !important;
+      margin-bottom: 17px !important;
+      padding: 15px 16px !important;
+    }
   }
 
   #root main.momo-app-main > .home-page > .home-brand-line {
