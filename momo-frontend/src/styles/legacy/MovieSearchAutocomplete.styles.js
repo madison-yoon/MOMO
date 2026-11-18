@@ -76,14 +76,12 @@ const MovieSearchAutocompleteStyles = createGlobalStyle`
     overflow-y: auto;
     box-sizing: border-box;
     background:
-      linear-gradient(90deg, transparent 0 24px, rgba(201,117,104,.13) 24px 25px, transparent 25px),
-      repeating-linear-gradient(0deg, transparent 0 30px, rgba(117,145,177,.07) 31px, transparent 32px),
-      rgba(255,254,249,.88);
+      linear-gradient(145deg, rgba(255,255,255,.76), rgba(240,246,241,.48) 58%, rgba(223,234,225,.32));
     border: 1px solid rgba(255,255,255,.98);
     border-radius: 17px;
     box-shadow: 0 24px 56px rgba(54,45,28,.17), 0 3px 8px rgba(54,45,28,.045), inset 0 1px rgba(255,255,255,.98);
-    backdrop-filter: blur(24px) saturate(145%);
-    -webkit-backdrop-filter: blur(24px) saturate(145%);
+    backdrop-filter: blur(28px) saturate(165%);
+    -webkit-backdrop-filter: blur(28px) saturate(165%);
   }
 
   /* 영화 검색 결과 */
@@ -95,11 +93,11 @@ const MovieSearchAutocompleteStyles = createGlobalStyle`
     min-height: 88px;
     padding: 10px 14px;
     border: none;
-    border-bottom: 1px solid rgba(177,158,119,.22);
-    background: rgba(255,254,249,.58);
+    border-bottom: 1px solid rgba(255,255,255,.72);
+    background: rgba(255,255,255,.12);
     text-align: left;
     cursor: pointer;
-    transition: background 160ms ease, padding-left 160ms ease;
+    transition: background 180ms ease, border-color 180ms ease;
   }
 
   .momo-search-result:last-child {
@@ -109,8 +107,8 @@ const MovieSearchAutocompleteStyles = createGlobalStyle`
   .momo-search-result:hover,
   .momo-search-result:focus-visible,
   .momo-search-result.is-active {
-    background: rgba(255,247,222,.92);
-    padding-left: 18px;
+    background: linear-gradient(145deg, rgba(255,255,255,.78), rgba(225,239,229,.58));
+    border-color: rgba(255,255,255,.96);
     outline: none;
   }
 
