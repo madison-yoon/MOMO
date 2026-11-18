@@ -137,6 +137,22 @@ const MomoMaterialSystemStyles = createGlobalStyle`
     transform: none;
   }
 
+  #root .momo-chat-launcher {
+    border: 1px solid rgba(255,255,255,.94);
+    background: linear-gradient(145deg, rgba(255,255,255,.84), rgba(232,243,235,.56) 54%, rgba(211,231,218,.36));
+    color: #3D4C41;
+    box-shadow: 0 8px 22px rgba(34,42,37,.12), inset 0 1px 0 rgba(255,255,255,1), inset 0 -1px rgba(150,176,156,.16);
+    -webkit-backdrop-filter: blur(24px) saturate(180%);
+    backdrop-filter: blur(24px) saturate(180%);
+  }
+  #root .momo-chat-launcher:hover {
+    border-color: rgba(255,255,255,1);
+    background: linear-gradient(145deg, rgba(255,255,255,.96), rgba(226,241,231,.72) 54%, rgba(205,228,213,.48));
+    box-shadow: 0 11px 26px rgba(34,42,37,.15), inset 0 1px 0 rgba(255,255,255,1);
+    color: #2F4135;
+    transform: none;
+  }
+
   #root .momo-app-header nav a {
     border: 1px solid rgba(255,255,255,.54);
     background: linear-gradient(145deg, rgba(255,255,255,.46), rgba(235,242,237,.18));
