@@ -8,7 +8,7 @@ const ProfileWorkspaceStyles = createGlobalStyle`
     margin: 0 auto;
     padding: 34px 0 64px;
     border-radius: 0;
-    background: transparent !important;
+    background: transparent;
   }
   #root .profile-dashboard .profile-dashboard-container { display: grid; gap: 18px; }
   #root .profile-dashboard .profile-dashboard-heading {
@@ -24,7 +24,7 @@ const ProfileWorkspaceStyles = createGlobalStyle`
   }
   #root .profile-dashboard .profile-heading h1,
   #root .profile-edit-page .profile-heading h1 {
-    margin: 0; padding: 0; border: 0; background: none !important;
+    margin: 0; padding: 0; border: 0; background: none;
     color: #292820; font-size: clamp(29px, 3.2vw, 36px);
     font-weight: 850; line-height: 1.16; letter-spacing: -.055em;
     box-shadow: none;
@@ -56,7 +56,7 @@ const ProfileWorkspaceStyles = createGlobalStyle`
     -webkit-backdrop-filter: blur(22px) saturate(125%);
   }
   #root .profile-dashboard .profile-card::before,
-  #root .profile-dashboard .profile-card::after { content: none !important; display: none !important; }
+  #root .profile-dashboard .profile-card::after { content: none; display: none; }
   #root .profile-dashboard .profile-card-heading {
     display: flex; align-items: flex-start; justify-content: space-between;
     gap: 16px; margin: 0 0 21px;
@@ -141,7 +141,7 @@ const ProfileWorkspaceStyles = createGlobalStyle`
     transition: border-color 180ms ease, background 180ms ease, transform 180ms ease, box-shadow 180ms ease;
   }
   #root .profile-dashboard .profile-activity-item::before,
-  #root .profile-dashboard .profile-activity-item::after { content: none !important; display: none !important; }
+  #root .profile-dashboard .profile-activity-item::after { content: none; display: none; }
   #root .profile-dashboard .profile-activity-item:hover {
     border-color: rgba(214,180,63,.74);
     background: linear-gradient(155deg, #FFFEFA, #FFF8E4);
@@ -184,7 +184,7 @@ const ProfileWorkspaceStyles = createGlobalStyle`
     border-top: 1px solid rgba(233,223,197,.86);
   }
   #root .profile-dashboard .profile-activity-footer p {
-    display: block !important; min-width: 0; margin: 0; color: #756C5A;
+    display: block; min-width: 0; margin: 0; color: #756C5A;
     font-size: 10px; font-weight: 600; line-height: 1.45;
   }
   #root .profile-dashboard .profile-activity-arrow {
@@ -226,7 +226,7 @@ const ProfileWorkspaceStyles = createGlobalStyle`
   #root .profile-edit-page {
     width: min(1080px, calc(100% - 48px)); max-width: 1080px;
     margin: 0 auto; padding: 34px 0 72px; border-radius: 0;
-    background: transparent !important;
+    background: transparent;
   }
   #root .profile-edit-page .profile-container { display: grid; gap: 18px; }
   #root .profile-edit-page .profile-edit-heading {
@@ -235,7 +235,7 @@ const ProfileWorkspaceStyles = createGlobalStyle`
     border: 0; border-radius: 0; background: transparent; box-shadow: none;
   }
   #root .profile-edit-page .profile-edit-heading::before,
-  #root .profile-edit-page .profile-edit-heading::after { content: none !important; display: none !important; }
+  #root .profile-edit-page .profile-edit-heading::after { content: none; display: none; }
   #root .profile-edit-page .profile-edit-card {
     position: relative; padding: 0; overflow: visible; border: 0; border-radius: 0;
     background: transparent; box-shadow: none; backdrop-filter: none; -webkit-backdrop-filter: none;
@@ -477,7 +477,7 @@ const ProfileWorkspaceStyles = createGlobalStyle`
   @media (prefers-reduced-motion: reduce) {
     #root .profile-dashboard *,
     #root .profile-edit-page * {
-      transition-duration: .01ms !important; animation-duration: .01ms !important;
+      transition-duration: .01ms; animation-duration: .01ms;
     }
   }
 `;
