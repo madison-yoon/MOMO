@@ -80,6 +80,13 @@ test("회원가입, 로그인, 로그아웃이 브라우저에서 이어진다",
   expect(headerSearch.image).toContain("linear-gradient");
   expect(headerSearch.border).toBe("rgba(255, 255, 255, 0.9)");
   expect(headerSearch.blur).toContain("blur(20px)");
+  const chatLauncherGlass = await page.locator(".momo-chat-launcher").evaluate((element) => {
+    const style = getComputedStyle(element);
+    return { image: style.backgroundImage, border: style.borderColor, blur: style.backdropFilter };
+  });
+  expect(chatLauncherGlass.image).toContain("linear-gradient");
+  expect(chatLauncherGlass.border).toBe("rgba(255, 255, 255, 0.94)");
+  expect(chatLauncherGlass.blur).toContain("blur(24px)");
   await page.screenshot({ path: "test-results/home-cinema-desktop.png", fullPage: true });
   await page.setViewportSize({ width: 390, height: 844 });
   const mobileHomeColumns = await homeHero.evaluate(
