@@ -166,6 +166,40 @@ const MomoMaterialSystemStyles = createGlobalStyle`
     -webkit-backdrop-filter: blur(24px) saturate(165%);
     backdrop-filter: blur(24px) saturate(165%);
   }
+  #root .momo-app-header .momo-search-button {
+    width: 34px;
+    height: 34px;
+    padding: 0;
+    border-radius: 10px;
+    color: #46554A;
+  }
+  #root .momo-app-header .momo-search-dropdown {
+    border: 1px solid rgba(255,255,255,.94);
+    border-radius: 18px;
+    background: linear-gradient(145deg, rgba(255,255,255,.82), rgba(238,246,240,.56) 58%, rgba(220,233,225,.38));
+    box-shadow: 0 20px 46px rgba(34,42,37,.14), inset 0 1px rgba(255,255,255,1);
+    -webkit-backdrop-filter: blur(30px) saturate(175%);
+    backdrop-filter: blur(30px) saturate(175%);
+  }
+  #root .momo-app-header .momo-search-result {
+    border: 0;
+    border-bottom: 1px solid rgba(255,255,255,.74);
+    border-radius: 0;
+    background: rgba(255,255,255,.12);
+    box-shadow: none;
+    color: #364239;
+    text-align: left;
+    -webkit-backdrop-filter: none;
+    backdrop-filter: none;
+  }
+  #root .momo-app-header .momo-search-result:hover,
+  #root .momo-app-header .momo-search-result:focus-visible,
+  #root .momo-app-header .momo-search-result.is-active {
+    border-color: rgba(255,255,255,.88);
+    background: linear-gradient(140deg, rgba(255,255,255,.78), rgba(224,239,228,.56));
+    color: #2E4234;
+    box-shadow: inset 0 1px rgba(255,255,255,.98);
+  }
   #root .momo-app-header .momo-search-form:focus-within {
     border-color: rgba(166,190,171,.92);
     background: linear-gradient(140deg, rgba(255,255,255,.84), rgba(235,245,238,.5));
@@ -535,14 +569,14 @@ const MomoMaterialSystemStyles = createGlobalStyle`
   }
 
   /* Footer is a quiet translucent panel, not a graph-paper memo. */
-  #root footer {
+  #root .momo-app-footer {
     border-top-color: rgba(255,255,255,.86);
     background: linear-gradient(145deg, rgba(255,255,255,.68), rgba(239,244,239,.42) 58%, rgba(225,232,225,.34));
     box-shadow: 0 -8px 26px rgba(34,42,37,.045), inset 0 1px rgba(255,255,255,.98);
     -webkit-backdrop-filter: blur(28px) saturate(155%);
     backdrop-filter: blur(28px) saturate(155%);
   }
-  #root footer::before { display: none; }
+  #root .momo-app-footer::before { display: none; }
 
   @media (max-width: 700px) {
     #root .momo-app-main > .home-page,
