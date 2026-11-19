@@ -85,12 +85,18 @@ public class SecurityConfig {
                                                                 HttpMethod.POST,
                                                                 "/api/auth/signup",
                                                                 "/api/auth/login",
+                                                                "/api/auth/kakao",
+                                                                "/api/auth/naver",
+                                                                "/api/auth/google",
                                                                 "/api/auth/reissue")
                                                 .permitAll()
 
                                                 // 공개 회원 조회 및 프로필 이미지 조회
                                                 .requestMatchers(
                                                                 HttpMethod.GET,
+                                                                "/api/auth/kakao/authorize",
+                                                                "/api/auth/naver/authorize",
+                                                                "/api/auth/google/authorize",
                                                                 "/api/auth/exists/id/**",
                                                                 "/api/auth/users/*/profile-image")
                                                 .permitAll()

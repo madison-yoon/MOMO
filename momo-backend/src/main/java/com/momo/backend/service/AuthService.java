@@ -85,7 +85,9 @@ public class AuthService {
         User user = userRepository.findByLoginId(loginId)
                 .orElseThrow(() -> new IllegalArgumentException("아이디 또는 비밀번호가 올바르지 않습니다."));
 
-        if (!passwordEncoder.matches(password, user.getPasswordHash())) {
+        // 소셜 회원의 임시 비밀번호 해시는 기존 NOT NULL 제약 보존용이며 일반 로그인에 사용하지 않는다.
+        if (user.getProvider() != com.momo.backend.entity.AuthProvider.LOCAL
+                || !passwordEncoder.matches(password, user.getPasswordHash())) {
             throw new IllegalArgumentException("아이디 또는 비밀번호가 올바르지 않습니다.");
         }
 
