@@ -37,6 +37,9 @@ const isExcludedAuthRequest = (url = "") => {
   const excludedPaths = [
     "/api/auth/signup",
     "/api/auth/login",
+    "/api/auth/kakao",
+    "/api/auth/naver",
+    "/api/auth/google",
     "/api/auth/reissue",
     "/api/auth/exists/id/",
   ];
@@ -325,6 +328,14 @@ const AxiosApi = {
       { withCredentials: true },
     );
   },
+
+  // state 바인딩 쿠키를 발급·전달하며 카카오 인증 실패는 일반 JWT 재발급 대상에서 제외한다.
+  naverAuthorize: async () => axios.get(`${HM_DOMAIN}/api/auth/naver/authorize`, { withCredentials: true }),
+  naverLogin: async (code, state) => axios.post(`${HM_DOMAIN}/api/auth/naver`, { code, state }, { withCredentials: true }),
+  googleAuthorize: async () => axios.get(`${HM_DOMAIN}/api/auth/google/authorize`, { withCredentials: true }),
+  googleLogin: async (code, state) => axios.post(`${HM_DOMAIN}/api/auth/google`, { code, state }, { withCredentials: true }),
+  kakaoAuthorize: async () => axios.get(`${HM_DOMAIN}/api/auth/kakao/authorize`, { withCredentials: true }),
+  kakaoLogin: async (code, state) => axios.post(`${HM_DOMAIN}/api/auth/kakao`, { code, state }, { withCredentials: true }),
 
   // 4. 회원정보 수정
   memberUpdate: async (data) => {

@@ -9,6 +9,8 @@ import { BrowserRouter, Navigate, Routes, Route, useParams } from "react-router-
 import Home from "./pages/Home";
 import MovieDetail from "./pages/MovieDetail";
 import Login from "./pages/Login";
+import KakaoCallback from "./pages/KakaoCallback";
+import SocialOAuthCallback from "./pages/SocialOAuthCallback";
 import SignUp from "./pages/SignUp";
 import Layout from "./pages/Layout";
 
@@ -74,6 +76,9 @@ function App() {
 
         {/* 로그인 */}
         <Route path="/login" element={<Login />} />
+        <Route path="/oauth/kakao" element={<KakaoCallback />} />
+        <Route path="/oauth/naver" element={<SocialOAuthCallback provider="naver" />} />
+        <Route path="/oauth/google" element={<SocialOAuthCallback provider="google" />} />
 
         {/* 회원가입 */}
         <Route path="/signup" element={<SignUp />} />
