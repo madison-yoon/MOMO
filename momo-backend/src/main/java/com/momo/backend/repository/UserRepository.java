@@ -1,6 +1,7 @@
 package com.momo.backend.repository;
 
 import com.momo.backend.entity.User;
+import com.momo.backend.entity.AuthProvider;
 import jakarta.persistence.LockModeType;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Lock;
@@ -10,6 +11,9 @@ import org.springframework.data.repository.query.Param;
 import java.util.Optional;
 
 public interface UserRepository extends JpaRepository<User, Long> {
+    // 이메일이 같은 일반 회원과 연결하지 않고 공급자 고유 식별자로만 소셜 회원을 조회한다.
+    Optional<User> findByProviderAndProviderId(AuthProvider provider, String providerId);
+
     // 로그인 아이디로 회원 정보 조회
     Optional<User> findByLoginId(String loginId);
 

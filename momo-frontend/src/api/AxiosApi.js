@@ -24,7 +24,9 @@ const guardSessionAdapter = (config) => {
   if (config._momoSessionGuarded) return;
   const adapter = config.adapter || axios.defaults?.adapter;
   config.adapter = (requestConfig) => {
-    if (!isAuthSessionCurrent(requestConfig._momoAuthSessionVersion)) {
+    if (!isAuthSessionCurrent(requestConfig._momoAuthSessionVersion)
+        || (requestConfig._momoAuthMarker && requestConfig._momoAuthMarker !== getAuthSessionMarker())
+        || (requestConfig._momoAuthIdentity && !isAuthIdentityCurrent(requestConfig._momoAuthIdentity))) {
       return Promise.reject(sessionChangedError());
     }
     return axios.getAdapter(adapter)(requestConfig);
@@ -34,15 +36,31 @@ const guardSessionAdapter = (config) => {
 
 // 인증이 필요 없는 API
 const isExcludedAuthRequest = (url = "") => {
-  const excludedPaths = [
-    "/api/auth/signup",
-    "/api/auth/login",
-    "/api/auth/reissue",
-    "/api/auth/exists/id/",
-  ];
-
-  return excludedPaths.some((path) => url.includes(path));
+  const path = new URL(url, HM_DOMAIN).pathname;
+  return ["/api/auth/signup", "/api/auth/login", "/api/auth/reissue"].includes(path)
+    || /^\/api\/auth\/(kakao|naver|google)(\/authorize)?$/.test(path)
+    || /^\/api\/auth\/exists\/id\/[^/]+$/.test(path);
 };
+
+const newSessionMarker = () => Array.from(window.crypto.getRandomValues(new Uint8Array(16)), byte => byte.toString(16).padStart(2, "0")).join("");
+
+// 익명 상태에도 식별자를 유지해 외부 인증 중 다른 탭의 로그인·로그아웃을 감지한다.
+export const getAuthSessionMarker = () => {
+  let marker = localStorage.getItem("momo-auth-session-id");
+  if (!marker) {
+    marker = newSessionMarker();
+    localStorage.setItem("momo-auth-session-id", marker);
+  }
+  return marker;
+};
+
+// 전체 페이지 이동 후에도 같은 로그인인지 확인한다. 토큰 재발급은 이 식별자를 변경하지 않는다.
+export const getAuthSessionIdentity = () => {
+  const username = localStorage.getItem("username");
+  if (!username || (!localStorage.getItem("accessToken") && !localStorage.getItem("refreshToken"))) return null;
+  return JSON.stringify([username, getAuthSessionMarker()]);
+};
+export const isAuthIdentityCurrent = identity => Boolean(identity) && getAuthSessionIdentity() === identity;
 
 // Authorization 헤더 설정
 const setAuthorization = (config, accessToken) => {
@@ -63,6 +81,7 @@ export const storeLoginTokens = (accessToken, refreshToken) => {
   refreshPromise = null;
   isHandlingAuthExpired = false;
 
+  localStorage.setItem("momo-auth-session-id", newSessionMarker());
   localStorage.setItem("accessToken", accessToken);
   localStorage.setItem("refreshToken", refreshToken);
 
@@ -75,6 +94,7 @@ export const clearAuthSession = (expectedSessionVersion = authSessionVersion) =>
   // 진행 중인 재발급 응답이 현재 세션을 덮어쓰지 못하도록 버전을 올린다.
   authSessionVersion += 1;
 
+  localStorage.setItem("momo-auth-session-id", newSessionMarker());
   localStorage.removeItem("accessToken");
   localStorage.removeItem("refreshToken");
   localStorage.removeItem("username");
@@ -129,15 +149,17 @@ const reissueAccessToken = () => {
   }
 
   const requestedSessionVersion = authSessionVersion;
+  const requestedIdentity = getAuthSessionIdentity();
 
   // finally에서 이전 Promise가 새 세션의 Promise를 지우지 않도록 참조를 비교한다.
   const currentPromise = axios
     .post(`${HM_DOMAIN}/api/auth/reissue`, { refreshToken }, {
       _momoAuthSessionVersion: requestedSessionVersion,
+      _momoAuthIdentity: requestedIdentity,
     })
     .then((response) => {
       // 이전 세션에서 시작한 응답은 현재 로그인 토큰을 덮어쓸 수 없다.
-      if (authSessionVersion !== requestedSessionVersion) {
+      if (authSessionVersion !== requestedSessionVersion || (requestedIdentity && !isAuthIdentityCurrent(requestedIdentity))) {
         const error = new Error("인증 상태가 이미 변경되었습니다.");
         error.code = "MOMO_AUTH_SESSION_CHANGED";
         throw error;
@@ -179,6 +201,10 @@ axios.interceptors.request.use(
 
     const isPublicAuthRequest = isExcludedAuthRequest(config.url);
 
+    if (isMomoApi && config._momoAuthMarker && config._momoAuthMarker !== getAuthSessionMarker()) throw sessionChangedError();
+
+    if (isMomoApi && config._momoAuthIdentity && !isAuthIdentityCurrent(config._momoAuthIdentity)) throw sessionChangedError();
+
     if (isMomoApi && config._momoAuthSessionVersion !== undefined
         && !isAuthSessionCurrent(config._momoAuthSessionVersion)) {
       throw sessionChangedError();
@@ -205,7 +231,9 @@ axios.interceptors.request.use(
 axios.interceptors.response.use(
   (response) => {
     const version = response.config?._momoAuthSessionVersion;
-    if (version !== undefined && !isAuthSessionCurrent(version)) {
+    if ((version !== undefined && !isAuthSessionCurrent(version))
+        || (response.config?._momoAuthMarker && response.config._momoAuthMarker !== getAuthSessionMarker())
+        || (response.config?._momoAuthIdentity && !isAuthIdentityCurrent(response.config._momoAuthIdentity))) {
       return Promise.reject(sessionChangedError());
     }
     return response;
@@ -225,6 +253,10 @@ axios.interceptors.response.use(
         && !isAuthSessionCurrent(originalRequest._momoAuthSessionVersion)) {
       return Promise.reject(sessionChangedError());
     }
+
+    if (originalRequest?._momoAuthMarker && originalRequest._momoAuthMarker !== getAuthSessionMarker()) return Promise.reject(sessionChangedError());
+
+    if (originalRequest?._momoAuthIdentity && !isAuthIdentityCurrent(originalRequest._momoAuthIdentity)) return Promise.reject(sessionChangedError());
 
     // 재발급 대상이 아닌 요청
     if (
@@ -298,6 +330,20 @@ axios.interceptors.response.use(
 // MOMO API
 // ========================================
 
+const oauthProvider = provider => {
+  if (!["kakao", "naver", "google"].includes(provider)) throw new Error("지원하지 않는 인증 방식입니다.");
+  return provider;
+};
+
+// 토큰이 없는 콜백은 코드 소비 전에 재발급한다. 서버의 JWT 401은 state 소비 이전에만 반환된다.
+const ensureDeleteAuthentication = async () => {
+  const version = getAuthSessionVersion();
+  const identity = getAuthSessionIdentity();
+  if (!localStorage.getItem("accessToken")) await reissueAccessToken();
+  if (!isAuthSessionCurrent(version) || (identity && !isAuthIdentityCurrent(identity))) throw sessionChangedError();
+  return { withCredentials: true, _momoAuthSessionVersion: version, _momoAuthIdentity: identity };
+};
+
 const AxiosApi = {
   // 1. 회원 아이디 중복 확인
   memberIdExist: async (loginId, signal) => {
@@ -324,6 +370,22 @@ const AxiosApi = {
       { loginId, password },
       { withCredentials: true },
     );
+  },
+
+  // 로그인만 공개 API이며 탈퇴 요청은 JWT 인증과 별도 state 쿠키를 사용한다.
+  oauthAuthorize: provider => axios.get(`${HM_DOMAIN}/api/auth/${oauthProvider(provider)}/authorize`, { withCredentials: true }),
+  oauthLogin: (provider, code, state) => axios.post(`${HM_DOMAIN}/api/auth/${oauthProvider(provider)}`, { code, state }, { withCredentials: true, _momoAuthSessionVersion: getAuthSessionVersion(), _momoAuthMarker: getAuthSessionMarker() }),
+  socialDeleteAuthorize: async (provider, confirmation) => {
+    const config = await ensureDeleteAuthentication();
+    return axios.post(`${HM_DOMAIN}/api/auth/${oauthProvider(provider)}/delete/authorize`, confirmation, config);
+  },
+  socialDeleteComplete: async (provider, code, state, confirmation) => {
+    const config = await ensureDeleteAuthentication();
+    return axios.post(`${HM_DOMAIN}/api/auth/${oauthProvider(provider)}/delete/complete`, { code, state, ...confirmation }, config);
+  },
+  socialMemberDelete: async confirmation => {
+    const config = await ensureDeleteAuthentication();
+    return axios.delete(`${HM_DOMAIN}/api/auth/me`, { ...config, data: confirmation });
   },
 
   // 4. 회원정보 수정

@@ -18,6 +18,32 @@ MOMO는 영화를 찾아보고, 평점과 감상을 남기며 다른 사람의 �
 | 데이터·외부 연동 | MySQL, KOBIS·KMDb·TMDb, Firebase Storage |
 | 빌드·검증 | Gradle Wrapper 9.9.0, Yarn 1.22.22, JUnit·Mockito·H2 및 격리 MySQL, React Testing Library |
 
+## 제3자 로그인 — Kakao / Naver / Google
+
+세 공급자의 로그인·신규 회원 자동 등록을 지원합니다. 공통 `OAuthController`·`OAuthStateService`·`SocialLoginService`로 처리하며, 인증 성공 후 LOCAL 로그인과 같은 `LoginSessionService`에서 MOMO JWT·Refresh Token을 발급합니다. 공급자별 코드 교환·신원 검증과 Google PKCE·nonce·ID Token 검증은 유지합니다.
+
+- 회원은 `provider + providerId`로 식별하며 이메일이 같아도 LOCAL·소셜 계정을 자동 연결하지 않습니다.
+- 소셜 회원은 이메일 없이도 닉네임을 수정할 수 있습니다. 공급자 이메일은 읽기 전용이며 MOMO 비밀번호 변경·확인은 제공하지 않습니다.
+- 탈퇴 시 카카오는 서버 Admin Key로 연결을 해제합니다. 네이버·Google은 연결된 동일 계정으로 다시 인증해 얻은 토큰으로 해제하며, 화면에서 추가 계정 확인과 후속 자동 탈퇴를 안내합니다. 공급자 계정 자체는 삭제하지 않습니다.
+- 외부 해제 성공 후 기존 회원·연관 데이터·MOMO Refresh Token을 삭제합니다. 공급자 Access/Refresh Token은 장기 저장하지 않습니다.
+- LOGIN/DELETE 목적·공급자·대상 회원을 서버 state로 구분합니다. 외부 해제 실패·결과 불명 시 삭제하지 않으며, 해제 성공 후 DB 삭제는 롤백이 확인된 잠금 오류만 제한적으로 재시도합니다. 서버 재시작 후 부분 실패의 자동 복구는 지원하지 않습니다.
+
+### OAuth 개발환경 설정
+
+백엔드 `.env.example`을 참고해 Git에서 제외되는 `.env` 또는 실행 환경에 설정합니다. 실제 값·인증 JSON·토큰은 공유 커밋에 넣지 않습니다.
+
+| 환경변수 | 용도 |
+|---|---|
+| `KAKAO_CLIENT_ID`, `KAKAO_CLIENT_SECRET` | 카카오 앱의 REST API 키와 Client Secret |
+| `KAKAO_REDIRECT_URI` | 카카오 Callback 주소. 미설정 시 기존 localhost 주소 사용 |
+| `KAKAO_ADMIN_KEY` | 서버의 카카오 탈퇴 연결 해제 전용 키. 해당 앱의 API 권한 확인 필요 |
+| `NAVER_CLIENT_ID`, `NAVER_CLIENT_SECRET`, `NAVER_REDIRECT_URI` | 네이버 앱 자격 정보와 Callback 주소 |
+| `GOOGLE_CLIENT_ID`, `GOOGLE_CLIENT_SECRET`, `GOOGLE_REDIRECT_URI` | Google 웹 OAuth 클라이언트 자격 정보와 Callback 주소 |
+
+공급자 콘솔에 `/oauth/kakao`, `/oauth/naver`, `/oauth/google`의 실제 HTTPS 프론트 Callback 주소를 등록합니다. 프론트와 API가 같은 사이트에서 state 쿠키를 전달할 수 있어야 합니다. Google revoke는 같은 Google 프로젝트의 다른 OAuth 클라이언트 권한에도 영향을 줄 수 있으므로 배포 전에 공유 프로젝트 구성을 확인합니다.
+
+기존 DB는 백업 후 `users.provider`, `provider_id`의 대소문자 구분·복합 UNIQUE, nullable email 상태를 먼저 확인합니다. 필요한 경우에만 [소셜 회원 준비 SQL](momo-backend/docs/sql/kakao_oauth.sql)과 [provider_id 호환 SQL](momo-backend/docs/sql/social_oauth_provider_id.sql)을 검토해 적용합니다. 이미 적용된 DB에는 재실행하지 않으며 자동 마이그레이션이나 DB 초기화는 하지 않습니다.
+
 ## 기능 안정화 — 2026.11.14~11.15
 
 초기 점검 대상으로는 박스오피스 표시 문제와 장르별 목록의 개봉일 누락이 전달됐습니다. 관련 영화 조회·저장 흐름을 따라가면서 인증, 동시 저장, 화면의 비동기 처리, 채팅 이미지까지 안정성 점검 범위가 넓어졌습니다. 초기 증상 각각의 재현 자료가 모두 남아 있지는 않아, 아래에는 코드와 검증 기록으로 확인한 변경을 중심으로 정리했습니다.
@@ -55,7 +81,7 @@ MOMO는 영화를 찾아보고, 평점과 감상을 남기며 다른 사람의 �
 ### 준비
 
 - Java 21, MySQL 8, Node.js와 Yarn 1.22.22를 준비합니다. 최근 브라우저 검증의 Node.js는 24.22.1이며 프로젝트에 Node 버전 고정 파일은 없습니다.
-- 기존 `momo_db` 및 팀에서 사용하던 DB·영화 API·JWT 설정을 준비합니다. [기존 application.properties](momo-backend/src/main/resources/application.properties)의 설정 방식을 이번에 바꾸지 않았습니다. 현재 코드가 읽는 `JWT_SECRET` 등 기존 실행 환경도 유지해야 합니다.
+- 기존 `momo_db` 및 팀에서 사용하던 DB·영화 API·JWT 설정을 준비합니다. [application.properties](momo-backend/src/main/resources/application.properties)가 읽는 환경변수나 백엔드 `.env`에 설정합니다. `JWT_SECRET` 등 기존 실행 환경은 유지하며 OAuth 추가 설정은 위 안내를 따릅니다.
 - Firebase 인증 파일은 별도로 준비해 `momo-backend/config/firebase-service-account.json`에 둡니다. 개인 인증 파일은 새 커밋에 포함하지 않습니다.
 - 백엔드 기본 포트는 `8111`, React는 `3000`입니다. 원격 PC에서 접속할 때는 API 주소와 기존 CORS·WebSocket 허용 origin 설정을 맞춰야 합니다.
 

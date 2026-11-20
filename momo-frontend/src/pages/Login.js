@@ -1,18 +1,28 @@
 import { safeRequestFailure } from "../utils/safeRequestFailure";
-import React, { useState } from "react";
+import React, { useEffect, useRef, useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
-import AxiosApi, { storeLoginTokens } from "../api/AxiosApi";
+import AxiosApi from "../api/AxiosApi";
+import { completeLogin } from "../utils/completeLogin";
+import { prepareSocialLogin, socialProviderName } from "../auth/socialOAuthFlow";
+import kakaoLogo from "../assets/oauth/kakao.svg";
+import naverLogo from "../assets/oauth/naver.png";
+import googleLogo from "../assets/oauth/google.png";
+import { SocialLoginArea, KakaoLoginButton, NaverLoginButton, GoogleLoginButton } from "../styles/redesign/SocialLogin.styles";
 import ArchiveAuthFrame from "../components/redesign/ArchiveAuthFrame";
 
 function Login() {
   const [inputId, setInputId] = useState("");
   const [inputPwd, setInputPwd] = useState("");
   const [isLoading, setIsLoading] = useState(false);
+  const [socialLoading, setSocialLoading] = useState("");
+  const [socialError, setSocialError] = useState("");
+  const mounted = useRef(true);
+  useEffect(() => { mounted.current = true; return () => { mounted.current = false; }; }, []);
 
   const navigate = useNavigate();
 
   // 아이디와 비밀번호 입력 여부 확인
-  const isValid = inputId.trim() !== "" && inputPwd !== "" && !isLoading;
+  const isValid = inputId.trim() !== "" && inputPwd !== "" && !isLoading && !socialLoading;
 
   // 로그인 요청
   const onSubmit = async (event) => {
@@ -30,44 +40,32 @@ function Login() {
         return;
       }
 
-      const loginId = response.data.loginId || inputId.trim();
-      const nickname = response.data.nickname || "회원";
-      const accessToken = response.data.accessToken;
-      const refreshToken = response.data.refreshToken;
-
-      // 토큰 발급 여부 확인
-      if (!accessToken || !refreshToken) {
-        alert("로그인 토큰을 발급받지 못했습니다.");
-        return;
-      }
-
-      // 회원 정보 저장
-      localStorage.setItem("username", loginId);
-      localStorage.setItem("nickname", nickname);
-
-      // Access Token / Refresh Token 저장
-      // 내부에서 인증 상태 변경 이벤트도 발생시킨다.
-      storeLoginTokens(accessToken, refreshToken);
-
-      // 로그인 화면이 바뀌어도 알림이 유지되도록 전역 이벤트로 전달한다.
-      window.dispatchEvent(
-        new CustomEvent("momo-toast", {
-          detail: { nickname },
-        }),
-      );
+      completeLogin(response.data, inputId.trim());
 
       navigate("/", { replace: true });
     } catch (error) {
       console.error("로그인 에러:", safeRequestFailure(error));
 
       const message =
-        error.response?.data?.message ||
+        (error.code === "MOMO_INVALID_LOGIN_RESPONSE" ? error.message : error.response?.data?.message) ||
         "아이디 또는 비밀번호가 올바르지 않습니다.";
 
       alert(message);
     } finally {
       setIsLoading(false);
     }
+  };
+
+  // 일반 로그인과 동시 제출하지 않고 서버가 발급한 state·바인딩 쿠키로 인증을 시작한다.
+  const onSocialLogin = async provider => {
+    if (isLoading || socialLoading) return;
+    setSocialLoading(provider); setSocialError("");
+    try {
+      const url = await prepareSocialLogin(provider);
+      if (mounted.current) window.location.assign(url);
+    } catch (error) {
+      if (mounted.current) setSocialError(error?.response?.data?.message || `${socialProviderName(provider)} 로그인에 연결하지 못했습니다. 잠시 후 다시 시도해 주세요.`);
+    } finally { if (mounted.current) setSocialLoading(""); }
   };
 
   return <ArchiveAuthFrame><main data-archive-page="login" className="signup-page">
@@ -78,6 +76,20 @@ function Login() {
         <div className="signup-field"><label htmlFor="loginPassword">비밀번호</label><input id="loginPassword" type="password" value={inputPwd} placeholder="비밀번호를 입력해 주세요." onChange={(event) => setInputPwd(event.target.value)} autoComplete="current-password" /></div>
         <button type="submit" className="signup-submit" disabled={!isValid}>{isLoading ? "로그인 중..." : "로그인"}</button>
       </form>
+      <SocialLoginArea aria-label="소셜 로그인">
+        <p>또는 소셜 계정으로 시작하기</p>
+        <KakaoLoginButton type="button" data-provider="kakao" onClick={() => onSocialLogin("kakao")} disabled={isLoading || !!socialLoading} aria-busy={socialLoading === "kakao"}>
+          <img src={kakaoLogo} alt="" aria-hidden="true" />
+          {socialLoading === "kakao" ? "카카오 연결 중..." : "카카오로 로그인"}
+        </KakaoLoginButton>
+        <NaverLoginButton type="button" data-provider="naver" onClick={() => onSocialLogin("naver")} disabled={isLoading || !!socialLoading} aria-busy={socialLoading === "naver"}>
+          <img src={naverLogo} alt="" aria-hidden="true" />{socialLoading === "naver" ? "네이버 연결 중..." : "네이버로 로그인"}
+        </NaverLoginButton>
+        <GoogleLoginButton type="button" data-provider="google" onClick={() => onSocialLogin("google")} disabled={isLoading || !!socialLoading} aria-busy={socialLoading === "google"}>
+          <img src={googleLogo} alt="" aria-hidden="true" />{socialLoading === "google" ? "구글 연결 중..." : "Google 계정으로 로그인"}
+        </GoogleLoginButton>
+        {socialError && <p role="alert">{socialError}</p>}
+      </SocialLoginArea>
       <div className="signup-footer"><span>아직 계정이 없으신가요?</span><Link to="/signup">회원가입</Link></div>
     </section></section>
   </main></ArchiveAuthFrame>;

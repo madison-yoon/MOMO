@@ -48,9 +48,10 @@ async function begin(action, pending) {
   } else {
     AxiosApi.memberDelete.mockReturnValue(pending.promise);
     render(React.createElement(ProfileDelete));
+    await screen.findByLabelText("현재 비밀번호");
     fireEvent.change(screen.getByLabelText("현재 비밀번호"), { target: { value: "test-password" } });
     fireEvent.click(screen.getByRole("checkbox"));
-    fireEvent.click(screen.getByRole("button", { name: "탈퇴하기" }));
+    fireEvent.click(screen.getByRole("button", { name: "회원 탈퇴", exact: true }));
   }
 }
 

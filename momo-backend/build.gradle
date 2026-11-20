@@ -37,6 +37,7 @@ dependencies {
 
     // Google 인증
     implementation 'com.google.auth:google-auth-library-oauth2-http'
+    implementation 'com.google.api-client:google-api-client:2.7.2'
 
     // Google Cloud Storage
     implementation 'com.google.cloud:google-cloud-storage'

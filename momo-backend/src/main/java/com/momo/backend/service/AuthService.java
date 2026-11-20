@@ -85,7 +85,9 @@ public class AuthService {
         User user = userRepository.findByLoginId(loginId)
                 .orElseThrow(() -> new IllegalArgumentException("아이디 또는 비밀번호가 올바르지 않습니다."));
 
-        if (!passwordEncoder.matches(password, user.getPasswordHash())) {
+        // 소셜 회원의 임시 비밀번호 해시는 기존 NOT NULL 제약 보존용이며 일반 로그인에 사용하지 않는다.
+        if (user.getProvider() != com.momo.backend.entity.AuthProvider.LOCAL
+                || !passwordEncoder.matches(password, user.getPasswordHash())) {
             throw new IllegalArgumentException("아이디 또는 비밀번호가 올바르지 않습니다.");
         }
 
@@ -108,6 +110,21 @@ public class AuthService {
         // 탈퇴·프로필 이미지 변경과 회원 정보 수정을 같은 회원 행 잠금으로 직렬화한다.
         User user = userRepository.findByUserIdForUpdate(userId)
                 .orElseThrow(() -> new IllegalArgumentException("회원 정보를 찾을 수 없습니다."));
+
+        // 회원 유형은 DB 값을 사용한다. 소셜 이메일은 누락·동일 값만 허용하고 공급자 저장값을 보존한다.
+        boolean social = user.getProvider() != com.momo.backend.entity.AuthProvider.LOCAL;
+        if (social) {
+            if (dto.email() != null && !java.util.Objects.equals(dto.email(), user.getEmail())) {
+                throw new IllegalArgumentException("소셜 회원의 이메일은 변경할 수 없습니다.");
+            }
+            if ((dto.currentPassword() != null && !dto.currentPassword().isEmpty())
+                    || (dto.newPassword() != null && !dto.newPassword().isEmpty())) {
+                throw new IllegalArgumentException("소셜 회원은 MOMO 비밀번호를 변경할 수 없습니다.");
+            }
+        } else if (dto.email() == null || dto.email().length() > 254
+                || !dto.email().matches("^[^\\s@]+@[^\\s@]+\\.[^\\s@]{2,}$")) {
+            throw new IllegalArgumentException("올바른 이메일을 입력해 주세요.");
+        }
 
         if (!user.getNickname().equals(dto.nickname())
                 && userRepository.existsByNickname(dto.nickname())) {
@@ -141,7 +158,7 @@ public class AuthService {
             user.updatePassword(passwordEncoder.encode(dto.newPassword()));
         }
 
-        user.updateProfile(dto.nickname(), dto.email());
+        user.updateProfile(dto.nickname(), social ? user.getEmail() : dto.email());
 
         try {
             // 동시 닉네임 변경 요청도 DB unique 제약조건 기준으로 충돌을 반환한다.
@@ -179,9 +196,27 @@ public class AuthService {
         User user = userRepository.findByUserIdForUpdate(userId)
                 .orElseThrow(() -> new IllegalArgumentException("회원 정보를 찾을 수 없습니다."));
 
-        if (!passwordEncoder.matches(password, user.getPasswordHash())) {
+        if (user.getProvider() != com.momo.backend.entity.AuthProvider.LOCAL || password == null || password.isBlank()
+                || !passwordEncoder.matches(password, user.getPasswordHash())) {
             throw new IllegalArgumentException("현재 비밀번호가 일치하지 않습니다.");
         }
+
+        deleteMemberData(userId, user);
+    }
+
+    /** 외부 연결 해제를 마친 조정자만 호출한다. 새 트랜잭션에서 DB 신원을 다시 확인한다. */
+    public void deleteVerifiedSocialAccount(Long userId, com.momo.backend.entity.AuthProvider provider, String providerId) {
+        User user = userRepository.findByUserIdForUpdate(userId)
+                .orElseThrow(() -> new IllegalArgumentException("회원 정보를 찾을 수 없습니다."));
+        if (provider == null || provider == com.momo.backend.entity.AuthProvider.LOCAL || user.getProvider() != provider
+                || !java.util.Objects.equals(user.getProviderId(), providerId)) {
+            throw new IllegalArgumentException("탈퇴 대상 회원이 일치하지 않습니다.");
+        }
+        deleteMemberData(userId, user);
+    }
+
+    // 인증 수단과 관계없이 기존 연관 데이터 삭제 순서·커밋 후 이미지 정리를 공유한다.
+    private void deleteMemberData(Long userId, User user) {
 
 
         // 회원 삭제 전에 Refresh Token 제거
@@ -238,6 +273,10 @@ public class AuthService {
             Long userId, String currentPassword) {
 
         User user = getLoginUser(userId);
+
+        if (user.getProvider() != com.momo.backend.entity.AuthProvider.LOCAL) {
+            throw new IllegalArgumentException("소셜 회원은 MOMO 비밀번호 확인을 사용하지 않습니다.");
+        }
 
         return passwordEncoder.matches(
                 currentPassword, user.getPasswordHash());

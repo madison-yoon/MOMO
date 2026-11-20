@@ -80,17 +80,28 @@ public class SecurityConfig {
                                                 // WebSocket handshake는 공개하고 첫 프레임에서 Access Token을 검증한다.
                                                 .requestMatchers("/ws/chat").permitAll()
 
+                                                // 소셜 탈퇴는 기존 공개 로그인 경로와 달리 MOMO JWT가 반드시 필요하다.
+                                                .requestMatchers(HttpMethod.POST,
+                                                                "/api/auth/*/delete/authorize",
+                                                                "/api/auth/*/delete/complete").authenticated()
+
                                                 // 회원가입, 로그인, 토큰 재발급 허용
                                                 .requestMatchers(
                                                                 HttpMethod.POST,
                                                                 "/api/auth/signup",
                                                                 "/api/auth/login",
+                                                                "/api/auth/kakao",
+                                                                "/api/auth/naver",
+                                                                "/api/auth/google",
                                                                 "/api/auth/reissue")
                                                 .permitAll()
 
                                                 // 공개 회원 조회 및 프로필 이미지 조회
                                                 .requestMatchers(
                                                                 HttpMethod.GET,
+                                                                "/api/auth/kakao/authorize",
+                                                                "/api/auth/naver/authorize",
+                                                                "/api/auth/google/authorize",
                                                                 "/api/auth/exists/id/**",
                                                                 "/api/auth/users/*/profile-image")
                                                 .permitAll()

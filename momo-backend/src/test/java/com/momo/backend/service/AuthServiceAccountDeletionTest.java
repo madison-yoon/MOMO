@@ -32,6 +32,7 @@ class AuthServiceAccountDeletionTest {
         User user = mock(User.class);
         when(userRepository.findByUserIdForUpdate(41L)).thenReturn(java.util.Optional.of(user));
         when(user.getUserId()).thenReturn(41L);
+        when(user.getProvider()).thenReturn(com.momo.backend.entity.AuthProvider.LOCAL);
         when(user.getPasswordHash()).thenReturn("encoded-password");
         when(passwordEncoder.matches("current-password", "encoded-password")).thenReturn(true);
 

@@ -6,6 +6,9 @@ import lombok.Getter;
 @Getter
 public class UserResponse {
 
+    // 화면 분기에만 사용하며 서버의 권한 판단은 항상 DB 회원 유형을 따른다.
+    private final com.momo.backend.entity.AuthProvider provider;
+
     // 회원 고유 번호
     private final Long userId;
 
@@ -23,6 +26,7 @@ public class UserResponse {
 
     // User Entity에서 응답에 필요한 정보만 가져옴
     public UserResponse(User user) {
+        this.provider = user.getProvider();
         this.userId = user.getUserId();
         this.loginId = user.getLoginId();
         this.nickname = user.getNickname();

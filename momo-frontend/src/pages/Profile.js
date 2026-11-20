@@ -10,6 +10,7 @@ function Profile() {
   const [userId, setUserId] = useState("");
   const [nickname, setNickname] = useState("");
   const [email, setEmail] = useState("");
+  const [provider, setProvider] = useState("LOCAL");
   const [profileUserId, setProfileUserId] = useState(null);
   const [hasProfileImage, setHasProfileImage] = useState(false);
 
@@ -55,6 +56,7 @@ function Profile() {
         setNickname(response.data.nickname ?? localStorage.getItem("nickname") ?? "");
         // 이메일이 응답에 없을 때 계정 구분 없는 로컬 값을 노출하지 않는다.
         setEmail(response.data.email || "");
+        setProvider(response.data.provider || "LOCAL");
         setProfileUserId(response.data.userId || null);
         setHasProfileImage(Boolean(response.data.profileImage));
       } catch (error) {
@@ -150,7 +152,7 @@ function Profile() {
 
               <dl className="compact-profile-fields">
                 <div><dt><svg viewBox="0 0 20 20" width="16" height="16" aria-hidden="true"><circle cx="10" cy="6" r="3" /><path d="M4 18v-2a6 6 0 0 1 12 0v2" /></svg>아이디</dt><dd>{userId || "정보 없음"}</dd></div>
-                <div><dt><svg viewBox="0 0 20 20" width="16" height="16" aria-hidden="true"><rect x="2" y="4" width="16" height="12" rx="2" /><path d="m2 5 8 6 8-6" /></svg>이메일</dt><dd>{email || "이메일 조회 정보 없음"}</dd></div>
+                <div><dt><svg viewBox="0 0 20 20" width="16" height="16" aria-hidden="true"><rect x="2" y="4" width="16" height="12" rx="2" /><path d="m2 5 8 6 8-6" /></svg>이메일</dt><dd>{email || (provider === "LOCAL" ? "이메일 조회 정보 없음" : "미등록")}</dd></div>
               </dl>
             </div>
           </div>

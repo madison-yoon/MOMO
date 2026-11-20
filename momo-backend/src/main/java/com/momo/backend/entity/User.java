@@ -6,7 +6,8 @@ import lombok.NoArgsConstructor;
 import java.time.LocalDateTime;
 
 @Entity
-@Table(name = "users")
+@Table(name = "users", uniqueConstraints = @UniqueConstraint(
+        name = "uk_users_provider_identity", columnNames = {"provider", "provider_id"}))
 @Getter
 @NoArgsConstructor
 public class User {
@@ -29,9 +30,17 @@ public class User {
     @Column(nullable = false, unique = true, length = 12)
     private String nickname;
 
-    // 회원이 필수로 등록하는 이메일
-    @Column(name = "email", nullable = false, length = 254)
+    // 일반 회원가입은 DTO에서 필수 검증하고, 이메일에 미동의한 소셜 회원만 null을 허용한다.
+    @Column(name = "email", length = 254)
     private String email;
+
+    // 기존 회원은 LOCAL로 유지하며 외부 식별자를 로그인 아이디·이메일과 분리한다.
+    @Enumerated(EnumType.STRING)
+    @Column(name = "provider", nullable = false, length = 20, columnDefinition = "varchar(20) default 'LOCAL'")
+    private AuthProvider provider = AuthProvider.LOCAL;
+
+    @Column(name = "provider_id", length = 255)
+    private String providerId;
 
     // 프로필 이미지
     @Column(name = "profile_image", length = 500)
@@ -55,6 +64,20 @@ public class User {
         this.email = email;
     }
 
+
+    // 소셜 회원도 같은 숫자 userId와 소유권 관계를 사용하되 일반 비밀번호 로그인은 허용하지 않는다.
+    public static User kakao(String loginId, String passwordHash, String nickname, String email, String providerId) {
+        return social(AuthProvider.KAKAO, loginId, passwordHash, nickname, email, providerId);
+    }
+
+    // 이메일이 같아도 계정을 합치지 않고 공급자와 원본 식별자 조합으로 별도 회원을 만든다.
+    public static User social(AuthProvider provider, String loginId, String passwordHash, String nickname, String email, String providerId) {
+        if (provider == null || provider == AuthProvider.LOCAL) throw new IllegalArgumentException("소셜 공급자가 필요합니다.");
+        User user = new User(loginId, passwordHash, nickname, email);
+        user.provider = provider;
+        user.providerId = providerId;
+        return user;
+    }
 
     // 회원의 닉네임과 이메일 수정
     public void updateProfile(String nickname, String email) {

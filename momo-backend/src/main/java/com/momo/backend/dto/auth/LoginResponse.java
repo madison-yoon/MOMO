@@ -9,7 +9,8 @@ public record LoginResponse(
         String profileImage,
         String accessToken,
         String refreshToken,
-        String tokenType
+        String tokenType,
+        com.momo.backend.entity.AuthProvider provider
 ) {
 
     public LoginResponse(User user, String accessToken, String refreshToken) {
@@ -20,7 +21,8 @@ public record LoginResponse(
                 user.getProfileImage(),
                 accessToken,
                 refreshToken,
-                "Bearer"
+                "Bearer",
+                user.getProvider()
         );
     }
 }

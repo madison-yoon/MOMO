@@ -10,7 +10,6 @@ import com.momo.backend.dto.auth.UserDeleteRequest;
 import com.momo.backend.entity.User;
 import com.momo.backend.service.AuthService;
 import com.momo.backend.dto.auth.LoginResponse;
-import com.momo.backend.security.TokenProvider;
 
 import jakarta.validation.Valid;
 
@@ -47,7 +46,8 @@ public class AuthController {
         private final RefreshTokenService refreshTokenService;
 
         // JWT 발급 담당
-        private final TokenProvider tokenProvider;
+         private final com.momo.backend.service.LoginSessionService loginSessions;
+         private final com.momo.backend.service.AccountDeletionService deletions;
 
         // 1. 회원가입
 
@@ -71,13 +71,7 @@ public class AuthController {
                                 dto.getLoginId(),
                                 dto.getPassword());
 
-                String accessToken = tokenProvider.createToken(user.getUserId());
-                String refreshToken = tokenProvider.createRefreshToken(user.getUserId());
-
-                refreshTokenService.saveOrReplace(user, refreshToken);
-
-                return ResponseEntity.ok(
-                                new LoginResponse(user, accessToken, refreshToken));
+                 return ResponseEntity.ok(loginSessions.issue(user));
         }
 
         // Refresh Token Rotation을 통한 토큰 재발급
@@ -122,9 +116,7 @@ public class AuthController {
                         Authentication authentication) {
 
                 // 회원 탈퇴 처리
-                authService.deleteMyAccount(
-                                MemberPrincipal.requireUserId(authentication),
-                                dto.password());
+                 deletions.delete(MemberPrincipal.requireUserId(authentication), dto);
 
                 // 인증 정보 제거
                 SecurityContextHolder.clearContext();

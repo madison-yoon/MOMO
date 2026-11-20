@@ -43,7 +43,7 @@ test("회원가입, 로그인, 로그아웃이 브라우저에서 이어진다",
     response.request().method() === "GET" &&
     response.ok(),
   );
-  await page.getByRole("button", { name: "로그인" }).click();
+  await page.getByRole("button", { name: "로그인", exact: true }).click();
 
   await expect(page).toHaveURL("http://127.0.0.1:3000/");
   await expect.poll(() => page.evaluate(() => localStorage.getItem("accessToken")))

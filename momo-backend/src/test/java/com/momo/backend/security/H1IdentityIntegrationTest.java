@@ -100,7 +100,7 @@ class H1IdentityIntegrationTest {
   favorites.addFavorite(id, new com.momo.backend.dto.favorite.FavoriteMovieRequest("20260001", "movie", "20250101", ""));
   assertEquals(1, favorites.getFavorites(id).size());
   assertTrue(favorites.getFavorites(other.getUserId()).isEmpty());
-  var controller = new com.momo.backend.controller.AuthController(auth, refresh, tokens);
+  var controller = new com.momo.backend.controller.AuthController(auth, refresh, new com.momo.backend.service.LoginSessionService(tokens, refresh), org.mockito.Mockito.mock(com.momo.backend.service.AccountDeletionService.class));
   var loginRequest = new com.momo.backend.dto.auth.LoginRequest();
   org.springframework.test.util.ReflectionTestUtils.setField(loginRequest, "loginId", "owner-login");
   org.springframework.test.util.ReflectionTestUtils.setField(loginRequest, "password", "TestPassword1!");
