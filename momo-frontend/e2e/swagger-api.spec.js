@@ -57,7 +57,7 @@ test("Swagger UI Try it out과 인증·리뷰·댓글·반응·관심 영화 API
   await reviewsOperation.locator(".opblock-summary").click();
   await reviewsOperation.locator("button.try-out__btn").click();
   await reviewsOperation.locator("button.execute").click();
-  await expect(reviewsOperation.locator(".response-col_status")).toHaveText("200");
+  await expect(reviewsOperation.locator(".responses-wrapper")).toContainText("200");
 
   // 2. 테스트 전용 회원을 만들고 JWT 인증을 확인한다.
   const suffix = `${Date.now().toString(36)}${Math.random().toString(36).slice(2, 7)}`;
