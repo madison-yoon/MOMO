@@ -39,7 +39,7 @@ class AuthServiceDuplicateSignupTest {
                 mock(FirebaseStorageService.class),
                 mock(MovieRatingRepository.class),
                 mock(FavoriteMovieRepository.class),
-                mock(RefreshTokenService.class)
+                mock(RefreshTokenService.class), mock(org.springframework.context.ApplicationEventPublisher.class)
         );
 
         SignupRequest request = mock(SignupRequest.class);

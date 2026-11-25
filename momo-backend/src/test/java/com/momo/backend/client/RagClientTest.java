@@ -1,87 +1,34 @@
 package com.momo.backend.client;
-
+import com.momo.backend.rag.client.RagClient;
 import com.sun.net.httpserver.HttpServer;
 import org.junit.jupiter.api.*;
-import org.springframework.transaction.support.*;
-import org.springframework.transaction.*;
 import java.net.*;
 import java.nio.charset.StandardCharsets;
-import java.util.concurrent.atomic.*;
+import java.util.List;
+import java.util.concurrent.atomic.AtomicInteger;
 import static org.junit.jupiter.api.Assertions.*;
-
-/** 로컬 HTTP와 실제 Spring commit/rollback 콜백을 검증한다. DB 접속은 없다. */
+/** 로컬 HTTP로 통신 계약만 검증하며 실제 DB·외부 서비스는 호출하지 않는다. */
 class RagClientTest {
-    HttpServer server;
-    AtomicInteger calls = new AtomicInteger();
-    AtomicReference<String> body = new AtomicReference<>();
-    AtomicReference<String> header = new AtomicReference<>();
-    AtomicInteger status = new AtomicInteger(200);
-    RagClient client;
-    @BeforeEach void setUp() throws Exception {
-        server = HttpServer.create(new InetSocketAddress("127.0.0.1", 0), 0);
-        server.createContext("/index", exchange -> {
-            calls.incrementAndGet();
-            header.set(exchange.getRequestHeaders().getFirst("X-Service-Token"));
-            body.set(new String(exchange.getRequestBody().readAllBytes(), StandardCharsets.UTF_8));
-            byte[] response = (exchange.getRequestMethod().equals("DELETE")
-                    ? "{\"review_id\":91,\"deleted\":1}" : "{\"review_id\":91,\"chunks\":2}").getBytes(StandardCharsets.UTF_8);
-            exchange.getResponseHeaders().set("Content-Type", "application/json");
-            exchange.sendResponseHeaders(status.get(), response.length);
-            exchange.getResponseBody().write(response);
-            exchange.close();
-        });
-        server.start();
-        client = new RagClient(true, "http://127.0.0.1:" + server.getAddress().getPort(), "test-only", 200, 200);
+    HttpServer server; String base; AtomicInteger status=new AtomicInteger(200);
+    @BeforeEach void start() throws Exception {
+        server=HttpServer.create(new InetSocketAddress("127.0.0.1",0),0);
+        server.createContext("/", e->{
+            assertEquals("test-only",e.getRequestHeaders().getFirst("X-Service-Token"));
+            String request=new String(e.getRequestBody().readAllBytes(),StandardCharsets.UTF_8);
+            String response=e.getRequestURI().getPath().equals("/query")
+                ? "{\"answer\":\"mock\",\"abstained\":false,\"sources\":[{\"review_id\":91,\"title\":\"title\",\"snippet\":\"part\",\"score\":1}],\"trace\":[\"retrieve\"]}"
+                : e.getRequestMethod().equals("DELETE")?"{\"review_id\":91,\"deleted\":1}":"{\"review_id\":91,\"chunks\":2}";
+            if(e.getRequestMethod().equals("POST")) assertTrue(request.contains("review_id"));
+            byte[] bytes=response.getBytes(StandardCharsets.UTF_8);
+            e.getResponseHeaders().set("Content-Type","application/json");e.sendResponseHeaders(status.get(),bytes.length);e.getResponseBody().write(bytes);e.close();
+        });server.start();base="http://127.0.0.1:"+server.getAddress().getPort();
     }
-    @AfterEach void stop() { server.stop(0); }
-    @Test void httpContractAndToken() {
-        assertEquals(2, client.index(new RagClient.IndexRequest(91L, "20990001", "제목", "내용")));
-        assertEquals("test-only", header.get());
-        assertTrue(body.get().contains("\"review_id\":91"));
-        assertFalse(body.get().contains("email"));
-        assertEquals(1, client.delete(91L));
-    }
-    @Test void callbackRunsOnlyAfterSuccessfulCommit() {
-        transactionTemplate().executeWithoutResult(s -> {
-            client.indexAfterCommit(91L, "20990001", "제목", "내용");
-            assertEquals(0, calls.get());
-        });
-        assertEquals(1, calls.get());
-        transactionTemplate().executeWithoutResult(s -> { client.deleteAfterCommit(91L); s.setRollbackOnly(); });
-        assertEquals(1, calls.get());
-    }
-    @Test void noTransactionAndDisabledDoNotSend() {
-        client.deleteAfterCommit(91L);
-        RagClient disabled = new RagClient(false, "http://127.0.0.1:1", "", 200, 200);
-        transactionTemplate().executeWithoutResult(s -> disabled.deleteAfterCommit(91L));
-        assertEquals(0, calls.get());
-    }
-    @Test void committedReviewDoesNotFailOnHttpError() {
-        status.set(401);
-        assertDoesNotThrow(() -> transactionTemplate().executeWithoutResult(s -> client.deleteAfterCommit(91L)));
-        assertEquals(1, calls.get());
-    }
-    @Test void connectionFailureDoesNotEscapeCallback() {
-        RagClient unavailable = new RagClient(true, "http://127.0.0.1:1", "test-only", 100, 100);
-        assertDoesNotThrow(() -> transactionTemplate().executeWithoutResult(s -> unavailable.deleteAfterCommit(91L)));
-    }
-    @Test void readTimeoutIsBoundedAndDoesNotEscapeCallback() {
-        server.removeContext("/index");
-        server.createContext("/index", exchange -> {
-            try { Thread.sleep(700); } catch (InterruptedException e) { Thread.currentThread().interrupt(); }
-            exchange.close();
-        });
-        long start = System.nanoTime();
-        assertDoesNotThrow(() -> transactionTemplate().executeWithoutResult(s -> client.deleteAfterCommit(91L)));
-        assertTrue((System.nanoTime() - start) / 1_000_000 < 650);
-    }
-    private TransactionTemplate transactionTemplate() {
-        // 자원 없는 매니저로 DB 없이 실제 동기화 순서를 확인한다.
-        return new TransactionTemplate(new AbstractPlatformTransactionManager() {
-            protected Object doGetTransaction() { return new Object(); }
-            protected void doBegin(Object tx, TransactionDefinition definition) { }
-            protected void doCommit(DefaultTransactionStatus status) { }
-            protected void doRollback(DefaultTransactionStatus status) { }
-        });
-    }
+    RagClient client(){return new RagClient(true,base,"test-only",200,200,200,1000);}
+    @AfterEach void stop(){server.stop(0);}
+    @Test void indexContract(){assertEquals(2,client().index(new RagClient.IndexRequest(91L,"20990001","title","body")));}
+    @Test void deleteContract(){assertEquals(1,client().delete(91L));}
+    @Test void queryContract(){var answer=client().query("question",List.of(91L),5);assertFalse(answer.abstained());assertEquals(91L,answer.sources().getFirst().review_id());}
+    @Test void httpFailurePropagatesToOrchestrator(){status.set(503);assertThrows(Exception.class,()->client().delete(91L));}
+    @Test void enabledNeedsToken(){assertThrows(IllegalArgumentException.class,()->new RagClient(true,base,"",1,1,1,1));}
+    @Test void timeoutsMustBePositive(){assertThrows(IllegalArgumentException.class,()->new RagClient(false,base,"",1,1,1,0));}
 }

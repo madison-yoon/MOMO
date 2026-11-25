@@ -46,7 +46,7 @@ class AuthServiceAccountDeletionTest {
                 mock(FirebaseStorageService.class),
                 movieRatingRepository,
                 favoriteMovieRepository,
-                refreshTokenService
+                refreshTokenService, mock(org.springframework.context.ApplicationEventPublisher.class)
         );
 
         service.deleteMyAccount(41L, "current-password");

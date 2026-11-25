@@ -36,7 +36,7 @@ class ReviewServiceDuplicateCreateTest {
                 mock(CommentRepository.class),
                 mock(ReviewReactionRepository.class),
                 mock(CommentReactionRepository.class),
-                mock(com.momo.backend.client.RagClient.class)
+                mock(org.springframework.context.ApplicationEventPublisher.class)
         );
 
         ReviewCreateRequest request = mock(ReviewCreateRequest.class);

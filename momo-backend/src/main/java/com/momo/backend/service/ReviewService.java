@@ -1,7 +1,9 @@
 
 package com.momo.backend.service;
 
-import com.momo.backend.client.RagClient;
+import org.springframework.context.ApplicationEventPublisher;
+import com.momo.backend.rag.event.ReviewIndexEvent;
+import com.momo.backend.rag.event.ReviewIndexEvent.Operation;
 import com.momo.backend.dto.review.ReviewCreateRequest;
 import com.momo.backend.dto.review.ReviewResponse;
 import com.momo.backend.dto.review.ReviewPageResponse;
@@ -51,7 +53,7 @@ public class ReviewService {
     private final CommentRepository commentRepository;
     private final ReviewReactionRepository reviewReactionRepository;
     private final CommentReactionRepository commentReactionRepository;
-    private final RagClient ragClient;
+    private final ApplicationEventPublisher ragEvents;
 
     // 전체 리뷰 목록 조회
 
@@ -271,8 +273,7 @@ public class ReviewService {
             // 동시 작성 요청도 DB unique 제약조건으로 중복을 차단한다.
             Review savedReview = reviewRepository.saveAndFlush(review);
             // DB 커밋이 성공한 뒤에만 메모리 검색 색인을 갱신한다.
-            ragClient.indexAfterCommit(savedReview.getReviewId(), savedReview.getMovieCode(),
-                    savedReview.getTitle(), savedReview.getContent());
+            ragEvents.publishEvent(new ReviewIndexEvent(savedReview.getReviewId(), Operation.UPSERT));
             return new ReviewResponse(savedReview);
         } catch (DataIntegrityViolationException duplicate) {
             throw new CustomException(
@@ -376,8 +377,8 @@ public class ReviewService {
                 dto.getContent()
         );
 
-        ragClient.indexAfterCommit(review.getReviewId(), review.getMovieCode(),
-                review.getTitle(), review.getContent());
+        review.markIndexing();
+        ragEvents.publishEvent(new ReviewIndexEvent(review.getReviewId(), Operation.UPSERT));
         return new ReviewResponse(review);
     }
 
@@ -414,6 +415,6 @@ public class ReviewService {
                 .deleteByReview_ReviewId(reviewId);
 
         reviewRepository.delete(review);
-        ragClient.deleteAfterCommit(reviewId);
+        ragEvents.publishEvent(new ReviewIndexEvent(reviewId, Operation.DELETE));
     }
 }

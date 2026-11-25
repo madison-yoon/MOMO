@@ -48,7 +48,7 @@ class H1IdentityIntegrationTest {
  @Autowired PasswordEncoder passwords;
  @MockitoBean FirebaseStorageService firebase;
  // 이 인증/소유권 테스트에서는 별도 RAG 서버에 접근하지 않는다.
- @MockitoBean com.momo.backend.client.RagClient ragClient;
+ @MockitoBean com.momo.backend.rag.client.RagClient ragClient;
  @MockitoBean com.momo.backend.service.MovieService movieService;
  @Autowired com.momo.backend.service.ReviewService reviews;
  @Autowired com.momo.backend.service.CommentService comments;

@@ -1,6 +1,8 @@
 package com.momo.backend.service;
 
-import com.momo.backend.client.RagClient;
+import org.springframework.context.ApplicationEventPublisher;
+import com.momo.backend.rag.event.ReviewIndexEvent;
+import com.momo.backend.rag.event.ReviewIndexEvent.Operation;
 import com.momo.backend.dto.review.*;
 import com.momo.backend.entity.*;
 import com.momo.backend.repository.*;
@@ -14,7 +16,7 @@ import static org.junit.jupiter.api.Assertions.*;
 class ReviewRagServiceTest {
     ReviewRepository reviews = mock(ReviewRepository.class);
     UserRepository users = mock(UserRepository.class);
-    RagClient rag = mock(RagClient.class);
+    ApplicationEventPublisher rag = mock(ApplicationEventPublisher.class);
     ReviewService service = new ReviewService(reviews, users, mock(MovieRepository.class),
             mock(CommentRepository.class), mock(ReviewReactionRepository.class),
             mock(CommentReactionRepository.class), rag);
@@ -34,20 +36,20 @@ class ReviewRagServiceTest {
         when(req.getTitle()).thenReturn("우주 영화");
         when(req.getContent()).thenReturn("우주 탐험");
         assertEquals(910001L, service.createReview(91L, req).getReviewId());
-        verify(rag).indexAfterCommit(910001L, "20990001", "우주 영화", "우주 탐험");
+        verify(rag).publishEvent(new ReviewIndexEvent(910001L, Operation.UPSERT));
     }
     @Test void updateCapturesNewContent() {
         ReviewUpdateRequest req = mock(ReviewUpdateRequest.class);
         when(req.getTitle()).thenReturn("수정 제목");
         when(req.getContent()).thenReturn("기차 여행");
         service.updateReview(910001L, 91L, req);
-        verify(rag).indexAfterCommit(910001L, "20990001", "수정 제목", "기차 여행");
+        verify(rag).publishEvent(new ReviewIndexEvent(910001L, Operation.UPSERT));
     }
     @Test void deleteSchedulesOnlyAfterLocalDelete() {
         service.deleteReview(910001L, 91L);
         var ordered = inOrder(reviews, rag);
         ordered.verify(reviews).delete(review);
-        ordered.verify(rag).deleteAfterCommit(910001L);
+        ordered.verify(rag).publishEvent(new ReviewIndexEvent(910001L, Operation.DELETE));
     }
     @Test void forbiddenDoesNotScheduleIndexOrDelete() {
         assertThrows(RuntimeException.class, () -> service.updateReview(910001L, 92L, mock(ReviewUpdateRequest.class)));

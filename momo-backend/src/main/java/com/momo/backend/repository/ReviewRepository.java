@@ -13,9 +13,33 @@ import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 
 import java.util.Optional;
+import java.util.List;
+import java.time.LocalDateTime;
+import com.momo.backend.rag.enums.IndexStatus;
 
 
 public interface ReviewRepository extends JpaRepository<Review, Long> {
+
+    @Query("select r.reviewId from Review r order by r.reviewId")
+    List<Long> findAllReviewIds();
+
+    @Query("select r.reviewId from Review r where r.user.userId = :userId order by r.reviewId")
+    List<Long> findAuthoredIds(@Param("userId") Long userId);
+
+    // 벌크 갱신은 엔티티 생명주기 콜백을 우회하므로 원본 updatedAt을 보존한다.
+    @Modifying(clearAutomatically = true, flushAutomatically = true)
+    @Query("update Review r set r.indexStatus = com.momo.backend.rag.enums.IndexStatus.INDEXING, r.indexError = null, r.indexedAt = null where r.reviewId = :reviewId")
+    int resetIndexState(@Param("reviewId") Long reviewId);
+
+    @Modifying(clearAutomatically = true, flushAutomatically = true)
+    @Query("update Review r set r.indexStatus = com.momo.backend.rag.enums.IndexStatus.INDEXING, r.indexError = null, r.indexedAt = null where r.indexStatus = com.momo.backend.rag.enums.IndexStatus.READY")
+    int invalidateReadyIndexes();
+
+    // 호출자는 같은 REQUIRES_NEW 트랜잭션에서 행 잠금 및 정확한 원본 비교를 완료해야 한다.
+    @Modifying(clearAutomatically = true, flushAutomatically = true)
+    @Query("update Review r set r.indexStatus = :status, r.indexError = :error, r.indexedAt = :indexedAt where r.reviewId = :reviewId and r.indexStatus = com.momo.backend.rag.enums.IndexStatus.INDEXING")
+    int writeIndexResult(@Param("reviewId") Long reviewId, @Param("status") IndexStatus status,
+                         @Param("error") String error, @Param("indexedAt") LocalDateTime indexedAt);
 
     // 리뷰 반응·댓글 등록과 리뷰 삭제가 동시에 진행되지 않도록 대상 리뷰 행을 잠근다.
     @Lock(LockModeType.PESSIMISTIC_WRITE)

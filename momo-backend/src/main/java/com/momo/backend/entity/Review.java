@@ -6,6 +6,7 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 
 import java.time.LocalDateTime;
+import com.momo.backend.rag.enums.IndexStatus;
 
 @Entity
 @Table(
@@ -50,6 +51,17 @@ public class Review {
     @Column(name = "updated_at", nullable = false)
     private LocalDateTime updatedAt;
 
+    // 사용자 원본과 색인 상태를 같은 행에 보관하며 성공 이전에는 검색에서 제외한다.
+    @Enumerated(EnumType.STRING)
+    @Column(name = "index_status", nullable = false, length = 20)
+    private IndexStatus indexStatus = IndexStatus.INDEXING;
+
+    @Column(name = "index_error", length = 500)
+    private String indexError;
+
+    @Column(name = "indexed_at", columnDefinition = "DATETIME(6)")
+    private LocalDateTime indexedAt;
+
     public Review(User user, String movieCode, String title, String content) {
         this.user = user;
         this.movieCode = movieCode;
@@ -72,5 +84,13 @@ public class Review {
     public void updateReview(String title, String content) {
         this.title = title;
         this.content = content;
+        markIndexing();
+    }
+
+    // 일반 수정 트랜잭션에서 사용한다. 상태 전용 갱신은 벌크 쿼리를 사용한다.
+    public void markIndexing() {
+        this.indexStatus = IndexStatus.INDEXING;
+        this.indexError = null;
+        this.indexedAt = null;
     }
 }

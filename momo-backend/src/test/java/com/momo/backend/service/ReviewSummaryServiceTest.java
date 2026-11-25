@@ -58,7 +58,7 @@ class ReviewSummaryServiceTest {
                 commentRepository,
                 reactionRepository,
                 mock(CommentReactionRepository.class),
-                mock(com.momo.backend.client.RagClient.class)
+                mock(org.springframework.context.ApplicationEventPublisher.class)
         );
 
         var result = service.getReviewSummaries(List.of(11L, 12L, 11L));
@@ -92,7 +92,7 @@ class ReviewSummaryServiceTest {
                 mock(CommentRepository.class),
                 mock(ReviewReactionRepository.class),
                 mock(CommentReactionRepository.class),
-                mock(com.momo.backend.client.RagClient.class)
+                mock(org.springframework.context.ApplicationEventPublisher.class)
         );
 
         assertThrows(

@@ -73,6 +73,12 @@ class RagLiveIntegrationTest {
                 .body(Map.of("movieCode","20990001","title","가상 우주 영화","content","우주 탐험과 음악이 좋다"))
                 .retrieve().body(Map.class);
         long id=((Number)created.get("reviewId")).longValue();
+        // 실제 Spring 질문 API가 READY 허용목록을 만들고 FastAPI 응답을 재검증한다.
+        var answer=spring.post().uri("/api/rag/query").contentType(MediaType.APPLICATION_JSON)
+                .body(Map.of("question","우주 탐험","scope","MINE")).retrieve().body(Map.class);
+        assertEquals(false, answer.get("abstained"));
+        assertFalse(((java.util.List<?>)answer.get("sources")).isEmpty());
+
         assertTrue(((Number)rag.delete().uri("/index/{id}",id).retrieve().body(Map.class).get("deleted")).intValue()>0);
         spring.put().uri("/api/reviews/{id}",id).contentType(MediaType.APPLICATION_JSON)
                 .body(Map.of("title","수정 가상 리뷰","content","기차 여행 장면이 좋다")).retrieve().toBodilessEntity();
@@ -82,6 +88,10 @@ class RagLiveIntegrationTest {
                 .body(Map.of("title","삭제 검증","content","가상 내용")).retrieve().toBodilessEntity();
         spring.delete().uri("/api/reviews/{id}",id).retrieve().toBodilessEntity();
         assertEquals(0,((Number)rag.delete().uri("/index/{id}",id).retrieve().body(Map.class).get("deleted")).intValue());
+        var removed=spring.post().uri("/api/rag/query").contentType(MediaType.APPLICATION_JSON)
+                .body(Map.of("question","우주 탐험","scope","ALL")).retrieve().body(Map.class);
+        assertEquals(true,removed.get("abstained"));
+
         python.destroy(); assertTrue(python.waitFor(5,TimeUnit.SECONDS));
         var afterStop=spring.post().uri("/api/reviews").contentType(MediaType.APPLICATION_JSON)
                 .body(Map.of("movieCode","20990002","title","장애 격리","content","서버가 꺼져도 리뷰는 저장된다"))

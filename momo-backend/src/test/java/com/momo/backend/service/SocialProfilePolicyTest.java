@@ -14,7 +14,7 @@ class SocialProfilePolicyTest {
     final UserRepository users = mock(UserRepository.class);
     final AuthService service = new AuthService(users, mock(PasswordEncoder.class), mock(ReviewRepository.class),
             mock(CommentRepository.class), mock(ReviewReactionRepository.class), mock(CommentReactionRepository.class),
-            mock(FirebaseStorageService.class), mock(MovieRatingRepository.class), mock(FavoriteMovieRepository.class), mock(RefreshTokenService.class));
+            mock(FirebaseStorageService.class), mock(MovieRatingRepository.class), mock(FavoriteMovieRepository.class), mock(RefreshTokenService.class), mock(org.springframework.context.ApplicationEventPublisher.class));
 
     User social(String email) {
         User user = User.social(AuthProvider.NAVER, "social", "random-hash", "기존이름", email, "external-id");

@@ -45,6 +45,7 @@ public class AuthService {
     private final MovieRatingRepository movieRatingRepository;
     private final FavoriteMovieRepository favoriteMovieRepository;
     private final RefreshTokenService refreshTokenService;
+    private final org.springframework.context.ApplicationEventPublisher ragEvents;
 
     // 회원가입
 
@@ -217,6 +218,8 @@ public class AuthService {
 
     // 인증 수단과 관계없이 기존 연관 데이터 삭제 순서·커밋 후 이미지 정리를 공유한다.
     private void deleteMemberData(Long userId, User user) {
+        // bulk 삭제 전에 ID만 확보하고 커밋 이후 전용 실행기로 청크를 정리한다.
+        var ragReviewIds = reviewRepository.findAuthoredIds(userId);
 
 
         // 회원 삭제 전에 Refresh Token 제거
@@ -242,6 +245,7 @@ public class AuthService {
         // 회원이 작성한 리뷰에 달린 댓글 삭제 후 리뷰 일괄 삭제
         commentRepository.deleteForReviewsAuthoredByUser(userId);
         reviewRepository.deleteAuthoredByUserId(userId);
+        ragEvents.publishEvent(new com.momo.backend.rag.event.ReviewPurgeEvent(ragReviewIds));
 
         // 회원이 남긴 영화 좋아요 및 싫어요 삭제
         movieRatingRepository.deleteAuthoredByUserId(userId);
