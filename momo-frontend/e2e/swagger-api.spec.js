@@ -42,7 +42,7 @@ test("Swagger UI Try it out과 인증·리뷰·댓글·반응·관심 영화 API
 
   const swaggerPage = await page.goto(`${API}/swagger-ui/index.html`);
   expect(swaggerPage?.status()).toBe(200);
-  await expect(page.locator(".swagger-ui")).toBeVisible();
+  await expect(page.locator(".swagger-ui").first()).toBeVisible();
 
   // 브라우저의 Swagger "Try it out"으로 공개 리뷰 목록 API를 실제 호출한다.
   const reviewsOperation = page
