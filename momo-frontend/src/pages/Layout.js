@@ -27,8 +27,15 @@ import {
 } from "../styles/legacy/Layout.styles";
 
 import textlogo from "../textlogo.png";
-import AxiosApi, { clearAuthSession, getAuthSessionVersion, isAuthSessionCurrent } from "../api/AxiosApi";
-import { getCurrentFavoriteUserId, syncFavoriteMoviesFromServer } from "../utils/favorites";
+import AxiosApi, {
+  clearAuthSession,
+  getAuthSessionVersion,
+  isAuthSessionCurrent,
+} from "../api/AxiosApi";
+import {
+  getCurrentFavoriteUserId,
+  syncFavoriteMoviesFromServer,
+} from "../utils/favorites";
 import MovieSearchAutocomplete from "../components/common/MovieSearchAutocomplete";
 import ScrollToTop from "../components/home/ScrollToTop";
 import { archivePageForPath } from "../styles/redesign/ArchivePages.styles";
@@ -94,7 +101,13 @@ function Layout() {
 
         setNickname(response.data.nickname || "회원");
       } catch (error) {
-        if (!active || controller.signal.aborted || error.code === "ERR_CANCELED" || error.name === "CanceledError") return;
+        if (
+          !active ||
+          controller.signal.aborted ||
+          error.code === "ERR_CANCELED" ||
+          error.name === "CanceledError"
+        )
+          return;
 
         if (error.response?.status === 401) {
           // 인증 만료 처리는 AxiosApi 인터셉터가 담당
@@ -149,7 +162,11 @@ function Layout() {
       // 메인 화면 이동
       navigate("/", { replace: true });
     } catch (error) {
-      if (!isAuthSessionCurrent(sessionVersion) || error.code === "MOMO_AUTH_SESSION_CHANGED") return;
+      if (
+        !isAuthSessionCurrent(sessionVersion) ||
+        error.code === "MOMO_AUTH_SESSION_CHANGED"
+      )
+        return;
       console.error("로그아웃 실패:", safeRequestFailure(error));
 
       // 401은 AxiosApi 인증 인터셉터가 처리하므로
@@ -167,7 +184,10 @@ function Layout() {
   // ========================================
 
   return (
-    <Container $homeRedesign={location.pathname === "/"} $archiveRedesign={Boolean(archivePageForPath(location.pathname))}>
+    <Container
+      $homeRedesign={location.pathname === "/"}
+      $archiveRedesign={Boolean(archivePageForPath(location.pathname))}
+    >
       <Header>
         <Logo to="/" aria-label="MOMO 홈">
           <LogoImage src={textlogo} alt="MOMO" />
@@ -177,12 +197,15 @@ function Layout() {
         <MovieSearchAutocomplete />
 
         <Navigation>
-          {!authLoading && !nickname && (location.pathname === "/" || archivePageForPath(location.pathname)) && (
-            <UserArea>
-              <NavLink to="/">홈</NavLink>
-              <NavLink to="/reviews">전체 리뷰</NavLink>
-            </UserArea>
-          )}
+          {!authLoading &&
+            !nickname &&
+            (location.pathname === "/" ||
+              archivePageForPath(location.pathname)) && (
+              <UserArea>
+                <NavLink to="/">홈</NavLink>
+                <NavLink to="/reviews">전체 리뷰</NavLink>
+              </UserArea>
+            )}
           {!authLoading &&
             (nickname ? (
               <UserArea>
@@ -191,7 +214,7 @@ function Layout() {
                 <NavLink to="/reviews">전체 리뷰</NavLink>
 
                 <NavLink to="/profile">마이페이지</NavLink>
-                <NavLink to="/ai-assistant">AI 도우미</NavLink>
+                <NavLink to="/ai-assistant">조감독 AI</NavLink>
 
                 <p>
                   <strong>{nickname}</strong>님
