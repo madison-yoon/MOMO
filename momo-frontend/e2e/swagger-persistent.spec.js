@@ -358,11 +358,12 @@ test("Swagger UI와 기존 momo_db의 실제 API 계약을 검증하고 테스�
   expect((await request.delete(
     `${API}/api/reviews/${reviewId}/reaction`, { headers },
   )).status()).toBe(204);
-  const removedReviewReaction = await request.get(
-    `${API}/api/reviews/${reviewId}/reaction`, { headers },
-  );
-  expect(removedReviewReaction.status()).toBe(200);
-  expect(await removedReviewReaction.json()).toBeNull();
+  expect(
+    (await request.delete(
+      `${API}/api/reviews/${reviewId}/reaction`, { headers },
+    )).status(),
+    "이미 취소된 리뷰 반응이 다시 삭제됩니다.",
+  ).toBe(400);
   expect((await request.put(`${API}/api/reviews/${reviewId}/reaction`, {
     headers, data: true,
   })).status()).toBe(200);
@@ -409,10 +410,12 @@ test("Swagger UI와 기존 momo_db의 실제 API 계약을 검증하고 테스�
   expect((await request.delete(
     `${API}/api/comments/${commentId}/reaction`, { headers },
   )).status()).toBe(204);
-  const commentRowsWithoutReaction = await getAllPagedContent(
-    request, `/api/reviews/${reviewId}/comments`, headers,
-  );
-  expect(commentRowsWithoutReaction.find((item) => item.commentId === commentId)?.myReaction).toBeNull();
+  expect(
+    (await request.delete(
+      `${API}/api/comments/${commentId}/reaction`, { headers },
+    )).status(),
+    "이미 취소된 댓글 반응이 다시 삭제됩니다.",
+  ).toBe(400);
   expect((await request.put(`${API}/api/comments/${commentId}/reaction`, {
     headers, data: true,
   })).status()).toBe(200);
@@ -464,6 +467,12 @@ test("Swagger UI와 기존 momo_db의 실제 API 계약을 검증하고 테스�
   const removedRating = await request.get(`${API}/api/movies/${movie.movieCode}/rating`, { headers });
   expect(removedRating.status()).toBe(200);
   expect((await removedRating.json()).myRating).toBeNull();
+  expect(
+    (await request.delete(
+      `${API}/api/movies/${movie.movieCode}/rating`, { headers },
+    )).status(),
+    "이미 취소된 영화 평점이 다시 삭제됩니다.",
+  ).toBe(400);
   expect((await request.put(`${API}/api/movies/${movie.movieCode}/rating`, {
     headers, data: true,
   })).status()).toBe(200);
