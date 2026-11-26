@@ -166,6 +166,9 @@ public class AuthService {
             }
 
             user.updatePassword(passwordEncoder.encode(dto.newPassword()));
+
+            // 비밀번호가 바뀌면 기존 Refresh Token을 폐기해 이전 로그인 세션의 재발급을 차단한다.
+            refreshTokenService.deleteByUserId(userId);
         }
 
         user.updateProfile(dto.nickname(), social ? user.getEmail() : dto.email());
