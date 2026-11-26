@@ -64,6 +64,16 @@ jobs:
           cat /tmp/momo-backend-e2e.log
           exit 1
 
+      # This fixture exists only in the disposable GitHub Actions MySQL service.
+      - name: Seed isolated MySQL Movie fixture
+        run: |
+          mysql_container="$(docker ps --filter "ancestor=mysql:8.4" --format "{{.ID}}" | head -n 1)"
+          if [ -z "$mysql_container" ]; then
+            echo "GitHub Actions MySQL service container was not found."
+            exit 1
+          fi
+          docker exec "$mysql_container" mysql -uroot -pmomo-e2e-password momo_db -e "INSERT INTO movies (movie_code, title, box_office_entered, row_version) VALUES ('20261234', 'MOMO API CRUD E2E', 0, 0) ON DUPLICATE KEY UPDATE title = VALUES(title);"
+
       - name: Install frontend dependencies
         working-directory: momo-frontend
         run: |
