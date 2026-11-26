@@ -138,10 +138,10 @@ class ReviewIndexPersistenceTest {
         });
 
         assertThat(outboxCount()).isEqualTo(4);
-        assertThat(jdbc.queryForList(
-                "SELECT review_id, operation FROM review_index_outbox ORDER BY id",
-                Long.class
-        )).containsExactly(900L, 901L, 902L, 903L);
+        assertThat(jdbc.query(
+                "SELECT CONCAT(review_id, ':', operation) FROM review_index_outbox ORDER BY id",
+                (rs, rowNumber) -> rs.getString(1)
+        )).containsExactly("900:UPSERT", "901:DELETE", "902:DELETE", "903:DELETE");
     }
 
     @Test
