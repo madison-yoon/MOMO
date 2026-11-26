@@ -14,23 +14,50 @@ import java.util.concurrent.Executor;
 public class ReviewIndexListener {
     private final ReviewIndexService indexService;
     private final Executor purgeExecutor;
+    private final Executor indexExecutor;
 
+    @org.springframework.beans.factory.annotation.Autowired
     public ReviewIndexListener(ReviewIndexService indexService,
-            @Qualifier("ragPurgeExecutor") Executor purgeExecutor) {
+            @Qualifier("ragPurgeExecutor") Executor purgeExecutor,
+            @Qualifier("ragIndexExecutor") Executor indexExecutor) {
         this.indexService = indexService;
         this.purgeExecutor = purgeExecutor;
+        this.indexExecutor = indexExecutor;
+    }
+
+    public ReviewIndexListener(ReviewIndexService indexService, Executor purgeExecutor) {
+        this(indexService, purgeExecutor, Runnable::run);
     }
 
     @TransactionalEventListener(phase = TransactionPhase.AFTER_COMMIT)
     public void onIndex(ReviewIndexEvent event) {
         try {
             switch (event.operation()) {
-                case UPSERT -> indexService.index(event.reviewId());
+                case UPSERT -> submit(event);
                 case DELETE -> indexService.remove(event.reviewId());
             }
         } catch (RuntimeException failure) {
             log.warn("RAG 커밋 후 처리 실패 reviewId={} operation={} type={}",
                     event.reviewId(), event.operation(), failure.getClass().getSimpleName());
+        }
+    }
+
+    private void submit(ReviewIndexEvent event) {
+        long generation = indexService.generation();
+        try {
+            indexExecutor.execute(() -> {
+                try { indexService.index(event.reviewId()); }
+                catch (RuntimeException failure) {
+                    log.warn("RAG async index failed reviewId={} type={}", event.reviewId(), failure.getClass().getSimpleName());
+                }
+            });
+        } catch (java.util.concurrent.RejectedExecutionException rejected) {
+            // 기존 유한 삭제 작업 큐를 재사용하여 짧은 조건부 상태 갱신을 수행한다.
+            try { purgeExecutor.execute(() -> indexService.rejected(event.snapshot(), generation)); }
+            catch (RuntimeException saturated) {
+                // 두 큐가 모두 포화되면 INDEXING을 유지하고 기존 수동 재색인으로 복구한다.
+                log.warn("RAG rejection marker unavailable reviewId={} classification=INDEX_RECOVERY_REQUIRED", event.reviewId());
+            }
         }
     }
 

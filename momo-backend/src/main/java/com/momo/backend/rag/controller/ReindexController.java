@@ -13,6 +13,13 @@ public class ReindexController {
     private final ReviewIndexService service;
 
     // 운영자 ID는 요청 본문이 아닌 검증된 JWT principal에서만 얻는다.
+    @GetMapping("/{reviewId}/status")
+    public IndexDetail status(@PathVariable Long reviewId, Authentication authentication) {
+        return new IndexDetail(service.indexError(reviewId, MemberPrincipal.requireUserId(authentication)));
+    }
+
+    public record IndexDetail(String indexError) { }
+
     @PostMapping("/{reviewId}")
     public SingleResult reindex(@PathVariable Long reviewId, Authentication authentication) {
         return new SingleResult(reviewId, service.reindex(reviewId, MemberPrincipal.requireUserId(authentication)));

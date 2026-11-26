@@ -191,6 +191,7 @@ function Layout() {
                 <NavLink to="/reviews">전체 리뷰</NavLink>
 
                 <NavLink to="/profile">마이페이지</NavLink>
+                <NavLink to="/ai-assistant">AI 도우미</NavLink>
 
                 <p>
                   <strong>{nickname}</strong>님

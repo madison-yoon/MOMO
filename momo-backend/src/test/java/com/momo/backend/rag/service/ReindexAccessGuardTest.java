@@ -29,6 +29,16 @@ class ReindexAccessGuardTest {
         rejected(guard, -1L, 401);
     }
 
+    @Test void capabilityOnlyReportsExistingAuthorizedOperators() {
+        when(client.isEnabled()).thenReturn(true);
+        when(users.existsById(1L)).thenReturn(true);
+        var guard = new ReindexAccessGuard(users, client, true, "1");
+        assertThat(guard.canReindex(1L)).isTrue();
+        assertThat(guard.canReindex(2L)).isFalse();
+        when(users.existsById(1L)).thenReturn(false);
+        assertThat(guard.canReindex(1L)).isFalse();
+    }
+
     private void rejected(ReindexAccessGuard guard, Long id, int expected) {
         assertThatThrownBy(() -> guard.check(id)).isInstanceOfSatisfying(ResponseStatusException.class,
                 error -> assertThat(error.getStatusCode().value()).isEqualTo(expected));

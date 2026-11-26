@@ -20,6 +20,10 @@ import com.momo.backend.rag.enums.IndexStatus;
 
 public interface ReviewRepository extends JpaRepository<Review, Long> {
 
+    // flush 직후 DB가 실제 저장한 소수초 정밀도를 읽어 커밋 후 거절 작업의 원본 비교에 사용한다.
+    @Query(value = "select updated_at from reviews where review_id = :reviewId", nativeQuery = true)
+    LocalDateTime findIndexTimestamp(@Param("reviewId") Long reviewId);
+
     @Query("select r.reviewId from Review r order by r.reviewId")
     List<Long> findAllReviewIds();
 

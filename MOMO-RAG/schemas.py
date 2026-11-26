@@ -6,6 +6,7 @@ class IndexRequest(BaseModel):
     movie_code: str = Field(min_length=1, max_length=20)
     title: str = Field(min_length=1, max_length=100)
     content: str = Field(min_length=1, max_length=2000)
+    fingerprint: str | None = Field(default=None, pattern=r"^[0-9a-f]{64}$")
 
 
 class IndexResponse(BaseModel):
@@ -19,11 +20,12 @@ class DeleteResponse(BaseModel):
 
 
 class QueryRequest(BaseModel):
-    question: str = Field(min_length=1, max_length=2000)
+    question: str = Field(min_length=1, max_length=500)
     # 기존 board_ids도 수용하되 둘 다 전달되면 명시적인 review_ids를 우선한다.
     review_ids: list[int] = Field(default_factory=list,
                                 validation_alias=AliasChoices("review_ids", "board_ids"))
-    top_k: int = Field(default=5, ge=1, le=20)
+    fingerprints: dict[str, str] = Field(default_factory=dict)
+    top_k: int = Field(default=5, ge=1, le=5)
 
 
 class Source(BaseModel):
@@ -32,6 +34,7 @@ class Source(BaseModel):
     title: str
     snippet: str
     score: float
+    fingerprint: str | None = None
 
 
 class QueryResponse(BaseModel):

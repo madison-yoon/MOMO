@@ -24,18 +24,27 @@ public class RagQueryService {
     private final RagClient client;
     private final RagQueryReader reader;
     private final int topK;
+    private final RagQueryBudget budget;
+    @Value("${RAG_QUERY_ENABLED:true}")
+    private boolean queryEnabled = true;
     private final int maxAllowedReviews;
 
-    public RagQueryService(RagClient client, RagQueryReader reader,
+    @org.springframework.beans.factory.annotation.Autowired
+    public RagQueryService(RagClient client, RagQueryReader reader, RagQueryBudget budget,
                            @Value("${rag.query.top-k:5}") int topK,
                            @Value("${rag.query.max-allowed-reviews:5000}") int maxAllowedReviews) {
-        if (topK < 1 || topK > 20 || maxAllowedReviews < 1 || maxAllowedReviews == Integer.MAX_VALUE) {
+        if (topK < 1 || topK > 5 || maxAllowedReviews < 1 || maxAllowedReviews == Integer.MAX_VALUE) {
             throw new IllegalArgumentException("RAG 질문 설정 범위를 확인해 주세요.");
         }
         this.client = client;
+        this.budget = budget;
         this.reader = reader;
         this.topK = topK;
         this.maxAllowedReviews = maxAllowedReviews;
+    }
+
+    public RagQueryService(RagClient client, RagQueryReader reader, int topK, int maxAllowedReviews) {
+        this(client, reader, new RagQueryBudget(), topK, maxAllowedReviews);
     }
 
     // 상위 호출자의 트랜잭션도 중단하여 HTTP 대기 중 DB 트랜잭션을 유지하지 않는다.
@@ -48,7 +57,11 @@ public class RagQueryService {
                 || request.question().isBlank() || request.question().length() > 500) {
             throw new IllegalArgumentException("질문은 1~500자, 검색 범위는 ALL 또는 MINE이어야 합니다.");
         }
-        if (!client.isEnabled()) throw unavailable();
+        if (!client.isEnabled() || !queryEnabled) throw unavailable();
+        try (var ignored = budget.enter(userId)) { return execute(userId, request); }
+    }
+
+    private RagAnswer execute(Long userId, RagQueryRequest request) {
 
         List<RagQueryReader.Snapshot> initial = reader.readAllowed(request.scope(), userId, maxAllowedReviews + 1);
         if (initial.isEmpty()) return RagAnswer.hold();
@@ -60,7 +73,11 @@ public class RagQueryService {
                 .collect(Collectors.toMap(RagQueryReader.Snapshot::reviewId, Function.identity()));
         RagAnswer answer;
         try {
-            answer = client.query(request.question(), initial.stream().map(RagQueryReader.Snapshot::reviewId).toList(), topK);
+            answer = client.query(request.question(), initial.stream().map(RagQueryReader.Snapshot::reviewId).toList(), topK, initial.stream().collect(Collectors.toMap(row -> row.reviewId().toString(), RagQueryReader.Snapshot::fingerprint)));
+        } catch (org.springframework.web.client.RestClientResponseException failure) {
+            if (failure.getStatusCode().value() == 429)
+                throw new ResponseStatusException(HttpStatus.TOO_MANY_REQUESTS, "AI 서비스의 일일 이용 한도를 초과했습니다.");
+            throw unavailable();
         } catch (RuntimeException ignored) {
             // 원격 응답이나 예외 메시지에 포함된 민감 정보를 사용자에게 노출하지 않는다.
             throw unavailable();
@@ -73,6 +90,7 @@ public class RagQueryService {
         Set<Long> sourceIds = new LinkedHashSet<>();
         for (RagAnswer.Source source : answer.sources()) {
             if (source == null || source.review_id() == null || !allowed.containsKey(source.review_id())
+                    || source.fingerprint() == null || !source.fingerprint().equals(allowed.get(source.review_id()).fingerprint())
                     || source.title() == null || source.snippet() == null || !Double.isFinite(source.score())) {
                 return RagAnswer.hold();
             }

@@ -2,6 +2,7 @@
 from __future__ import annotations
 
 import operator
+import re
 from typing import Annotated, Literal, TypedDict
 
 from engine import ABSTAIN_MESSAGE, Chunk, StubEngine, body_of
@@ -14,6 +15,7 @@ class RagState(TypedDict, total=False):
     question: str
     query: str
     review_ids: list[int]
+    fingerprints: dict[str, str] | None
     top_k: int
     chunks: list[Chunk]
     rewrites: int
@@ -31,7 +33,13 @@ def build_graph(engine: StubEngine, settings: Settings):
     def retrieve(state: RagState) -> dict:
         """빈 허용 목록은 엔진을 호출하지 않으며 기존 검색의 임계값을 그대로 사용한다."""
         ids = state["review_ids"]
-        chunks = engine.search(state["query"], ids, state["top_k"]) if ids else []
+        fingerprints = state.get("fingerprints")
+        if fingerprints is not None:
+            ids = [i for i in ids if re.fullmatch(r"[0-9a-f]{64}", fingerprints.get(str(i), ""))]
+        chunks = engine.search(state["query"], ids, state["top_k"], fingerprints) if ids else []
+        if fingerprints is not None:
+            chunks = [c for c in chunks if c.review_id in ids
+                      and c.fingerprint == fingerprints.get(str(c.review_id))]
         return {"chunks": chunks, "trace": ["retrieve"]}
 
     def grade(state: RagState) -> dict:
@@ -42,7 +50,11 @@ def build_graph(engine: StubEngine, settings: Settings):
         """근거가 있으면 생성하고, 허용 ID가 있을 때만 설정된 횟수까지 재검색한다."""
         if state["chunks"]:
             return "generate"
-        if state["review_ids"] and state["rewrites"] < settings.max_rewrites:
+        ids = state["review_ids"]
+        fingerprints = state.get("fingerprints")
+        if fingerprints is not None:
+            ids = [i for i in ids if re.fullmatch(r"[0-9a-f]{64}", fingerprints.get(str(i), ""))]
+        if ids and state["rewrites"] < settings.max_rewrites:
             return "rewrite"
         return "abstain"
 
@@ -52,9 +64,17 @@ def build_graph(engine: StubEngine, settings: Settings):
                 "rewrites": state["rewrites"] + 1, "trace": ["rewrite"]}
 
     def generate(state: RagState) -> dict:
-        """검색된 청크를 근거로 모의 답변만 생성한다."""
-        return {"answer": engine.generate(state["question"], state["chunks"]),
-                "abstained": False, "trace": ["generate"]}
+        """엔진별 답변을 생성하고 검색 근거에 없는 인용은 전체 보류한다."""
+        answer = engine.generate(state["question"], state["chunks"])
+        tokens = re.findall(r"\[리뷰[^\]]*\]", answer)
+        valid = [re.fullmatch(r"\[리뷰 #(\d+)\]", token) for token in tokens]
+        cited = {int(match.group(1)) for match in valid if match}
+        allowed = {c.review_id for c in state["chunks"]}
+        if (not cited or not all(valid) or answer.count("[리뷰") != len(tokens)
+                or not cited.issubset(allowed)):
+            return {"answer": ABSTAIN_MESSAGE, "abstained": True,
+                    "chunks": [], "trace": ["generate", "abstain"]}
+        return {"answer": answer, "abstained": False, "trace": ["generate"]}
 
     def abstain(state: RagState) -> dict:
         """근거가 없으면 추측하지 않고 빈 출처와 함께 답변을 보류한다."""
@@ -68,7 +88,7 @@ def build_graph(engine: StubEngine, settings: Settings):
             if chunk.review_id not in best or chunk.score > best[chunk.review_id].score:
                 best[chunk.review_id] = chunk
         sources = [Source(review_id=c.review_id, title=c.title,
-                          snippet=body_of(c.text)[:120], score=c.score)
+                          snippet=body_of(c.text)[:120], score=c.score, fingerprint=c.fingerprint)
                    for c in sorted(best.values(), key=lambda c: c.score, reverse=True)]
         return {"sources": sources, "trace": ["format"]}
 
@@ -87,10 +107,12 @@ def build_graph(engine: StubEngine, settings: Settings):
     return graph.compile()
 
 
-def run_graph(graph, question: str, review_ids: list[int], top_k: int) -> dict:
+def run_graph(graph, question: str, review_ids: list[int], top_k: int,
+              fingerprints: dict[str, str] | None = None) -> dict:
     """요청마다 새 상태로 실행하고 내부 검색어·청크 대신 공개 응답 필드만 반환한다."""
     result = graph.invoke({"question": question, "query": question,
                            "review_ids": review_ids, "top_k": top_k,
+                           "fingerprints": fingerprints,
                            "rewrites": 0, "trace": []})
     return QueryResponse(answer=result["answer"], abstained=result["abstained"],
-                         sources=result["sources"], trace=result["trace"]).model_dump()
+                         sources=result["sources"], trace=result["trace"]).model_dump(exclude_none=True)

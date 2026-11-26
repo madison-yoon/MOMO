@@ -36,14 +36,14 @@ class ReviewRagServiceTest {
         when(req.getTitle()).thenReturn("우주 영화");
         when(req.getContent()).thenReturn("우주 탐험");
         assertEquals(910001L, service.createReview(91L, req).getReviewId());
-        verify(rag).publishEvent(new ReviewIndexEvent(910001L, Operation.UPSERT));
+        verify(rag).publishEvent(new ReviewIndexEvent(910001L, Operation.UPSERT, com.momo.backend.rag.service.ReviewIndexTransactions.Snapshot.from(review)));
     }
     @Test void updateCapturesNewContent() {
         ReviewUpdateRequest req = mock(ReviewUpdateRequest.class);
         when(req.getTitle()).thenReturn("수정 제목");
         when(req.getContent()).thenReturn("기차 여행");
         service.updateReview(910001L, 91L, req);
-        verify(rag).publishEvent(new ReviewIndexEvent(910001L, Operation.UPSERT));
+        verify(rag).publishEvent(new ReviewIndexEvent(910001L, Operation.UPSERT, com.momo.backend.rag.service.ReviewIndexTransactions.Snapshot.from(review)));
     }
     @Test void deleteSchedulesOnlyAfterLocalDelete() {
         service.deleteReview(910001L, 91L);

@@ -345,6 +345,10 @@ const ensureDeleteAuthentication = async () => {
 };
 
 const AxiosApi = {
+  ragQuery: (question, scope, signal) => axios.post(`${HM_DOMAIN}/api/rag/query`, { question, scope }, { withCredentials: true, signal }),
+  ragCapabilities: (signal) => axios.get(`${HM_DOMAIN}/api/rag/capabilities`, { withCredentials: true, signal }),
+  ragIndexStatus: (reviewId, signal) => axios.get(`${HM_DOMAIN}/api/rag/reindex/${encodeURIComponent(reviewId)}/status`, { withCredentials: true, signal }),
+  ragReindex: (reviewId, signal) => axios.post(`${HM_DOMAIN}/api/rag/reindex/${encodeURIComponent(reviewId)}`, {}, { withCredentials: true, signal }),
   // 1. 회원 아이디 중복 확인
   memberIdExist: async (loginId, signal) => {
     return await axios.get(

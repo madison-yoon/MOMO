@@ -43,7 +43,8 @@ class ApiTest(unittest.TestCase):
     def test_lifespan_auth_index_delete_and_query(self):
         with patch.dict(os.environ, {"SERVICE_TOKEN": "test-only"}):
             with TestClient(app) as client:
-                self.assertEqual(client.get("/health").json(), {"status": "OK"})
+                self.assertEqual(client.get("/health").json(),
+                                 {"status": "OK", "engine": "stub", "ready": True})
                 payload = dict(zip(("review_id", "movie_code", "title", "content"), REVIEWS[0]))
                 self.assertEqual(client.post("/index", json=payload).status_code, 401)
                 self.assertEqual(client.post("/index", json=payload, headers={"X-Service-Token": "wrong"}).status_code, 401)

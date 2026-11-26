@@ -75,6 +75,7 @@ class RagMySqlPoolTest {
         @Bean RagClient client() { return mock(RagClient.class); }
         @Bean ReindexAccessGuard reindexAccessGuard() { return mock(ReindexAccessGuard.class); }
         @Bean("ragPurgeExecutor") Executor purgeExecutor() { return Runnable::run; }
+        @Bean("ragIndexExecutor") Executor indexExecutor() { return Runnable::run; }
     }
 
     @BeforeEach

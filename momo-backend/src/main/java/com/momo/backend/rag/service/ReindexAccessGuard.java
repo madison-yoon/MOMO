@@ -28,6 +28,11 @@ public class ReindexAccessGuard {
                 .filter(value -> !value.isEmpty()).map(Long::valueOf).collect(Collectors.toUnmodifiableSet());
     }
 
+    public boolean canReindex(Long userId) {
+        return userId != null && userId > 0 && enabled && operatorIds.contains(userId)
+                && client.isEnabled() && users.existsById(userId);
+    }
+
     public void check(Long userId) {
         if (userId == null || userId <= 0 || !users.existsById(userId))
             throw new ResponseStatusException(HttpStatus.UNAUTHORIZED, "유효한 회원 인증이 필요합니다.");

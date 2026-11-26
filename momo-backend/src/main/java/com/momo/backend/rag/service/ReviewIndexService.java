@@ -26,6 +26,20 @@ public class ReviewIndexService {
     private final ReindexAccessGuard access;
     private final AtomicBoolean rebuilding = new AtomicBoolean();
 
+    public long generation() { return locks.generation(); }
+
+    // 원본 커밋 연결을 보유한 요청 스레드 대신 기존 삭제 작업 스레드에서 짧은 상태 갱신을 수행한다.
+    public Outcome rejected(ReviewIndexTransactions.Snapshot snapshot, long generation) {
+        if (snapshot == null || !client.isEnabled()) return Outcome.SKIPPED;
+        try (var ignored = locks.acquire(snapshot.reviewId())) {
+            // 먼저 승인된 작업의 성공 결과를 거절 표식이 덮어쓰지 않도록 같은 리뷰 잠금에서 비교한다.
+            return record(generation, snapshot, IndexStatus.FAILED, "INDEX_QUEUE_REJECTED");
+        } catch (ReviewLocks.LockUnavailableException failure) {
+            log.warn("RAG 거절 상태 기록 잠금 대기 초과 reviewId={}", snapshot.reviewId());
+            return Outcome.SKIPPED;
+        }
+    }
+
     public Outcome index(Long reviewId) {
         if (!client.isEnabled()) return Outcome.SKIPPED;
         try (var ignored = locks.acquire(reviewId)) { return indexLocked(reviewId); }
@@ -62,6 +76,12 @@ public class ReviewIndexService {
     public void remove(Long reviewId) {
         if (!client.isEnabled()) return;
         try (var ignored = locks.acquire(reviewId)) { client.delete(reviewId); }
+    }
+
+    public String indexError(Long reviewId, Long operatorId) {
+        access.check(operatorId);
+        return transactions.indexError(reviewId).orElseThrow(() ->
+                new ResponseStatusException(HttpStatus.NOT_FOUND, "리뷰를 찾을 수 없습니다."));
     }
 
     public Outcome reindex(Long reviewId, Long operatorId) {

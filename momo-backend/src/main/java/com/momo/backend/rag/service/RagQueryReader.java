@@ -43,14 +43,21 @@ public class RagQueryReader {
     private String selectSnapshot() {
         // 길이 접두어로 필드 경계를 보존하고 DB에서 해시하여 본문 대량 전송을 피한다.
         // 해시는 원본 바이트를 사용하므로 collation, 대소문자, 후행 공백에 영향받지 않는다.
-        String framed = "concat(char_length(title), ':', title, char_length(content), ':', content, "
-                + "char_length(movie_code), ':', movie_code)";
         boolean h2 = entityManager.getEntityManagerFactory().unwrap(SessionFactoryImplementor.class)
                 .getJdbcServices().getDialect() instanceof H2Dialect;
+        // H2의 CHAR_LENGTH는 UTF-16 단위다. 보충 문자를 한 문자로 치환하여 MySQL 문자 수와 맞춘다.
+        String framed = "concat(" + characterLength("title", h2) + ", ':', title, "
+                + characterLength("content", h2) + ", ':', content, "
+                + characterLength("movie_code", h2) + ", ':', movie_code)";
         String fingerprint = h2
                 ? "lower(rawtohex(hash('SHA-256', stringtoutf8(" + framed + "))))"
                 : "sha2(" + framed + ", 256)";
         return "select review_id, user_id, updated_at, " + fingerprint + " from reviews";
+    }
+
+    private String characterLength(String column, boolean h2) {
+        return h2 ? "char_length(regexp_replace(" + column + ", '[\\x{10000}-\\x{10FFFF}]', 'x'))"
+                : "char_length(" + column + ")";
     }
 
     @SuppressWarnings("unchecked")

@@ -14,7 +14,10 @@ flowchart LR
     Spring --> Firebase[Firebase 프로필 이미지]
     Spring --> Files[로컬 포스터 · 채팅 이미지]
     Spring -->|HTTP · X-Service-Token| FastAPI[FastAPI · LangGraph]
-    FastAPI --> Stub[메모리 StubEngine]
+    FastAPI --> Stub[개발용 메모리 StubEngine]
+    FastAPI --> Atlas[선택형 AtlasEngine]
+    Atlas --> Mongo[(Atlas 리뷰 청크·벡터)]
+    Atlas --> OpenAI[OpenAI 임베딩·답변]
 ```
 
 | 구성 | 실제 역할 | 주요 위치 |
@@ -22,11 +25,11 @@ flowchart LR
 | React 18 | 영화·리뷰·회원 화면, API 인증 갱신, 실시간 채팅 | `momo-frontend/src` |
 | Java 21·Spring Boot 4.1.2 | 인증·권한, 원본 CRUD, 외부 영화 API, 캐시·배치, RAG 조정 | `momo-backend/src/main/java/com/momo/backend` |
 | MySQL | 회원·리뷰·댓글·평점·관심 영화·영화 정보·캐시·호출 예산·Refresh Token 보관 | 백엔드 `entity`, `repository` |
-| Python FastAPI·LangGraph | 서비스 인증, 청킹·색인·삭제, 허용된 리뷰 검색, 근거 평가와 모의 응답 | `MOMO-RAG` |
+| Python FastAPI·LangGraph | 서비스 인증, 청킹·색인·삭제, 허용 리뷰·원본 검증, Stub 또는 Atlas 검색·답변 | `MOMO-RAG` |
 
 React의 라우트는 `App.js`, 페이지는 `pages`, 공통 UI는 `components`에 있다. API 접근은 `api/AxiosApi.js`에 모여 있다. Spring의 일반 기능은 `controller → service → repository`로 연결되고, RAG 전용 코드는 `rag`에 둔다. 기존 Review·ReviewRepository·ReviewService·AuthService의 위치는 유지한다.
 
-현재 RAG는 문자 2-gram 검색과 근거 발췌를 사용하는 수업용 대역이다. 실제 임베딩·벡터 DB·LLM·MongoDB Atlas는 사용하지 않는다. React RAG 질문 화면도 이번 구현 범위에 포함하지 않는다.
+6차시는 기존 문자 2-gram Stub을 유지하면서 선택형 AtlasEngine과 React AI 도우미를 추가한다. Atlas 모드에서만 OpenAI 임베딩·답변과 MongoDB Vector Search를 사용한다. 실제 유료 API·운영 Atlas 검증은 사용자 직접 확인 전까지 미검증이며, 자동 Mock 테스트와 구분한다. 일반 리뷰 색인은 AFTER_COMMIT 이후 전용 bounded executor로 실행하고 상태 저장의 REQUIRES_NEW·원본 비교·세대 검증은 유지한다. 설정과 전환 절차는 [6차시 RAG 안내](RAG.md#6차시-atlasopenai-전환과-사용자-검증)를 따른다.
 
 ## 회원 데이터와 JWT
 

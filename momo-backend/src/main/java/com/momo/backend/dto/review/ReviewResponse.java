@@ -27,9 +27,14 @@ public class ReviewResponse {
     private final LocalDateTime createdAt;
     private final LocalDateTime updatedAt;
 
+    private final com.momo.backend.rag.enums.IndexStatus indexStatus;
+    private final LocalDateTime indexedAt;
+
     // Review Entity를 응답 DTO로 변환
     public ReviewResponse(Review review) {
         this.reviewId = review.getReviewId();
+        this.indexStatus = review.getIndexStatus();
+        this.indexedAt = review.getIndexedAt();
         this.userId = review.getUser().getUserId();
         this.nickname = review.getUser().getNickname();
         this.movieCode = review.getMovieCode();

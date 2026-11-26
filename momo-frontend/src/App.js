@@ -24,6 +24,7 @@ import MyReviews from "./pages/MyReviews";
 import LikedReviews from "./pages/LikedReviews";
 import FavoriteMovies from "./pages/FavoriteMovies";
 import PersonDetail from "./pages/PersonDetail";
+import AiAssistant from "./pages/AiAssistant";
 
 function LegacyMovieRedirect() {
   const { tmdbId } = useParams();
@@ -47,6 +48,7 @@ function App() {
           <Route path="/movie/:id" element={<MovieDetail />} />
 
           <Route path="/search" element={<Search />} />
+          <Route path="/ai-assistant" element={<AiAssistant />} />
 
           {/* 전체 리뷰 */}
           <Route path="/reviews" element={<AllReviews />} />
