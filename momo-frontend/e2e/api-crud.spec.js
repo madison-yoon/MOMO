@@ -56,7 +56,8 @@ test("격리 MySQL에서 회원·리뷰·댓글·반응·평점·관심 영화 A
     data: { loginId: secondLoginId, password },
   });
   expect(secondLogin.status()).toBe(200);
-  const secondHeaders = auth((await secondLogin.json()).accessToken);
+  const secondSession = await secondLogin.json();
+  const secondHeaders = auth(secondSession.accessToken);
   const duplicateNickname = await request.put(`${API}/api/auth/me`, {
     headers: secondHeaders,
     data: {
@@ -80,6 +81,10 @@ test("격리 MySQL에서 회원·리뷰·댓글·반응·평점·관심 영화 A
     data: { password },
   });
   expect(deleteSecondAccount.status()).toBe(200);
+  const deletedAccountRefresh = await request.post(`${API}/api/auth/reissue`, {
+    data: { refreshToken: secondSession.refreshToken },
+  });
+  expect(deletedAccountRefresh.status(), "탈퇴한 회원의 Refresh Token은 재발급할 수 없어야 합니다.").toBe(401);
   expect((await request.post(`${API}/api/auth/login`, {
     data: { loginId: secondLoginId, password },
   })).status()).toBe(400);
