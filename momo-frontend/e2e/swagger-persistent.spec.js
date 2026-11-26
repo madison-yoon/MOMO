@@ -355,6 +355,21 @@ test("Swagger UI와 기존 momo_db의 실제 API 계약을 검증하고 테스�
     `${API}/api/reviews/${reviewId}/reaction`, { headers },
   )).json()).toBe(true);
 
+  expect((await request.delete(
+    `${API}/api/reviews/${reviewId}/reaction`, { headers },
+  )).status()).toBe(204);
+  const removedReviewReaction = await request.get(
+    `${API}/api/reviews/${reviewId}/reaction`, { headers },
+  );
+  expect(removedReviewReaction.status()).toBe(200);
+  expect(await removedReviewReaction.json()).toBeNull();
+  expect((await request.put(`${API}/api/reviews/${reviewId}/reaction`, {
+    headers, data: true,
+  })).status()).toBe(200);
+  expect(await (await request.get(
+    `${API}/api/reviews/${reviewId}/reaction`, { headers },
+  )).json()).toBe(true);
+
   // 댓글 목록은 비회원에게도 공개되며, 개인 반응 정보만 인증에 의존한다.
   expect((await request.get(
     `${API}/api/reviews/${reviewId}/comments?page=0`,
@@ -387,6 +402,20 @@ test("Swagger UI와 기존 momo_db의 실제 API 계약을 검증하고 테스�
     headers, data: true,
   })).status()).toBe(200);
   expect((await request.get(`${API}/api/comments/${commentId}/reactions`)).status()).toBe(200);
+  const commentRowsWithReaction = await getAllPagedContent(
+    request, `/api/reviews/${reviewId}/comments`, headers,
+  );
+  expect(commentRowsWithReaction.find((item) => item.commentId === commentId)?.myReaction).toBe(true);
+  expect((await request.delete(
+    `${API}/api/comments/${commentId}/reaction`, { headers },
+  )).status()).toBe(204);
+  const commentRowsWithoutReaction = await getAllPagedContent(
+    request, `/api/reviews/${reviewId}/comments`, headers,
+  );
+  expect(commentRowsWithoutReaction.find((item) => item.commentId === commentId)?.myReaction).toBeNull();
+  expect((await request.put(`${API}/api/comments/${commentId}/reaction`, {
+    headers, data: true,
+  })).status()).toBe(200);
 
   // 댓글 삭제는 별도 임시 댓글만 사용한다. 기존 QA 댓글과 일반 댓글은 보존한다.
   const commentsForDeletion = await getAllPagedContent(
@@ -429,6 +458,19 @@ test("Swagger UI와 기존 momo_db의 실제 API 계약을 검증하고 테스�
   expect((await rating.json()).myRating).toBe(true);
   expect((await request.get(`${API}/api/movies/my/liked`, { headers })).status()).toBe(200);
 
+  expect((await request.delete(
+    `${API}/api/movies/${movie.movieCode}/rating`, { headers },
+  )).status()).toBe(204);
+  const removedRating = await request.get(`${API}/api/movies/${movie.movieCode}/rating`, { headers });
+  expect(removedRating.status()).toBe(200);
+  expect((await removedRating.json()).myRating).toBeNull();
+  expect((await request.put(`${API}/api/movies/${movie.movieCode}/rating`, {
+    headers, data: true,
+  })).status()).toBe(200);
+  expect((await (await request.get(
+    `${API}/api/movies/${movie.movieCode}/rating`, { headers },
+  )).json()).myRating).toBe(true);
+
   expect((await request.post(`${API}/api/favorites`, {
     headers,
     data: {
@@ -441,6 +483,26 @@ test("Swagger UI와 기존 momo_db의 실제 API 계약을 검증하고 테스�
   const favorites = await request.get(`${API}/api/favorites`, { headers });
   expect(favorites.status()).toBe(200);
   expect((await favorites.json()).some((item) => item.movieCode === movie.movieCode)).toBe(true);
+
+  expect((await request.delete(
+    `${API}/api/favorites/${movie.movieCode}`, { headers },
+  )).status()).toBe(204);
+  const favoritesAfterDelete = await request.get(`${API}/api/favorites`, { headers });
+  expect((await favoritesAfterDelete.json()).some((item) => item.movieCode === movie.movieCode)).toBe(false);
+  expect((await request.delete(
+    `${API}/api/favorites/${movie.movieCode}`, { headers },
+  )).status()).toBe(204);
+  expect((await request.post(`${API}/api/favorites`, {
+    headers,
+    data: {
+      movieCode: movie.movieCode,
+      title: movie.title,
+      releaseDate: movie.releaseDate,
+      posterUrl: "",
+    },
+  })).status()).toBe(201);
+  const restoredFavorites = await request.get(`${API}/api/favorites`, { headers });
+  expect((await restoredFavorites.json()).some((item) => item.movieCode === movie.movieCode)).toBe(true);
 
   expect((await request.post(`${API}/api/movies/posters/status`, {
     data: [movie.movieCode],
