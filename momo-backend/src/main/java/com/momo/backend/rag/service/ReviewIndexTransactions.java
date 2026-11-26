@@ -51,6 +51,11 @@ public class ReviewIndexTransactions {
                 status == IndexStatus.READY ? LocalDateTime.now() : null) == 1;
     }
 
+    @Transactional(propagation = Propagation.REQUIRES_NEW, readOnly = true, timeout = 5)
+    public Optional<String> indexError(Long reviewId) {
+        return repository.findById(reviewId).map(review -> review.getIndexError() == null ? "" : review.getIndexError());
+    }
+
     public record Snapshot(Long reviewId, String movieCode, String title, String content, LocalDateTime updatedAt) {
         public static Snapshot from(Review review) {
             return new Snapshot(review.getReviewId(), review.getMovieCode(), review.getTitle(), review.getContent(), review.getUpdatedAt());

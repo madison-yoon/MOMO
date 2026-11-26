@@ -23,7 +23,7 @@ import static org.springframework.test.web.servlet.request.MockMvcRequestBuilder
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
 
 /** 실제 JWT 필터와 요청 JSON 계약을 검증하며 외부 HTTP와 DB는 사용하지 않는다. */
-@WebMvcTest(controllers = RagQueryController.class,
+@WebMvcTest(controllers = {RagQueryController.class, RagCapabilitiesController.class, ReindexController.class},
         excludeFilters = @ComponentScan.Filter(type = FilterType.ASSIGNABLE_TYPE, classes = PosterResourceConfig.class),
         properties = {
         "jwt.secret=TW9tb1Rlc3RPbmx5U2VjcmV0S2V5Rm9ySlZUVGVzdHMxMjM0NQ=="})
@@ -33,6 +33,22 @@ class RagQueryControllerTest {
     @Autowired TokenProvider tokens;
     @MockitoBean RagQueryService service;
     @MockitoBean UserRepository users;
+    @MockitoBean com.momo.backend.rag.service.ReindexAccessGuard access;
+    @MockitoBean com.momo.backend.rag.service.ReviewIndexService indexing;
+
+    @Test
+    void capabilityExposesOnlyBooleanAndDetailsUseAuthenticatedOperatorId() throws Exception {
+        when(users.existsById(7L)).thenReturn(true);
+        when(access.canReindex(7L)).thenReturn(true);
+        mvc.perform(org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get("/api/rag/capabilities")
+                        .header("Authorization", "Bearer " + tokens.createToken(7L)))
+                .andExpect(status().isOk()).andExpect(content().json("{\"canReindex\":true}"));
+        when(indexing.indexError(1L,7L)).thenReturn("HTTP_503");
+        mvc.perform(org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get("/api/rag/reindex/1/status")
+                        .header("Authorization", "Bearer " + tokens.createToken(7L)))
+                .andExpect(status().isOk()).andExpect(jsonPath("$.indexError").value("HTTP_503"));
+        verify(indexing).indexError(1L,7L);
+    }
 
     @Test
     void authenticatedQueryUsesNumericJwtIdAndIgnoresClientSuppliedIds() throws Exception {

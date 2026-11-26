@@ -7,6 +7,7 @@ on:
     branches:
       - main
       - fix/autocomplete-saved-posters
+      - feature/ui-redesign
 
 concurrency:
   group: momo-browser-e2e-${{ github.ref }}
@@ -49,6 +50,8 @@ jobs:
         working-directory: momo-backend
         env:
           DB_URL: jdbc:mysql://127.0.0.1:3306/momo_db?serverTimezone=Asia/Seoul&allowPublicKeyRetrieval=true&useSSL=false
+          RAG_ENGINE: stub
+          RAG_ENABLED: "false"
           DB_USERNAME: root
           DB_PASSWORD: momo-e2e-password
           JWT_SECRET: TW9tb1Rlc3RPbmx5U2VjcmV0S2V5Rm9ySlZUVGVzdHMxMjM0NQ==

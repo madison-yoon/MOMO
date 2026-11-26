@@ -32,18 +32,41 @@ import static org.mockito.Mockito.*;
         "spring.datasource.driver-class-name=org.h2.Driver", "spring.datasource.username=sa",
         "spring.datasource.password=", "spring.jpa.hibernate.ddl-auto=create-drop"})
 @AutoConfigureTestDatabase(replace = AutoConfigureTestDatabase.Replace.NONE)
-@Import({RagQueryReader.class, RagQueryService.class, RagQueryReaderTest.ClientConfig.class})
+@Import({RagQueryReader.class, RagQueryService.class, RagQueryBudget.class, RagQueryReaderTest.ClientConfig.class})
 @Transactional(propagation = Propagation.NOT_SUPPORTED)
 class RagQueryReaderTest {
     @Autowired EntityManager em;
     @Autowired PlatformTransactionManager manager;
     @Autowired RagQueryReader reader;
+    @Autowired com.momo.backend.repository.ReviewRepository reviews;
     @Autowired RagQueryService service;
     @Autowired RagClient client;
 
     @TestConfiguration
     static class ClientConfig {
         @Bean RagClient client() { return mock(RagClient.class); }
+    }
+
+    @Test
+    void javaFingerprintMatchesDatabaseFramingIncludingKoreanAndEmoji() {
+        Fixture a = fixture("READY", "영화😀", "제목😀", "리뷰 🚀 본문");
+        assertEquals(ReviewFingerprint.of("제목😀", "리뷰 🚀 본문", "영화😀"),
+                reader.readReadySources(List.of(a.reviewId)).getFirst().fingerprint());
+    }
+
+    @Test
+    void rejectionSnapshotUsesActualPersistedTimestampPrecision() {
+        Fixture a=fixture("INDEXING", "timestamp", "Title", "Body");
+        assertEquals(reader.readAllowed(QueryScope.ALL, a.userId, 5001).stream()
+                .filter(row->row.reviewId().equals(a.reviewId)).count(), 0);
+        new TransactionTemplate(manager).executeWithoutResult(status -> {
+            Review review=em.find(Review.class,a.reviewId);
+            review.updateReview("New title", "New body");
+            em.flush();
+            var actual=reviews.findIndexTimestamp(a.reviewId);
+            em.clear();
+            assertEquals(em.find(Review.class,a.reviewId).getUpdatedAt(), actual);
+        });
     }
 
     @Test
@@ -81,12 +104,12 @@ class RagQueryReaderTest {
         Fixture a = fixture("READY", "movie-g", "Before", "Body");
         reset(client);
         when(client.isEnabled()).thenReturn(true);
-        when(client.query(any(), any(), anyInt())).thenAnswer(invocation -> {
+        when(client.query(any(), any(), anyInt(), anyMap())).thenAnswer(invocation -> {
             assertFalse(TransactionSynchronizationManager.isActualTransactionActive());
             tx(() -> em.createNativeQuery("update reviews set content='changed' where review_id=:id")
                     .setParameter("id", a.reviewId).executeUpdate());
             return new RagAnswer("폐기할 답변", false,
-                    List.of(new RagAnswer.Source(a.reviewId, "Before", "Body", .9)), List.of("generate"));
+                    List.of(new RagAnswer.Source(a.reviewId, "Before", "Body", .9, ReviewFingerprint.of("Before", "Body", "movie-g"))), List.of("generate"));
         });
         new TransactionTemplate(manager).executeWithoutResult(status -> {
             Review stale = em.find(Review.class, a.reviewId);

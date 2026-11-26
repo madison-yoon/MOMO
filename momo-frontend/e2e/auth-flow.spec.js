@@ -21,7 +21,7 @@ test("회원가입, 로그인, 로그아웃이 브라우저에서 이어진다",
   await page.locator("#signupNickname").fill(nickname);
 
   const signupButton = page.getByRole("button", {
-    name: "무료 회원가입하고 영화 메모하러 가기",
+    name: "회원가입",
   });
   await expect(signupButton).toBeEnabled();
   await signupButton.click();

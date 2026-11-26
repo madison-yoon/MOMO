@@ -7,3 +7,6 @@ langchain-core==1.8.4
 langgraph==1.2.24
 # TestClient 실행용
 httpx==0.28.1
+# Direct SDK calls keep paid-request accounting explicit; no hidden chunk batching.
+openai==2.8.1
+pymongo==4.20.2

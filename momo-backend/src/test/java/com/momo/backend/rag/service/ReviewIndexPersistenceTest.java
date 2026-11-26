@@ -45,6 +45,7 @@ class ReviewIndexPersistenceTest {
     @TestConfiguration static class Config {
         @Bean ReviewIndexService indexService() { return mock(ReviewIndexService.class); }
         @Bean("ragPurgeExecutor") Executor purgeExecutor() { return Runnable::run; }
+        @Bean("ragIndexExecutor") Executor indexExecutor() { return Runnable::run; }
     }
 
     @Test void statusOnlyUpdatesPreserveOriginalTimestampAndNewRowsStartIndexing() {

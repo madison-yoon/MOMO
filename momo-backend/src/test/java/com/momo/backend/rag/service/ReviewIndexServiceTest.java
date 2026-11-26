@@ -15,7 +15,7 @@ class ReviewIndexServiceTest {
     RagClient client = mock(RagClient.class);
     ReviewIndexTransactions transactions = mock(ReviewIndexTransactions.class);
     ReindexAccessGuard guard = mock(ReindexAccessGuard.class);
-    ReviewLocks locks = new ReviewLocks(100);
+    ReviewLocks locks = new ReviewLocks(500);
     ReviewIndexService service = new ReviewIndexService(client, transactions, locks, guard);
     ReviewIndexTransactions.Snapshot snapshot = new ReviewIndexTransactions.Snapshot(1L, "movie", "title", "body", LocalDateTime.now());
 
@@ -23,6 +23,45 @@ class ReviewIndexServiceTest {
         when(client.isEnabled()).thenReturn(true);
         when(transactions.readLatest(1L)).thenReturn(Optional.of(snapshot));
         when(transactions.recordResult(eq(snapshot), any(), any())).thenReturn(true);
+    }
+
+    @Test void rejectedTaskOnlyWritesInItsCapturedGeneration() {
+        long oldGeneration = service.generation();
+        locks.invalidate(() -> { });
+        assertThat(service.rejected(snapshot, oldGeneration)).isEqualTo(ReviewIndexService.Outcome.SKIPPED);
+        verify(transactions, never()).recordResult(any(), any(), any());
+        assertThat(service.rejected(snapshot, service.generation())).isEqualTo(ReviewIndexService.Outcome.FAILED);
+        verify(transactions).recordResult(snapshot, IndexStatus.FAILED, "INDEX_QUEUE_REJECTED");
+        verify(client, never()).index(any());
+    }
+
+    @Test void detailedErrorRequiresOperatorBeforeAnyDatabaseRead() {
+        doThrow(new ResponseStatusException(org.springframework.http.HttpStatus.FORBIDDEN)).when(guard).check(20L);
+        assertThatThrownBy(() -> service.indexError(1L, 20L)).isInstanceOf(ResponseStatusException.class);
+        verify(transactions, never()).indexError(anyLong());
+        when(transactions.indexError(1L)).thenReturn(Optional.of("HTTP_503"));
+        assertThat(service.indexError(1L, 10L)).isEqualTo("HTTP_503");
+    }
+
+    @Test void rejectedNewTaskWaitsForAdmittedWorkerBeforeComparingState() throws Exception {
+        CountDownLatch entered=new CountDownLatch(1), release=new CountDownLatch(1), failedWrite=new CountDownLatch(1);
+        var state=new java.util.concurrent.atomic.AtomicReference<>(IndexStatus.INDEXING);
+        when(client.index(any())).thenAnswer(invocation -> { entered.countDown(); release.await(1,TimeUnit.SECONDS); return 1; });
+        when(transactions.recordResult(eq(snapshot),any(),any())).thenAnswer(invocation -> {
+            IndexStatus target=invocation.getArgument(1);
+            if(target==IndexStatus.FAILED) failedWrite.countDown();
+            return state.compareAndSet(IndexStatus.INDEXING,target);
+        });
+        try(var executor=Executors.newFixedThreadPool(2)) {
+            var worker=executor.submit(()->service.index(1L));
+            assertThat(entered.await(1,TimeUnit.SECONDS)).isTrue();
+            var marker=executor.submit(()->service.rejected(snapshot,service.generation()));
+            try { assertThat(failedWrite.await(30,TimeUnit.MILLISECONDS)).isFalse(); }
+            finally { release.countDown(); }
+            assertThat(worker.get(1,TimeUnit.SECONDS)).isEqualTo(ReviewIndexService.Outcome.READY);
+            assertThat(marker.get(1,TimeUnit.SECONDS)).isEqualTo(ReviewIndexService.Outcome.SKIPPED);
+            assertThat(state.get()).isEqualTo(IndexStatus.READY);
+        }
     }
 
     @Test void disabledSkipsWithoutFailureOrDatabaseWrite() {

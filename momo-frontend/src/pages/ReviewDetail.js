@@ -4,6 +4,7 @@ import React, { useEffect, useRef, useState } from "react";
 import { Link, useNavigate, useParams } from "react-router-dom";
 import AxiosApi from "../api/AxiosApi";
 import ProfileAvatar from "../components/ProfileAvatar";
+import ReviewIndexStatus from "../components/rag/ReviewIndexStatus";
 import { resolvePosterUrl } from "../utils/mediaUrl";
 
 const h = React.createElement;
@@ -571,6 +572,7 @@ function ReviewDetail() {
             <button type="button" className="review-action-button delete" onClick={handleReviewDelete}>삭제</button>
           </div>}
         </div>
+        <ReviewIndexStatus review={review} reviewId={reviewId} onReindexed={fetchReview} />
       </div>
     </header>
   );

@@ -55,6 +55,12 @@ public class ReviewService {
     private final CommentReactionRepository commentReactionRepository;
     private final ApplicationEventPublisher ragEvents;
 
+    private com.momo.backend.rag.service.ReviewIndexTransactions.Snapshot indexSnapshot(Review review) {
+        return new com.momo.backend.rag.service.ReviewIndexTransactions.Snapshot(review.getReviewId(),
+                review.getMovieCode(), review.getTitle(), review.getContent(),
+                reviewRepository.findIndexTimestamp(review.getReviewId()));
+    }
+
     // 전체 리뷰 목록 조회
 
     @Transactional(readOnly = true)
@@ -273,7 +279,7 @@ public class ReviewService {
             // 동시 작성 요청도 DB unique 제약조건으로 중복을 차단한다.
             Review savedReview = reviewRepository.saveAndFlush(review);
             // DB 커밋이 성공한 뒤에만 메모리 검색 색인을 갱신한다.
-            ragEvents.publishEvent(new ReviewIndexEvent(savedReview.getReviewId(), Operation.UPSERT));
+            ragEvents.publishEvent(new ReviewIndexEvent(savedReview.getReviewId(), Operation.UPSERT, indexSnapshot(savedReview)));
             return new ReviewResponse(savedReview);
         } catch (DataIntegrityViolationException duplicate) {
             throw new CustomException(
@@ -378,7 +384,8 @@ public class ReviewService {
         );
 
         review.markIndexing();
-        ragEvents.publishEvent(new ReviewIndexEvent(review.getReviewId(), Operation.UPSERT));
+        reviewRepository.flush();
+        ragEvents.publishEvent(new ReviewIndexEvent(review.getReviewId(), Operation.UPSERT, indexSnapshot(review)));
         return new ReviewResponse(review);
     }
 
