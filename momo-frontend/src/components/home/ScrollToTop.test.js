@@ -1,0 +1,23 @@
+import React from "react";
+import { fireEvent, render, screen } from "@testing-library/react";
+import ScrollToTop from "./ScrollToTop";
+test("최상단에서도 항상 표시하며 56px 버튼 간 12px 간격과 이동을 유지한다", () => {
+  window.scrollTo = jest.fn();
+  Object.defineProperty(window, "scrollY", { value: 0, writable: true, configurable: true });
+  const chat = document.createElement("button"); chat.setAttribute("aria-label", "공용 채팅 열기");
+  chat.setAttribute("aria-expanded", "false");
+  const close = document.createElement("button"); close.setAttribute("aria-label", "채팅 닫기");
+  close.getBoundingClientRect = () => ({ top: 100 }); document.body.append(close);
+  chat.getBoundingClientRect = () => ({ top: 600, height: 48, right: 1000 }); document.body.append(chat);
+  const view = render(<ScrollToTop />);
+  expect(screen.getByRole("button", { name: "맨 위로 이동" })).toBeInTheDocument();
+  window.scrollY = 400; fireEvent.scroll(window);
+  const button = screen.getByRole("button", { name: "맨 위로 이동" });
+  expect(getComputedStyle(button).width).toBe("56px");
+  expect(getComputedStyle(button).height).toBe("56px");
+  expect(getComputedStyle(button).bottom).toBe("88px");
+  expect(getComputedStyle(button).backgroundColor).toBe("rgb(119, 90, 72)");
+  expect(Number(getComputedStyle(button).zIndex)).toBeLessThan(1000);
+  fireEvent.click(button); expect(window.scrollTo).toHaveBeenCalledWith({ top: 0, behavior: "smooth" });
+  view.unmount(); chat.remove(); close.remove(); window.scrollY = 0;
+});

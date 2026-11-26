@@ -1,0 +1,180 @@
+package com.momo.backend.service;
+
+import com.momo.backend.entity.Movie;
+import com.momo.backend.entity.MovieRating;
+import com.momo.backend.entity.User;
+import com.momo.backend.exception.CustomException;
+import com.momo.backend.repository.MovieRatingRepository;
+import com.momo.backend.repository.MovieRepository;
+import com.momo.backend.repository.UserRepository;
+
+import lombok.RequiredArgsConstructor;
+import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
+import org.springframework.transaction.annotation.Propagation;
+
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+
+@Service
+@Transactional
+@RequiredArgsConstructor
+public class MovieRatingService {
+
+    private final MovieRatingRepository movieRatingRepository;
+    private final MovieRepository movieRepository;
+    private final UserRepository userRepository;
+    private final MovieService movieService;
+
+    // 영화 좋아요 또는 싫어요 등록 및 변경
+    public void saveRating(
+            Long userId,
+            String movieCode,
+            Boolean liked
+    ) {
+
+        if (liked == null) {
+            throw new IllegalArgumentException(
+                    "좋아요 또는 싫어요를 선택해주세요."
+            );
+        }
+
+        // 같은 회원의 같은 영화 평가 저장·변경·삭제를 직렬화한다.
+        User user = userRepository.findByUserIdForUpdate(userId)
+                .orElseThrow(() ->
+                        new CustomException(
+                                "USER_NOT_FOUND",
+                                "회원 정보를 찾을 수 없습니다."
+                        )
+                );
+
+        Movie movie = movieRepository.findById(movieCode)
+                .orElseThrow(() ->
+                        new CustomException(
+                                "MOVIE_NOT_FOUND",
+                                "영화 정보를 찾을 수 없습니다."
+                        )
+                );
+
+        MovieRating rating = movieRatingRepository
+                .findByUser_UserIdAndMovie_MovieCode(
+                        user.getUserId(),
+                        movieCode
+                )
+                .orElse(null);
+
+        if (rating == null) {
+            // 사용자 행 잠금으로 같은 회원의 동시 INSERT를 직렬화한다.
+            movieRatingRepository.save(new MovieRating(user, movie, liked));
+        } else {
+            rating.updateRating(liked);
+        }
+    }
+
+    // 로그인한 회원의 영화 평가 취소
+    public void deleteRating(
+            Long userId,
+            String movieCode
+    ) {
+
+        User user = userRepository.findByUserIdForUpdate(userId)
+                .orElseThrow(() ->
+                        new CustomException(
+                                "USER_NOT_FOUND",
+                                "회원 정보를 찾을 수 없습니다."
+                        )
+                );
+
+        MovieRating rating = movieRatingRepository
+                .findByUser_UserIdAndMovie_MovieCode(
+                        user.getUserId(),
+                        movieCode
+                )
+                .orElseThrow(() ->
+                        new CustomException(
+                                "RATING_NOT_FOUND",
+                                "취소할 영화 평가가 없습니다."
+                        )
+                );
+
+        movieRatingRepository.delete(rating);
+    }
+
+    // 로그인 회원이 좋아요한 영화 목록 조회
+    @Transactional(readOnly = true)
+    public List<Map<String, Object>> getMyLikedMovies(Long userId) {
+        if (userId == null) {
+            return List.of();
+        }
+
+        User user = userRepository.findById(userId).orElse(null);
+        if (user == null) {
+            return List.of();
+        }
+
+        return movieRatingRepository
+                .findByUser_UserIdAndLikedOrderByRatingIdDesc(user.getUserId(), true)
+                .stream()
+                .map(rating -> {
+                    Movie movie = rating.getMovie();
+                    Map<String, Object> item = new HashMap<>();
+                    item.put("movieCode", movie.getMovieCode());
+                    item.put("title", movie.getTitle());
+                    item.put("genre", movie.getGenre());
+                    item.put("releaseDate", movie.getReleaseDate());
+                    item.put("posterUrl", movie.getPosterUrl());
+                    return item;
+                })
+                .toList();
+    }
+
+    // 영화 상세 등록이 끝나기 전에 잠금이 풀리지 않도록 외부 트랜잭션을 시작하지 않는다.
+    @Transactional(propagation = Propagation.NOT_SUPPORTED)
+    // 특정 영화의 전체 평가 및 로그인 회원의 평가 상태 조회
+    public Map<String, Object> getMovieRating(
+            String movieCode,
+            Long userId
+    ) {
+        // 상세정보 경로에서 등록이 누락된 KOBIS 영화도 평가 조회 시 DB에 먼저 등록한다.
+        if (!movieRepository.existsById(movieCode)) {
+            movieService.getMovieDetail(movieCode);
+            if (!movieRepository.existsById(movieCode)) {
+                throw new CustomException(
+                        "MOVIE_NOT_FOUND",
+                        "영화 정보를 등록하지 못했습니다."
+                );
+            }
+        }
+
+        long likeCount = movieRatingRepository.countByMovie_MovieCodeAndLiked(
+                movieCode, true);
+        long dislikeCount = movieRatingRepository.countByMovie_MovieCodeAndLiked(
+                movieCode, false);
+        long totalCount = likeCount + dislikeCount;
+
+        Double positiveRate = totalCount == 0
+                ? null
+                : Math.round((double) likeCount / totalCount * 1000) / 10.0;
+
+        Boolean myRating = null;
+        if (userId != null) {
+            User user = userRepository.findById(userId).orElse(null);
+            if (user != null) {
+                MovieRating rating = movieRatingRepository
+                        .findByUser_UserIdAndMovie_MovieCode(user.getUserId(), movieCode)
+                        .orElse(null);
+                myRating = rating == null ? null : rating.getLiked();
+            }
+        }
+
+        Map<String, Object> result = new HashMap<>();
+        result.put("movieCode", movieCode);
+        result.put("likeCount", likeCount);
+        result.put("dislikeCount", dislikeCount);
+        result.put("totalCount", totalCount);
+        result.put("positiveRate", positiveRate);
+        result.put("myRating", myRating);
+        return result;
+    }
+}

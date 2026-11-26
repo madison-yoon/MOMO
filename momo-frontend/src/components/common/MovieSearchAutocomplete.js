@@ -1,0 +1,363 @@
+import { safeRequestFailure } from "../../utils/safeRequestFailure";
+import React, { useEffect, useRef, useState } from "react";
+import { useNavigate, useSearchParams } from "react-router-dom";
+
+import AxiosApi from "../../api/AxiosApi";
+import SafeImage from "./SafeImage";
+import { resolvePosterUrl } from "../../utils/mediaUrl";
+import { getPosterPollDelay } from "../../utils/posterPolling";
+
+function MovieSearchAutocomplete() {
+  const navigate = useNavigate();
+  const [searchParams] = useSearchParams();
+
+  const searchAreaRef = useRef(null);
+  const requestRef = useRef(null);
+
+  const [keyword, setKeyword] = useState(searchParams.get("keyword") || "");
+
+  const [movies, setMovies] = useState([]);
+  const [isOpen, setIsOpen] = useState(false);
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState("");
+  const [activeIndex, setActiveIndex] = useState(-1);
+
+  // URL 검색어 변경 시 검색창 동기화
+  useEffect(() => {
+    setKeyword(searchParams.get("keyword") || "");
+    setIsOpen(false);
+  }, [searchParams]);
+
+  // 영화 검색 자동완성
+  useEffect(() => {
+    const trimmedKeyword = keyword.trim();
+
+    if (!isOpen || trimmedKeyword.length < 2) {
+      setMovies([]);
+      setLoading(false);
+      setError("");
+      return;
+    }
+
+    const controller = new AbortController();
+    requestRef.current = controller;
+
+    const timer = setTimeout(async () => {
+      setLoading(true);
+      setError("");
+      setMovies([]);
+
+      try {
+        const response = await AxiosApi.movieSearch(
+          trimmedKeyword,
+          1,
+          100,
+          controller.signal,
+        );
+
+        if (controller.signal.aborted) return;
+
+        const data = response.data;
+
+        const results = Array.isArray(data?.content) ? data.content : [];
+
+        const validMovies = results.filter(
+          (movie) => movie.movieCode && movie.title,
+        );
+
+        setMovies(validMovies);
+        setActiveIndex(-1);
+      } catch (err) {
+        if (
+          !controller.signal.aborted &&
+          err.code !== "ERR_CANCELED" &&
+          err.name !== "CanceledError"
+        ) {
+          console.error("영화 자동완성 검색 실패:", safeRequestFailure(err));
+          setError("영화 검색 중 오류가 발생했습니다.");
+        }
+      } finally {
+        if (!controller.signal.aborted) {
+          setLoading(false);
+        }
+      }
+    }, 300);
+
+    return () => {
+      clearTimeout(timer);
+      controller.abort();
+
+      if (requestRef.current === controller) {
+        requestRef.current = null;
+      }
+    };
+  }, [keyword, isOpen]);
+
+  // 비동기 포스터 수집이 끝나면 열린 자동완성 결과의 이미지를 갱신한다.
+  // 최대 5회만 재조회해 검색창을 열어 둔 동안에도 불필요한 API 반복을 막는다.
+  const movieCodesKey = movies
+    .map((movie) => movie.movieCode)
+    .filter(Boolean)
+    .join("|");
+
+  useEffect(() => {
+    if (!isOpen || !movieCodesKey) return undefined;
+
+    const movieCodes = movieCodesKey.split("|");
+    let cancelled = false;
+    let timerId = null;
+    let controller = null;
+    let attempt = 0;
+
+    const pollPosterStatuses = () => {
+      timerId = setTimeout(async () => {
+        controller = new AbortController();
+
+        try {
+          const response = await AxiosApi.moviePosterStatuses(
+            movieCodes,
+            controller.signal,
+          );
+
+          if (cancelled) return;
+
+          const statuses = Array.isArray(response.data) ? response.data : [];
+          const statusByMovieCode = new Map(
+            statuses.map((status) => [status.movieCode, status]),
+          );
+
+          setMovies((currentMovies) =>
+            currentMovies.map((movie) => {
+              const status = statusByMovieCode.get(movie.movieCode);
+
+              if (
+                status?.status === "SUCCESS" &&
+                status.posterUrl &&
+                status.posterUrl !== movie.posterUrl
+              ) {
+                return { ...movie, posterUrl: status.posterUrl };
+              }
+
+              return movie;
+            }),
+          );
+
+          const hasPendingPoster = statuses.some(
+            (status) =>
+              status.status === "PENDING" || status.status === "PROCESSING",
+          );
+
+          if (hasPendingPoster && attempt < 4 && !cancelled) {
+            attempt += 1;
+            pollPosterStatuses();
+          }
+        } catch (pollError) {
+          if (
+            !cancelled &&
+            pollError.code !== "ERR_CANCELED" &&
+            pollError.name !== "CanceledError" &&
+            attempt < 4
+          ) {
+            attempt += 1;
+            pollPosterStatuses();
+          }
+        }
+      }, getPosterPollDelay(attempt));
+    };
+
+    pollPosterStatuses();
+
+    return () => {
+      cancelled = true;
+      clearTimeout(timerId);
+      controller?.abort();
+    };
+  }, [isOpen, movieCodesKey]);
+
+  // 검색창 외부 클릭 시 자동완성 닫기
+  useEffect(() => {
+    const handleOutsideClick = (event) => {
+      if (
+        searchAreaRef.current &&
+        !searchAreaRef.current.contains(event.target)
+      ) {
+        setIsOpen(false);
+      }
+    };
+
+    document.addEventListener("mousedown", handleOutsideClick);
+
+    return () => {
+      document.removeEventListener("mousedown", handleOutsideClick);
+    };
+  }, []);
+
+  // 검색 결과 페이지 이동
+  const handleSearchSubmit = (event) => {
+    event.preventDefault();
+
+    const value = keyword.trim();
+
+    if (!value) return;
+
+    setIsOpen(false);
+
+    navigate(`/search?keyword=${encodeURIComponent(value)}`);
+  };
+
+  // 영화 상세 페이지 이동
+  const handleMovieSelect = (movie) => {
+    if (!movie?.movieCode) return;
+
+    setIsOpen(false);
+
+    if (requestRef.current) {
+      requestRef.current.abort();
+    }
+
+    navigate(`/movie/${encodeURIComponent(movie.movieCode)}`);
+  };
+
+  // 키보드로 자동완성 결과 이동 및 선택
+  const handleKeyDown = (event) => {
+    if (event.key === "Escape") {
+      setIsOpen(false);
+      setActiveIndex(-1);
+      return;
+    }
+
+    if (!isOpen || movies.length === 0) return;
+
+    if (event.key === "ArrowDown") {
+      event.preventDefault();
+      setActiveIndex((current) =>
+        current >= movies.length - 1 ? 0 : current + 1,
+      );
+      return;
+    }
+
+    if (event.key === "ArrowUp") {
+      event.preventDefault();
+      setActiveIndex((current) =>
+        current <= 0 ? movies.length - 1 : current - 1,
+      );
+      return;
+    }
+
+    if (event.key === "Enter" && activeIndex >= 0) {
+      event.preventDefault();
+      handleMovieSelect(movies[activeIndex]);
+    }
+  };
+
+  // 개봉일 표시
+  const formatReleaseDate = (releaseDate) => {
+    if (!releaseDate) return "개봉일 정보 없음";
+
+    return releaseDate;
+  };
+
+  return (
+    <div
+      className="momo-search-area"
+      ref={searchAreaRef}
+      onKeyDown={handleKeyDown}
+    >
+      <form
+        className="momo-search-form"
+        onSubmit={handleSearchSubmit}
+        role="search"
+      >
+        <input
+          className="momo-search-input"
+          type="text"
+          role="combobox"
+          value={keyword}
+          placeholder="영화 제목 또는 키워드 검색"
+          aria-label="영화 검색어"
+          aria-expanded={isOpen}
+          aria-autocomplete="list"
+          aria-controls={isOpen ? "momo-search-listbox" : undefined}
+          aria-haspopup="listbox"
+          aria-activedescendant={
+            activeIndex >= 0 && movies[activeIndex]
+              ? `momo-search-option-${movies[activeIndex].movieCode}`
+              : undefined
+          }
+          onChange={(event) => {
+            setKeyword(event.target.value);
+            setActiveIndex(-1);
+            setIsOpen(true);
+          }}
+          onFocus={() => {
+            if (keyword.trim().length >= 2) {
+              setIsOpen(true);
+            }
+          }}
+        />
+
+        <button className="momo-search-button" type="submit">
+          검색
+        </button>
+      </form>
+
+      {isOpen && keyword.trim().length >= 2 && (
+        <div
+          className="momo-search-dropdown"
+          id="momo-search-listbox"
+          role="listbox"
+        >
+          {loading && (
+            <div className="momo-search-message">영화를 검색하고 있습니다.</div>
+          )}
+
+          {!loading && error && (
+            <div className="momo-search-message">{error}</div>
+          )}
+
+          {!loading && !error && movies.length === 0 && (
+            <div className="momo-search-message">검색 결과가 없습니다.</div>
+          )}
+
+          {!loading &&
+            !error &&
+            movies.map((movie, index) => (
+              <button
+                type="button"
+                role="option"
+                id={`momo-search-option-${movie.movieCode}`}
+                aria-selected={activeIndex === index}
+                className={`momo-search-result ${activeIndex === index ? "is-active" : ""}`}
+                key={movie.movieCode}
+                onMouseEnter={() => setActiveIndex(index)}
+                onClick={() => handleMovieSelect(movie)}
+                aria-label={`${movie.title} 상세 페이지 이동`}
+              >
+                <div className="momo-search-poster">
+                  <SafeImage
+                    src={resolvePosterUrl(movie.posterUrl)}
+                    alt={`${movie.title} 포스터`}
+                    loading="lazy"
+                    fallbackClassName="momo-search-poster-fallback"
+                    fallbackText="🎬"
+                  />
+                </div>
+
+                <div className="momo-search-info">
+                  <span className="momo-search-title">{movie.title}</span>
+
+                  <span className="momo-search-meta">
+                    {formatReleaseDate(movie.releaseDate)}
+                    {" · "}
+                    {movie.genre || "장르 정보 없음"}
+                  </span>
+                </div>
+              </button>
+            ))}
+        </div>
+      )}
+    </div>
+  );
+}
+
+export default MovieSearchAutocomplete;

@@ -1,0 +1,337 @@
+import { safeRequestFailure } from "../utils/safeRequestFailure";
+import SafeImage from "../components/common/SafeImage";
+import React, { useEffect, useState } from "react";
+import { Link, useNavigate, useParams } from "react-router-dom";
+import AxiosApi from "../api/AxiosApi";
+import { resolvePosterUrl } from "../utils/mediaUrl";
+
+function AllReviews() {
+  const navigate = useNavigate();
+  const { movieCode } = useParams();
+
+  const [reviews, setReviews] = useState([]);
+  const [page, setPage] = useState(0);
+  const [totalPages, setTotalPages] = useState(0);
+  const [searchType, setSearchType] = useState("ALL");
+  const [searchInput, setSearchInput] = useState("");
+  const [activeSearch, setActiveSearch] = useState({
+    searchType: "ALL",
+    keyword: "",
+  });
+
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState("");
+
+  // 영화 정보 및 리뷰 통계
+  const [reviewInfo, setReviewInfo] = useState({});
+
+  // 같은 목록 화면을 재사용하되 영화가 바뀌면 첫 페이지부터 조회한다.
+  useEffect(() => { setPage(0); }, [movieCode]);
+
+  // 전체 리뷰 조회
+  useEffect(() => {
+    const controller = new AbortController();
+
+    const fetchReviews = async () => {
+      try {
+        setLoading(true);
+        setError("");
+        setReviewInfo({});
+
+        // 영화명 검색은 동명 영화를 섞을 수 있어 영화 코드 전용 API를 사용한다.
+        const response = movieCode
+          ? await AxiosApi.movieReviews(movieCode, page, controller.signal)
+          : await AxiosApi.allReviews(
+          page,
+          controller.signal,
+          activeSearch.searchType,
+          activeSearch.keyword,
+        );
+
+        if (controller.signal.aborted) return;
+
+        const data = response.data;
+        const reviewList = data.content || [];
+
+        setReviews(reviewList);
+        setTotalPages(data.page?.totalPages ?? data.totalPages ?? 0);
+
+        // 통계와 포스터 수집 요청을 페이지 단위로 묶는다.
+        const reviewIds = reviewList.map((review) => review.reviewId);
+        const movieCodes = [
+          ...new Set(
+            reviewList
+              .map((review) => review.movieCode)
+              .filter(
+                (code) =>
+                  typeof code === "string" && /^[A-Za-z0-9]{8}$/.test(code),
+              ),
+          ),
+        ];
+
+        const [summaryResult, posterResult] = await Promise.all([
+          reviewIds.length
+            ? AxiosApi.reviewSummaries(reviewIds, controller.signal)
+                .then((result) => ({ status: "fulfilled", data: result.data }))
+                .catch((reason) => ({ status: "rejected", reason }))
+            : Promise.resolve({ status: "fulfilled", data: [] }),
+          movieCodes.length
+            ? AxiosApi.moviePostersEnsure(movieCodes, controller.signal)
+                .then((result) => ({ status: "fulfilled", data: result.data }))
+                .catch((reason) => ({ status: "rejected", reason }))
+            : Promise.resolve({ status: "fulfilled", data: [] }),
+        ]);
+
+        if (controller.signal.aborted) return;
+
+        if (summaryResult.status === "rejected") {
+          console.error(
+            "리뷰 요약 조회 실패:",
+            safeRequestFailure(summaryResult.reason),
+          );
+        }
+        if (posterResult.status === "rejected") {
+          console.error(
+            "일괄 포스터 조회 실패:",
+            safeRequestFailure(posterResult.reason),
+          );
+        }
+
+        const summaryByReviewId = new Map(
+          (summaryResult.data || []).map((summary) => [
+            summary.reviewId,
+            summary,
+          ]),
+        );
+        const posterByMovieCode = new Map(
+          (posterResult.data || []).map((poster) => [poster.movieCode, poster]),
+        );
+        const infoMap = {};
+
+        reviewList.forEach((review) => {
+          const summary = summaryByReviewId.get(review.reviewId);
+          const poster = posterByMovieCode.get(review.movieCode);
+          infoMap[review.reviewId] = {
+            reviewId: review.reviewId,
+            posterUrl: poster?.posterUrl || "",
+            commentCount: summary?.commentCount ?? 0,
+            likeCount: summary?.likeCount ?? 0,
+            dislikeCount: summary?.dislikeCount ?? 0,
+          };
+        });
+
+        setReviewInfo(infoMap);
+      } catch (err) {
+        if (err.name === "CanceledError" || err.code === "ERR_CANCELED") {
+          return;
+        }
+
+        console.error("전체 리뷰 조회 실패:", safeRequestFailure(err));
+        setError("리뷰 목록을 불러오지 못했습니다.");
+      } finally {
+        if (!controller.signal.aborted) {
+          setLoading(false);
+        }
+      }
+    };
+
+    fetchReviews();
+
+    return () => controller.abort();
+  }, [page, activeSearch, movieCode]);
+
+  // 날짜 형식 변환
+  const formatDate = (dateString) => {
+    if (!dateString) return "-";
+
+    const date = new Date(dateString);
+
+    if (Number.isNaN(date.getTime())) return "-";
+
+    return date.toLocaleDateString("ko-KR", {
+      year: "numeric",
+      month: "2-digit",
+      day: "2-digit",
+    });
+  };
+
+  // 리뷰 상세 페이지 이동
+  const handleReviewClick = (reviewId) => {
+    navigate(`/reviews/${reviewId}`);
+  };
+
+  // 검색 실행
+  const handleSearch = (event) => {
+    event.preventDefault();
+    setPage(0);
+    setActiveSearch({
+      searchType,
+      keyword: searchInput.trim(),
+    });
+  };
+
+  // 검색 조건과 검색어 초기화
+  const handleSearchReset = () => {
+    setSearchType("ALL");
+    setSearchInput("");
+    setPage(0);
+    setActiveSearch({ searchType: "ALL", keyword: "" });
+  };
+
+  const searchPlaceholders = {
+    ALL: "검색하고 싶은 키워드를 입력하세요.",
+    MOVIE: "영화 제목을 입력하세요.",
+    DIRECTOR: "감독 이름을 입력하세요.",
+    ACTOR: "배우 이름을 입력하세요.",
+    NICKNAME: "사용자 닉네임을 입력하세요.",
+    TITLE: "리뷰 제목을 입력하세요.",
+    CONTENT: "리뷰 내용을 입력하세요.",
+  };
+
+  // 페이지 변경
+  const handlePageChange = (nextPage) => {
+    if (nextPage < 0 || nextPage >= totalPages) return;
+
+    setPage(nextPage);
+
+    window.scrollTo({
+      top: 0,
+      behavior: "smooth",
+    });
+  };
+
+  // 페이지 번호 생성
+  const pageNumbers = Array.from({ length: totalPages }, (_, index) => index);
+
+  return (
+    <div className="all-reviews-page" data-archive-page="reviews">
+      {/* 상단 소개 */}
+      <section className="all-reviews-heading">
+        <div>
+          <h1>{movieCode ? "이 영화의 모든 리뷰" : "모든 영화 리뷰"}</h1>
+
+          <p className="all-reviews-description">
+            {movieCode ? `영화 코드 ${movieCode}의 감상 기록을 모았습니다.` : "영화에 대한 다양한 생각과 기록을 만나보세요."}
+          </p>
+        </div>
+      </section>
+
+      {/* 리뷰 목록 */}
+      <section className="all-reviews-card">
+        <div className="all-reviews-card-heading">
+          <div>
+            <h2>리뷰 모아보기</h2>
+
+            <p>최근 작성된 리뷰부터 보여드립니다.</p>
+          </div>
+
+          <span className="all-reviews-page-info">
+            {totalPages > 0 ? `${page + 1} / ${totalPages} 페이지` : "리뷰"}
+          </span>
+        </div>
+
+        {movieCode ? <Link to="/reviews">모든 영화 리뷰 보기</Link> : <form className="all-reviews-search" onSubmit={handleSearch}>
+          <label
+            className="all-reviews-search-label"
+            htmlFor="all-reviews-search-type"
+          >
+            검색 범위
+          </label>
+          <select
+            id="all-reviews-search-type"
+            className="all-reviews-search-select"
+            value={searchType}
+            onChange={(event) => setSearchType(event.target.value)}
+          >
+            <option value="ALL">전체</option>
+            <option value="MOVIE">영화 제목</option>
+            <option value="DIRECTOR">감독</option>
+            <option value="ACTOR">배우</option>
+            <option value="NICKNAME">닉네임</option>
+            <option value="TITLE">리뷰 제목</option>
+            <option value="CONTENT">리뷰 내용</option>
+          </select>
+
+          <input
+            className="all-reviews-search-input"
+            type="search"
+            value={searchInput}
+            onChange={(event) => setSearchInput(event.target.value)}
+            placeholder={searchPlaceholders[searchType]}
+            aria-label="리뷰 검색어"
+          />
+
+          <button className="all-reviews-search-submit" type="submit">
+            검색
+          </button>
+          <button
+            className="all-reviews-search-reset"
+            type="button"
+            onClick={handleSearchReset}
+          >
+            초기화
+          </button>
+        </form>}
+
+        {loading ? (
+          <div className="all-reviews-state">리뷰를 불러오는 중입니다.</div>
+        ) : error ? (
+          <div className="all-reviews-state all-reviews-error">{error}</div>
+        ) : reviews.length === 0 ? (
+          <div className="all-reviews-state">
+            {activeSearch.keyword
+              ? "검색 조건에 맞는 리뷰가 없습니다."
+              : "아직 작성된 리뷰가 없습니다."}
+          </div>
+        ) : (
+          <>
+            <div className="archive-review-list">
+              {reviews.map((review) => {
+                const info = reviewInfo[review.reviewId];
+                return <article className="archive-review-row" key={review.reviewId} onClick={() => handleReviewClick(review.reviewId)}>
+                  <div className="all-review-poster"><SafeImage src={resolvePosterUrl(info?.posterUrl)} alt={review.movieTitle || "영화 포스터"} fallbackClassName="all-review-poster-placeholder" /></div>
+                  <div><p className="archive-review-movie">{review.movieTitle || (movieCode ? `영화 코드 ${movieCode}` : "알 수 없는 영화")}{review.movieYear ? ` · ${review.movieYear}` : ""}</p>
+                    <Link to={`/reviews/${review.reviewId}`} className="review-title-link" onClick={(event) => event.stopPropagation()}>{review.title}</Link>
+                    <div className="archive-review-meta"><span>{review.nickname || "익명"}</span><time dateTime={review.createdAt}>{formatDate(review.createdAt)}</time><span>좋아요 {info?.likeCount ?? 0}</span><span>싫어요 {info?.dislikeCount ?? 0}</span><span>댓글 {info?.commentCount ?? 0}</span></div>
+                  </div>
+                </article>;
+              })}
+            </div>
+
+            {/* 페이지네이션 */}
+            <div className="all-reviews-pagination">
+              <button
+                type="button"
+                onClick={() => handlePageChange(page - 1)}
+                disabled={page === 0}
+              >
+                이전
+              </button>
+
+              {pageNumbers.map((pageNumber) => (
+                <button
+                  type="button"
+                  key={pageNumber}
+                  className={pageNumber === page ? "active" : ""}
+                  onClick={() => handlePageChange(pageNumber)}
+                >
+                  {pageNumber + 1}
+                </button>
+              ))}
+
+              <button
+                type="button"
+                onClick={() => handlePageChange(page + 1)}
+                disabled={page >= totalPages - 1}
+              >
+                다음
+              </button>
+            </div>
+          </>
+        )}
+      </section>
+    </div>
+  );
+}
+
+export default AllReviews;

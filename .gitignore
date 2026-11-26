@@ -1,0 +1,14 @@
+# 로컬 비밀 설정과 OAuth 다운로드 인증 파일은 공유하지 않는다.
+**/.env
+**/.env.*
+!**/.env.example
+**/client_secret*.json
+**/google-credentials*.json
+**/credentials.json
+
+# Python RAG 로컬 실행 산출물
+MOMO-RAG/.venv/
+**/__pycache__/
+**/*.py[cod]
+**/.pytest_cache/
+MOMO-RAG/.idea/
