@@ -51,7 +51,7 @@ Swagger의 실제 DB 반복 검증은 별도 테스트 DB를 만들지 않고 �
 | 리뷰 항목 | 남은 이유 및 다음 작업 |
 | --- | --- |
 | JPA 자동 스키마 변경을 마이그레이션으로 전환 | 현재 저장소에는 전체 기존 MySQL 스키마를 재현하는 초기 Flyway migration이 없다. 임의의 baseline이나 ddl-auto 변경은 기존 `momo_db` 실행을 깨뜨릴 수 있으므로, 실제 테이블·인덱스·제약조건을 추출하고 기존 DB와 신규 DB 양쪽을 검증한 뒤 별도 작업으로 전환해야 한다. |
-| 실제 RAG 엔진 | 현재 `MOMO-RAG/engine.py`는 메모리 2-gram StubEngine이다. 실제 임베딩·벡터 저장소·Hermes API/LLM 연결은 현재 MOMO 저장소 구현에 포함되어 있지 않으며, 요청·응답 계약과 모델·색인 재생성 정책을 정한 뒤 별도 구현이 필요하다. |
+| 실제 RAG 엔진 | 현재 `MOMO-RAG/engine.py`는 메모리 2-gram StubEngine이다. 실제 임베딩·벡터 저장소·LLM 추론은 아직 구현되지 않았다. MOMO 내부 RAG 서비스의 검색 품질·영속성·모델 도입은 현재 Stub 동작과 별도 검증을 거쳐 단계적으로 진행해야 한다. |
 | RAG 커밋 후 처리 지연 | `ReviewIndexListener`는 AFTER_COMMIT에서 원격 색인 작업을 동기 실행한다. 단순 비동기 전환은 같은 리뷰의 UPSERT/DELETE 순서와 실패 복구를 깨뜨릴 수 있어 Outbox 또는 영속 작업 큐와 함께 바꾸는 것이 안전하다. |
 | 대형 서비스·컴포넌트 분리 | MovieService, PersonService, MovieDetail, ReviewDetail, ChatPopup, AxiosApi의 책임을 도메인별로 나누는 작업은 각 경계에 회귀 테스트를 추가하며 별도 단계로 진행한다. |
 | 채팅 상태 영속화·다중 인스턴스 | 현재 메시지·접속 상태는 메모리 기반이다. MySQL 메시지 이력, Redis Pub/Sub 또는 WebSocket 브로커, 공유 이미지 저장소와 재접속 커서 정책을 함께 설계해야 한다. |
