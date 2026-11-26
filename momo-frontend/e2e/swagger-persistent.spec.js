@@ -138,7 +138,7 @@ test("Swagger UI와 기존 momo_db의 실제 API 계약을 검증하고 테스�
   expect(
     ACCOUNT.password,
     "비밀번호는 영문·숫자·특수문자(!@#$%^&*)를 포함한 8~20자로 지정하세요.",
-  ).toMatch(/^(?=.*[A-Za-z])(?=.*\\d)(?=.*[!@#$%^&*])[A-Za-z\\d!@#$%^&*]{8,20}$/);
+  ).toMatch(/^(?=.*[A-Za-z])(?=.*\d)(?=.*[!@#$%^&*])[A-Za-z\d!@#$%^&*]{8,20}$/);
   const configuredMovie = await loadExistingMovie(
     request, process.env.MOMO_SWAGGER_MOVIE_CODE || "",
   );
