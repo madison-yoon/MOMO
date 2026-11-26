@@ -11,6 +11,7 @@ test("격리 MySQL에서 회원·리뷰·댓글·반응·평점·관심 영화 A
   const suffix = Date.now().toString(36).slice(-7);
   const loginId = `crud${suffix}`;
   const password = "MomoE2e1!";
+  const changedPassword = "MomoE2e2!";
   const nickname = `C${suffix}`;
   const updatedNickname = `U${suffix}`;
   const email = `${loginId}@example.com`;
@@ -28,7 +29,7 @@ test("격리 MySQL에서 회원·리뷰·댓글·반응·평점·관심 영화 A
   const headers = auth(session.accessToken);
 
   expect((await request.get(`${API}/api/auth/me`)).status()).toBe(401);
-  const profile = await request.get(`${API}/api/auth/me`, { headers });
+  const profile = await request.get(`${API}/api/auth/me`, { headers: updatedHeaders });
   expect(profile.status()).toBe(200);
   expect((await profile.json()).loginId).toBe(loginId);
 
@@ -39,12 +40,75 @@ test("격리 MySQL에서 회원·리뷰·댓글·반응·평점·관심 영화 A
   expect(updateProfile.status()).toBe(200);
   expect((await updateProfile.json()).nickname).toBe(updatedNickname);
 
-  const ratingBefore = await request.get(`${API}/api/movies/${MOVIE_CODE}/rating`, { headers });
+  // 다른 회원이 이미 사용 중인 닉네임으로 변경하면 409 Conflict를 반환한다.
+  const secondLoginId = `other${suffix}`;
+  const secondNickname = `D${suffix}`;
+  const secondEmail = `${secondLoginId}@example.com`;
+  expect((await request.post(`${API}/api/auth/signup`, {
+    data: {
+      loginId: secondLoginId,
+      password,
+      nickname: secondNickname,
+      email: secondEmail,
+    },
+  })).status()).toBe(201);
+  const secondLogin = await request.post(`${API}/api/auth/login`, {
+    data: { loginId: secondLoginId, password },
+  });
+  expect(secondLogin.status()).toBe(200);
+  const secondHeaders = auth((await secondLogin.json()).accessToken);
+  const duplicateNickname = await request.put(`${API}/api/auth/me`, {
+    headers: secondHeaders,
+    data: {
+      nickname: updatedNickname,
+      email: secondEmail,
+      currentPassword: null,
+      newPassword: null,
+    },
+  });
+  expect(duplicateNickname.status()).toBe(409);
+  const secondProfile = await request.get(`${API}/api/auth/me`, { headers: secondHeaders });
+  expect((await secondProfile.json()).nickname).toBe(secondNickname);
+
+  // 현재 비밀번호 검증 후 변경하고, 기존 비밀번호 재로그인은 거부되는지 확인한다.
+  const passwordUpdate = await request.put(`${API}/api/auth/me`, {
+    headers,
+    data: {
+      nickname: updatedNickname,
+      email,
+      currentPassword: password,
+      newPassword: changedPassword,
+    },
+  });
+  expect(passwordUpdate.status()).toBe(200);
+
+  const oldPasswordCheck = await request.post(`${API}/api/auth/me/password-check`, {
+    headers, data: { currentPassword: password },
+  });
+  expect(oldPasswordCheck.status()).toBe(200);
+  expect(await oldPasswordCheck.json()).toBe(false);
+  const newPasswordCheck = await request.post(`${API}/api/auth/me/password-check`, {
+    headers, data: { currentPassword: changedPassword },
+  });
+  expect(newPasswordCheck.status()).toBe(200);
+  expect(await newPasswordCheck.json()).toBe(true);
+
+  expect((await request.post(`${API}/api/auth/login`, {
+    data: { loginId, password },
+  })).status()).toBe(400);
+  const renewedLogin = await request.post(`${API}/api/auth/login`, {
+    data: { loginId, password: changedPassword },
+  });
+  expect(renewedLogin.status()).toBe(200);
+  const renewedSession = await renewedLogin.json();
+  const updatedHeaders = auth(renewedSession.accessToken);
+
+  const ratingBefore = await request.get(`${API}/api/movies/${MOVIE_CODE}/rating`, { headers: updatedHeaders });
   expect(ratingBefore.status(), "CI DB Movie fixture가 존재해야 합니다.").toBe(200);
 
   const reviewTitle = `CI CRUD ${suffix}`;
   const createReview = await request.post(`${API}/api/reviews`, {
-    headers,
+    headers: updatedHeaders,
     data: { movieCode: MOVIE_CODE, title: reviewTitle, content: "리뷰 CRUD API 검증" },
   });
   expect(createReview.status()).toBe(201);
@@ -52,7 +116,7 @@ test("격리 MySQL에서 회원·리뷰·댓글·반응·평점·관심 영화 A
   expect(reviewId).toBeTruthy();
 
   const duplicateReview = await request.post(`${API}/api/reviews`, {
-    headers,
+    headers: updatedHeaders,
     data: { movieCode: MOVIE_CODE, title: "중복 리뷰", content: "중복 작성 검증" },
   });
   expect(duplicateReview.status()).toBe(409);
@@ -62,7 +126,7 @@ test("격리 MySQL에서 회원·리뷰·댓글·반응·평점·관심 영화 A
   expect((await reviewDetail.json()).title).toBe(reviewTitle);
 
   const updateReview = await request.put(`${API}/api/reviews/${reviewId}`, {
-    headers,
+    headers: updatedHeaders,
     data: { title: `${reviewTitle} 수정`, content: "수정 API 검증" },
   });
   expect(updateReview.status()).toBe(200);
@@ -74,14 +138,14 @@ test("격리 MySQL에서 회원·리뷰·댓글·반응·평점·관심 영화 A
   expect((await reviewSearch.json()).content.some((item) => item.reviewId === reviewId)).toBe(true);
 
   expect((await request.put(`${API}/api/reviews/${reviewId}/reaction`, {
-    headers, data: true,
+    headers: updatedHeaders, data: true,
   })).status()).toBe(200);
-  expect((await request.get(`${API}/api/reviews/${reviewId}/reaction`, { headers })).status()).toBe(200);
+  expect((await request.get(`${API}/api/reviews/${reviewId}/reaction`, { headers: updatedHeaders })).status()).toBe(200);
   expect((await request.get(`${API}/api/reviews/${reviewId}/reactions`)).status()).toBe(200);
-  expect((await request.delete(`${API}/api/reviews/${reviewId}/reaction`, { headers })).status()).toBe(204);
+  expect((await request.delete(`${API}/api/reviews/${reviewId}/reaction`, { headers: updatedHeaders })).status()).toBe(204);
 
   const createComment = await request.post(`${API}/api/reviews/${reviewId}/comments`, {
-    headers, data: { content: `CI CRUD comment ${suffix}` },
+    headers: updatedHeaders, data: { content: `CI CRUD comment ${suffix}` },
   });
   expect(createComment.status()).toBe(201);
   const commentId = (await createComment.json()).commentId;
@@ -101,7 +165,7 @@ test("격리 MySQL에서 회원·리뷰·댓글·반응·평점·관심 영화 A
     headers, data: true,
   })).status()).toBe(200);
   expect((await request.get(`${API}/api/comments/${commentId}/reactions`)).status()).toBe(200);
-  expect((await request.delete(`${API}/api/comments/${commentId}/reaction`, { headers })).status()).toBe(204);
+  expect((await request.delete(`${API}/api/comments/${commentId}/reaction`, { headers: updatedHeaders })).status()).toBe(204);
   expect((await request.delete(`${API}/api/comments/${commentId}`, { headers })).status()).toBe(204);
 
   const commentsAfterDelete = await request.get(`${API}/api/reviews/${reviewId}/comments?page=0`);
@@ -123,7 +187,7 @@ test("격리 MySQL에서 회원·리뷰·댓글·반응·평점·관심 영화 A
     releaseDate: "20260101",
     posterUrl: "",
   };
-  expect((await request.post(`${API}/api/favorites`, { headers, data: favorite })).status()).toBe(201);
+  expect((await request.post(`${API}/api/favorites`, { headers: updatedHeaders, data: favorite })).status()).toBe(201);
   const favorites = await request.get(`${API}/api/favorites`, { headers });
   expect((await favorites.json()).some((item) => item.movieCode === MOVIE_CODE)).toBe(true);
   expect((await request.delete(`${API}/api/favorites/${MOVIE_CODE}`, { headers })).status()).toBe(204);
@@ -134,7 +198,7 @@ test("격리 MySQL에서 회원·리뷰·댓글·반응·평점·관심 영화 A
 
   expect((await request.post(`${API}/api/auth/logout`, { headers })).status()).toBe(204);
   const reissue = await request.post(`${API}/api/auth/reissue`, {
-    data: { refreshToken: session.refreshToken },
+    data: { refreshToken: renewedSession.refreshToken },
   });
   expect(reissue.status()).toBe(401);
 });
