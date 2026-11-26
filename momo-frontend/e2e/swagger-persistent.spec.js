@@ -227,6 +227,8 @@ test("Swagger UI와 기존 momo_db의 실제 API 계약을 검증하고 테스�
   expect(movieSearch.status(), "영화 검색 API 실패").toBe(200);
   const searchBody = await movieSearch.json();
   expect(Array.isArray(searchBody.content)).toBe(true);
+  expect(searchBody.content.length, "영화 검색 결과가 비어 있습니다. 검색어 또는 공급자 응답을 확인하세요.").toBeGreaterThan(0);
+  expect(searchBody.totalCount).toBeGreaterThan(0);
   expect(searchBody.page).toBe(1);
   expect(searchBody.size).toBe(5);
   expect(Number.isInteger(searchBody.totalCount)).toBe(true);
