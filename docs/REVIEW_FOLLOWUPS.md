@@ -61,7 +61,7 @@ CI의 `momo-frontend/e2e/api-crud.spec.js`는 GitHub Actions의 별도 일회용
 | 대형 서비스·컴포넌트 분리 | MovieService, PersonService, MovieDetail, ReviewDetail, ChatPopup, AxiosApi의 책임을 도메인별로 나누는 작업은 각 경계에 회귀 테스트를 추가하며 별도 단계로 진행한다. |
 | 채팅 상태 영속화·다중 인스턴스 | 현재 메시지·접속 상태는 메모리 기반이다. MySQL 메시지 이력, Redis Pub/Sub 또는 WebSocket 브로커, 공유 이미지 저장소와 재접속 커서 정책을 함께 설계해야 한다. |
 | 프로필 이미지 API 실환경 검증 | 파일 유효성·권한 테스트는 존재하지만 실제 Firebase Storage 자격정보로 업로드·조회·삭제하는 통합 검증은 별도 환경에서 수행해야 한다. |
-| 회원 탈퇴 API 통합 검증 | 삭제 순서와 데이터 정합성의 서비스 단위 테스트는 있으나, 일회용 계정을 사용하는 전체 API 계약 검증은 별도로 보강한다. |
+| 회원 탈퇴 API 통합 검증 | CI의 일회용 두 번째 회원으로 `DELETE /api/auth/me` 비밀번호 확인·탈퇴 응답·탈퇴 후 로그인 거부를 검증한다. 소셜 공급자 실제 연결 해제는 공급자 자격정보가 필요한 별도 검증이다. |
 
 ## 검증
 
