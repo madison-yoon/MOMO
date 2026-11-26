@@ -13,6 +13,24 @@ const COMMENT_MARKER = "[MOMO SWAGGER QA] persistent comment";
 
 const authHeaders = (token) => ({ Authorization: `Bearer ${token}` });
 
+async function getAllPagedContent(request, path, headers) {
+  const items = [];
+  let totalPages = 1;
+
+  for (let page = 0; page < totalPages; page += 1) {
+    const separator = path.includes("?") ? "&" : "?";
+    const response = await request.get(`${API}${path}${separator}page=${page}`, { headers });
+    expect(response.status(), `페이지 조회 실패: ${path} (page=${page})`).toBe(200);
+
+    const body = await response.json();
+    items.push(...(body.content || []));
+    totalPages = Number(body.page?.totalPages ?? body.totalPages ?? 1);
+    if (!Number.isFinite(totalPages) || totalPages < 1) totalPages = 1;
+  }
+
+  return items;
+}
+
 async function loginOrCreateAccount(request) {
   const exists = await request.get(
     `${API}/api/auth/exists/id/${encodeURIComponent(ACCOUNT.loginId)}`,
@@ -125,13 +143,18 @@ test("Swagger UI와 기존 momo_db의 실제 API 계약을 검증하고 테스�
   expect(passwordCheck.status()).toBe(200);
   expect(await passwordCheck.json()).toBe(true);
 
-  // 리뷰는 최초 1건만 만들고 이후 같은 reviewId를 업데이트
-  const ownResponse = await request.get(`${API}/api/reviews/me?page=0`, { headers });
-  expect(ownResponse.status()).toBe(200);
-  const ownReviews = (await ownResponse.json()).content || [];
-  let qaReview = ownReviews.find((item) => item.title === REVIEW_TITLE);
+  // 모든 페이지를 조회해 QA 레코드를 찾는다. 다른 리뷰를 테스트 데이터로 오인하지 않는다.
+  const ownReviews = await getAllPagedContent(request, "/api/reviews/me", headers);
+  const qaReview = ownReviews.find((item) => item.title === REVIEW_TITLE);
   const movie = await loadExistingMovie(request, qaReview?.movieCode);
-  if (!qaReview) qaReview = ownReviews.find((item) => item.movieCode === movie.movieCode);
+
+  if (!qaReview) {
+    const existingReview = ownReviews.find((item) => item.movieCode === movie.movieCode);
+    expect(
+      existingReview,
+      `선택한 영화(${movie.movieCode})에 QA 표시가 없는 기존 리뷰가 있습니다. 기존 리뷰를 변경하지 않도록 다른 미리 리뷰하지 않은 영화 코드를 지정하세요.`,
+    ).toBeUndefined();
+  }
 
   let reviewId;
   if (qaReview) {
@@ -178,12 +201,11 @@ test("Swagger UI와 기존 momo_db의 실제 API 계약을 검증하고 테스�
     `${API}/api/reviews/${reviewId}/reaction`, { headers },
   )).json()).toBe(true);
 
-  // 댓글 역시 최초 한 건만 만들고 이후에는 같은 commentId를 갱신
-  const commentsResponse = await request.get(
-    `${API}/api/reviews/${reviewId}/comments?page=0`, { headers },
+  // 댓글 역시 모든 페이지에서 QA 표시를 찾고, 동일 commentId만 수정한다.
+  const allComments = await getAllPagedContent(
+    request, `/api/reviews/${reviewId}/comments`, headers,
   );
-  expect(commentsResponse.status()).toBe(200);
-  const oldComment = ((await commentsResponse.json()).content || []).find(
+  const oldComment = allComments.find(
     (item) => (item.content || "").startsWith(COMMENT_MARKER),
   );
 
