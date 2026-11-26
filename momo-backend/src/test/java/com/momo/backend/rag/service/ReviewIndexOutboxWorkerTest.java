@@ -58,11 +58,23 @@ class ReviewIndexOutboxWorkerTest {
         var event = event(ReviewIndexEvent.Operation.UPSERT, 5);
         when(client.isEnabled()).thenReturn(true);
         when(store.claimNext()).thenReturn(Optional.of(event));
+        when(indexing.indexQueued(900L)).thenReturn(ReviewIndexService.Outcome.RETRYABLE);
+
+        worker().processNext();
+        verify(store).retry(event, 1000L, "INDEX_RETRYABLE");
+        verify(store, never()).complete(event);
+    }
+
+    @Test
+    void permanentUpsertFailureCompletesTheQueueAndLeavesReviewMarkedFailed() {
+        var event = event(ReviewIndexEvent.Operation.UPSERT, 1);
+        when(client.isEnabled()).thenReturn(true);
+        when(store.claimNext()).thenReturn(Optional.of(event));
         when(indexing.indexQueued(900L)).thenReturn(ReviewIndexService.Outcome.FAILED);
 
         worker().processNext();
-        verify(store).retry(event, 1000L, "INDEX_FAILED");
-        verify(store, never()).complete(event);
+        verify(store).complete(event);
+        verify(store, never()).retry(any(), anyLong(), anyString());
     }
 
     @Test

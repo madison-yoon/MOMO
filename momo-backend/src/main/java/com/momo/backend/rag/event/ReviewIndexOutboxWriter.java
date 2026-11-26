@@ -10,6 +10,7 @@ import org.springframework.transaction.annotation.Propagation;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
+import jakarta.annotation.PostConstruct;
 
 /**
  * Writes RAG work in the same transaction as the review mutation.
@@ -27,6 +28,12 @@ public class ReviewIndexOutboxWriter {
 
     private final JdbcTemplate jdbcTemplate;
     private final RagClient ragClient;
+
+    @PostConstruct
+    void validateOutboxSchema() {
+        // RAG_ENABLED=true is fail-closed: never start a worker that can only log a missing-table error.
+        jdbcTemplate.queryForObject("SELECT COUNT(*) FROM review_index_outbox", Integer.class);
+    }
 
     @EventListener
     @Transactional(propagation = Propagation.MANDATORY)

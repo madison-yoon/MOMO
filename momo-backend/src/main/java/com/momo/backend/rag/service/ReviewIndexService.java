@@ -10,6 +10,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Propagation;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.client.RestClientResponseException;
+import org.springframework.web.client.ResourceAccessException;
 import org.springframework.web.server.ResponseStatusException;
 import java.util.List;
 import java.util.concurrent.atomic.AtomicBoolean;
@@ -51,8 +52,9 @@ public class ReviewIndexService {
         } catch (RuntimeException error) {
             String safeError = safeFailure(error);
             log.warn("RAG 색인 실패 reviewId={} classification={}", reviewId, safeError);
-            record(generation, snapshot, IndexStatus.FAILED, safeError);
-            return Outcome.FAILED;
+            Outcome recorded = record(generation, snapshot, IndexStatus.FAILED, safeError);
+            if (recorded == Outcome.RETRYABLE) return Outcome.RETRYABLE;
+            return retryableFailure(error) ? Outcome.RETRYABLE : Outcome.FAILED;
         }
         return record(generation, snapshot, IndexStatus.READY, null);
     }
@@ -64,7 +66,7 @@ public class ReviewIndexService {
         } catch (RuntimeException failure) {
             // 예외 메시지·스택에는 원본/인증정보가 섞일 수 있어 클래스명만 남긴다.
             log.warn("RAG 상태 기록 실패 reviewId={} type={}", snapshot.reviewId(), failure.getClass().getSimpleName());
-            return Outcome.FAILED;
+            return Outcome.RETRYABLE;
         }
     }
 
@@ -104,7 +106,7 @@ public class ReviewIndexService {
                     }
                     switch (outcome) {
                         case READY -> success++;
-                        case FAILED -> failed++;
+                        case FAILED, RETRYABLE -> failed++;
                         case SKIPPED -> skipped++;
                     }
                 } catch (ReviewLocks.LockUnavailableException failure) {
@@ -122,11 +124,20 @@ public class ReviewIndexService {
         } finally { rebuilding.set(false); }
     }
 
+    private boolean retryableFailure(RuntimeException failure) {
+        if (failure instanceof ResourceAccessException) return true;
+        if (failure instanceof RestClientResponseException http) {
+            int status = http.getStatusCode().value();
+            return status == 408 || status == 425 || status == 429 || status >= 500;
+        }
+        return false;
+    }
+
     private String safeFailure(RuntimeException failure) {
         return failure instanceof RestClientResponseException http
                 ? "HTTP_" + http.getStatusCode().value() : "INDEX_" + failure.getClass().getSimpleName();
     }
 
-    public enum Outcome { READY, FAILED, SKIPPED }
+    public enum Outcome { READY, FAILED, RETRYABLE, SKIPPED }
     public record ReindexSummary(int total, int success, int failed, int skipped) { }
 }

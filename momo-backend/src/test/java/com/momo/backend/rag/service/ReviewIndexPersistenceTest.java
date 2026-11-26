@@ -6,7 +6,6 @@ import com.momo.backend.rag.client.RagClient;
 import com.momo.backend.rag.enums.IndexStatus;
 import com.momo.backend.rag.event.ReviewIndexEvent;
 import com.momo.backend.rag.event.ReviewPurgeEvent;
-import com.momo.backend.repository.ReviewRepository;
 import jakarta.persistence.EntityManager;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -26,7 +25,6 @@ import org.springframework.transaction.support.TransactionTemplate;
 
 import java.time.LocalDateTime;
 import java.util.List;
-import java.util.Optional;
 import java.util.UUID;
 
 import static org.assertj.core.api.Assertions.*;

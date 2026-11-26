@@ -9,7 +9,6 @@ import org.springframework.stereotype.Repository;
 import org.springframework.transaction.annotation.Propagation;
 import org.springframework.transaction.annotation.Transactional;
 
-import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
@@ -17,39 +16,41 @@ import java.util.UUID;
 /**
  * Durable, per-review ordered queue.
  *
- * Claim uses a conditional UPDATE rather than relying on process-local locks. Competing
- * instances may read the same candidate, but only one can transition it to a live lease.
+ * Candidate reads are intentionally unlocked. A conditional UPDATE grants one worker
+ * a time-limited lease; the claim token fences a worker whose lease has expired.
+ * Queue timestamps are calculated by MySQL to avoid JVM/database timezone drift.
  */
 @Repository
 @RequiredArgsConstructor
 @ConditionalOnProperty(name = "RAG_ENABLED", havingValue = "true")
 public class ReviewIndexOutboxStore {
     private static final String NEXT_SQL = """
-            SELECT current.id, current.review_id, current.operation, current.attempt_count
-              FROM review_index_outbox current
+            SELECT candidate.id, candidate.review_id, candidate.operation, candidate.attempt_count
+              FROM review_index_outbox candidate
              WHERE (
-                    (current.status = 'PENDING' AND current.available_at <= CURRENT_TIMESTAMP(6))
-                 OR (current.status = 'PROCESSING' AND current.locked_until <= CURRENT_TIMESTAMP(6))
+                    (candidate.status = 'PENDING' AND candidate.available_at <= CURRENT_TIMESTAMP(6))
+                 OR (candidate.status = 'PROCESSING' AND candidate.locked_until <= CURRENT_TIMESTAMP(6))
              )
                AND NOT EXISTS (
                     SELECT 1
                       FROM review_index_outbox earlier
-                     WHERE earlier.review_id = current.review_id
-                       AND earlier.id < current.id
+                     WHERE earlier.review_id = candidate.review_id
+                       AND earlier.id < candidate.id
                        AND earlier.status IN ('PENDING', 'PROCESSING')
                )
-             ORDER BY current.id
+             ORDER BY candidate.id
              LIMIT 1
             """;
 
     private final JdbcTemplate jdbcTemplate;
+
     @Value("${momo.rag.outbox.lease-ms:30000}")
     private long leaseMillis;
 
     @Transactional(propagation = Propagation.REQUIRES_NEW, timeout = 5)
     public Optional<ClaimedEvent> claimNext() {
-        if (leaseMillis < 5000) {
-            throw new IllegalStateException("RAG outbox lease must be at least 5000 ms");
+        if (leaseMillis < 5000 || leaseMillis > 86_400_000) {
+            throw new IllegalStateException("RAG outbox lease must be between 5000 and 86400000 ms");
         }
 
         List<Candidate> candidates = jdbcTemplate.query(
@@ -67,28 +68,25 @@ public class ReviewIndexOutboxStore {
 
         Candidate candidate = candidates.getFirst();
         String claimToken = UUID.randomUUID().toString();
-        LocalDateTime now = LocalDateTime.now();
         int claimed = jdbcTemplate.update("""
                 UPDATE review_index_outbox
                    SET status = 'PROCESSING',
                        attempt_count = attempt_count + 1,
-                       locked_until = ?,
+                       locked_until = TIMESTAMPADD(MICROSECOND, ?, CURRENT_TIMESTAMP(6)),
                        claim_token = ?,
                        last_error = NULL
                  WHERE id = ?
                    AND (
-                        (status = 'PENDING' AND available_at <= ?)
-                     OR (status = 'PROCESSING' AND locked_until <= ?)
+                        (status = 'PENDING' AND available_at <= CURRENT_TIMESTAMP(6))
+                     OR (status = 'PROCESSING' AND locked_until <= CURRENT_TIMESTAMP(6))
                    )
                 """,
-                now.plusMilliseconds(leaseMillis),
+                Math.multiplyExact(leaseMillis, 1000L),
                 claimToken,
-                candidate.id(),
-                now,
-                now
+                candidate.id()
         );
         if (claimed != 1) {
-            // Another process claimed this row after our candidate read. The next poll retries.
+            // A competing process claimed the candidate after our read; retry next poll.
             return Optional.empty();
         }
 
@@ -96,8 +94,16 @@ public class ReviewIndexOutboxStore {
         try {
             operation = ReviewIndexEvent.Operation.valueOf(candidate.operation());
         } catch (IllegalArgumentException invalidOperation) {
-            // Preserve the queue row for diagnosis; the worker will record a safe retry classification.
-            retryClaim(candidate.id(), claimToken, now.plusSeconds(30), "OUTBOX_INVALID_OPERATION");
+            // Keep malformed rows diagnosable without blocking all work for this review forever.
+            jdbcTemplate.update("""
+                    UPDATE review_index_outbox
+                       SET status = 'DONE',
+                           completed_at = CURRENT_TIMESTAMP(6),
+                           locked_until = NULL,
+                           claim_token = NULL,
+                           last_error = 'OUTBOX_INVALID_OPERATION'
+                     WHERE id = ? AND status = 'PROCESSING' AND claim_token = ?
+                    """, candidate.id(), claimToken);
             return Optional.empty();
         }
 
@@ -127,37 +133,37 @@ public class ReviewIndexOutboxStore {
 
     @Transactional(propagation = Propagation.REQUIRES_NEW, timeout = 5)
     public boolean retry(ClaimedEvent event, long delayMillis, String errorCode) {
-        if (delayMillis < 0) {
-            throw new IllegalArgumentException("RAG outbox retry delay cannot be negative");
+        if (delayMillis < 0 || delayMillis > 86_400_000) {
+            throw new IllegalArgumentException("RAG outbox retry delay must be between 0 and 86400000 ms");
         }
-        LocalDateTime availableAt = LocalDateTime.now().plusMilliseconds(delayMillis);
         String safeError = errorCode == null ? "OUTBOX_FAILED"
                 : errorCode.replaceAll("[^A-Za-z0-9_-]", "_");
         if (safeError.length() > 100) safeError = safeError.substring(0, 100);
-        return retryClaim(event.id(), event.claimToken(), availableAt, safeError);
-    }
 
-    @Transactional(propagation = Propagation.REQUIRES_NEW, timeout = 10)
-    public int deleteCompletedBefore(LocalDateTime cutoff) {
-        return jdbcTemplate.update("""
-                DELETE FROM review_index_outbox
-                 WHERE status = 'DONE'
-                   AND completed_at < ?
-                """, cutoff);
-    }
-
-    private boolean retryClaim(long id, String claimToken, LocalDateTime availableAt, String errorCode) {
         return jdbcTemplate.update("""
                 UPDATE review_index_outbox
                    SET status = 'PENDING',
-                       available_at = ?,
+                       available_at = TIMESTAMPADD(MICROSECOND, ?, CURRENT_TIMESTAMP(6)),
                        locked_until = NULL,
                        claim_token = NULL,
                        last_error = ?
                  WHERE id = ?
                    AND status = 'PROCESSING'
                    AND claim_token = ?
-                """, availableAt, errorCode, id, claimToken) == 1;
+                """, Math.multiplyExact(delayMillis, 1000L), safeError,
+                event.id(), event.claimToken()) == 1;
+    }
+
+    @Transactional(propagation = Propagation.REQUIRES_NEW, timeout = 10)
+    public int deleteCompletedBeforeDays(int retentionDays) {
+        if (retentionDays < 1 || retentionDays > 3650) {
+            throw new IllegalArgumentException("RAG outbox retention must be between 1 and 3650 days");
+        }
+        return jdbcTemplate.update("""
+                DELETE FROM review_index_outbox
+                 WHERE status = 'DONE'
+                   AND completed_at < TIMESTAMPADD(DAY, ?, CURRENT_TIMESTAMP(6))
+                """, -retentionDays);
     }
 
     private record Candidate(long id, long reviewId, String operation, int attemptCount) { }

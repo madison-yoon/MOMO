@@ -8,7 +8,6 @@ import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Component;
 
-import java.time.LocalDateTime;
 import java.util.Optional;
 
 /**
@@ -57,7 +56,13 @@ public class ReviewIndexOutboxWorker {
             return false;
         }
 
-        Optional<ReviewIndexOutboxStore.ClaimedEvent> next = store.claimNext();
+        final Optional<ReviewIndexOutboxStore.ClaimedEvent> next;
+        try {
+            next = store.claimNext();
+        } catch (RuntimeException failure) {
+            log.warn("RAG outbox claim failed type={}", failure.getClass().getSimpleName());
+            return false;
+        }
         if (next.isEmpty()) {
             return false;
         }
@@ -66,10 +71,11 @@ public class ReviewIndexOutboxWorker {
         try {
             if (event.operation() == ReviewIndexEvent.Operation.UPSERT) {
                 ReviewIndexService.Outcome outcome = indexService.indexQueued(event.reviewId());
-                if (outcome == ReviewIndexService.Outcome.FAILED) {
-                    retry(event, "INDEX_FAILED");
+                if (outcome == ReviewIndexService.Outcome.RETRYABLE) {
+                    retry(event, "INDEX_RETRYABLE");
                     return true;
                 }
+                // FAILED is permanent (for example, provider 4xx) and remains visible in reviews.index_status.
                 // SKIPPED means the latest review no longer exists or a newer index generation won.
             } else {
                 // DELETE is idempotent; a missing remote chunk is a successful completion.
@@ -91,7 +97,7 @@ public class ReviewIndexOutboxWorker {
             return;
         }
         try {
-            int deleted = store.deleteCompletedBefore(LocalDateTime.now().minusDays(retentionDays));
+            int deleted = store.deleteCompletedBeforeDays(retentionDays);
             if (deleted > 0) {
                 log.info("RAG outbox completed records cleaned count={}", deleted);
             }

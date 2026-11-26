@@ -43,9 +43,15 @@ class ReviewIndexServiceTest {
         verify(transactions).recordResult(snapshot, IndexStatus.FAILED, "INDEX_IllegalStateException");
     }
 
+    @Test void networkFailureIsMarkedRetryable() {
+        when(client.index(any())).thenThrow(new org.springframework.web.client.ResourceAccessException("timeout"));
+        assertThat(service.index(1L)).isEqualTo(ReviewIndexService.Outcome.RETRYABLE);
+        verify(transactions).recordResult(snapshot, IndexStatus.FAILED, "INDEX_ResourceAccessException");
+    }
+
     @Test void resultWriteFailureIsIsolatedAndLeaseReleased() {
         when(transactions.recordResult(eq(snapshot), any(), any())).thenThrow(new IllegalStateException("secret"));
-        assertThat(service.index(1L)).isEqualTo(ReviewIndexService.Outcome.FAILED);
+        assertThat(service.index(1L)).isEqualTo(ReviewIndexService.Outcome.RETRYABLE);
         try (var lease = locks.acquire(1L)) { assertThat(lease).isNotNull(); }
     }
 

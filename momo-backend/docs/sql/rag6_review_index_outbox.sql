@@ -17,6 +17,7 @@ CREATE TABLE IF NOT EXISTS review_index_outbox (
     completed_at DATETIME(6) NULL,
     PRIMARY KEY (id),
     KEY ix_review_index_outbox_claim (status, available_at, id),
+    KEY ix_review_index_outbox_lease (status, locked_until, id),
     KEY ix_review_index_outbox_review_order (review_id, id, status),
     KEY ix_review_index_outbox_completed (status, completed_at),
     CONSTRAINT ck_review_index_outbox_operation
