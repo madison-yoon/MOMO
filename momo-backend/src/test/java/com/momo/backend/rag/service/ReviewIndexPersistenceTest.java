@@ -2,12 +2,13 @@ package com.momo.backend.rag.service;
 
 import com.momo.backend.entity.Review;
 import com.momo.backend.entity.User;
-import com.momo.backend.rag.enums.IndexStatus;
 import com.momo.backend.rag.client.RagClient;
+import com.momo.backend.rag.enums.IndexStatus;
 import com.momo.backend.rag.event.ReviewIndexEvent;
 import com.momo.backend.rag.event.ReviewPurgeEvent;
-import com.momo.backend.rag.event.ReviewIndexListener;
+import com.momo.backend.repository.ReviewRepository;
 import jakarta.persistence.EntityManager;
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.data.jpa.test.autoconfigure.DataJpaTest;
@@ -16,38 +17,65 @@ import org.springframework.boot.test.context.TestConfiguration;
 import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Import;
+import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.transaction.PlatformTransactionManager;
 import org.springframework.transaction.annotation.Propagation;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.transaction.support.TransactionSynchronizationManager;
 import org.springframework.transaction.support.TransactionTemplate;
+
+import java.time.LocalDateTime;
 import java.util.List;
+import java.util.Optional;
 import java.util.UUID;
-import java.util.concurrent.Executor;
+
 import static org.assertj.core.api.Assertions.*;
 import static org.mockito.Mockito.*;
 
-/** 메모리 H2만 사용하여 실제 프록시 트랜잭션·생명주기 콜백·커밋 이벤트를 검증한다. */
 @DataJpaTest(showSql = false, properties = {
         "spring.datasource.url=jdbc:h2:mem:rag-index-state;DB_CLOSE_DELAY=-1;MODE=MySQL",
-        "spring.datasource.driver-class-name=org.h2.Driver", "spring.datasource.username=sa",
-        "spring.datasource.password=", "spring.jpa.hibernate.ddl-auto=create-drop"})
+        "spring.datasource.driver-class-name=org.h2.Driver",
+        "spring.datasource.username=sa",
+        "spring.datasource.password=",
+        "spring.jpa.hibernate.ddl-auto=create-drop",
+        "spring.jpa.open-in-view=false",
+        "spring.sql.init.mode=always",
+        "spring.sql.init.schema-locations=classpath:rag-index-outbox-test-schema.sql",
+        "RAG_ENABLED=true"
+})
 @AutoConfigureTestDatabase(replace = AutoConfigureTestDatabase.Replace.NONE)
-@Import({ReviewIndexTransactions.class, ReviewIndexListener.class, ReviewIndexPersistenceTest.Config.class})
+@Import({
+        ReviewIndexTransactions.class,
+        ReviewIndexOutboxWriter.class,
+        ReviewIndexOutboxStore.class,
+        ReviewIndexPersistenceTest.Config.class
+})
 @Transactional(propagation = Propagation.NOT_SUPPORTED)
 class ReviewIndexPersistenceTest {
     @Autowired EntityManager em;
     @Autowired PlatformTransactionManager manager;
     @Autowired ReviewIndexTransactions transactions;
     @Autowired ApplicationEventPublisher publisher;
-    @Autowired ReviewIndexService service;
+    @Autowired ReviewIndexOutboxStore outbox;
+    @Autowired JdbcTemplate jdbc;
 
-    @TestConfiguration static class Config {
-        @Bean ReviewIndexService indexService() { return mock(ReviewIndexService.class); }
-        @Bean("ragPurgeExecutor") Executor purgeExecutor() { return Runnable::run; }
+    @TestConfiguration
+    static class Config {
+        @Bean
+        RagClient ragClient() {
+            RagClient client = mock(RagClient.class);
+            when(client.isEnabled()).thenReturn(true);
+            return client;
+        }
     }
 
-    @Test void statusOnlyUpdatesPreserveOriginalTimestampAndNewRowsStartIndexing() {
+    @BeforeEach
+    void clearOutbox() {
+        jdbc.update("DELETE FROM review_index_outbox");
+    }
+
+    @Test
+    void statusOnlyUpdatesPreserveOriginalTimestampAndNewRowsStartIndexing() {
         Long id = fixture();
         var original = transactions.readLatest(id).orElseThrow();
         assertThat(transactions.recordResult(original, IndexStatus.READY, null)).isTrue();
@@ -67,7 +95,8 @@ class ReviewIndexPersistenceTest {
         });
     }
 
-    @Test void exactComparisonRejectsChangesAtIdenticalTimestamp() {
+    @Test
+    void exactComparisonRejectsChangesAtIdenticalTimestamp() {
         Long id = fixture();
         var original = transactions.readLatest(id).orElseThrow();
         tx(() -> em.createNativeQuery("update reviews set title='TITLE ', content='BODY' where review_id=:id")
@@ -76,7 +105,8 @@ class ReviewIndexPersistenceTest {
         assertThat(transactions.readLatest(id).orElseThrow().updatedAt()).isEqualTo(original.updatedAt());
     }
 
-    @Test void requiresNewResultSurvivesCallerRollbackAndErrorIsBounded() {
+    @Test
+    void requiresNewResultSurvivesCallerRollbackAndErrorIsBounded() {
         Long id = fixture();
         var snapshot = transactions.readLatest(id).orElseThrow();
         new TransactionTemplate(manager).executeWithoutResult(outer -> {
@@ -92,44 +122,75 @@ class ReviewIndexPersistenceTest {
         });
     }
 
-    @Test void commitRunsUpsertDeleteAndPurgeButRollbackRunsNone() {
-        reset(service);
-        for (var operation : ReviewIndexEvent.Operation.values()) {
-            new TransactionTemplate(manager).executeWithoutResult(status -> {
-                publisher.publishEvent(new ReviewIndexEvent(900L, operation));
-                verifyNoInteractions(service);
-                status.setRollbackOnly();
-            });
-        }
+    @Test
+    void outboxRowsCommitAndRollbackWithTheOriginalReviewTransaction() {
         new TransactionTemplate(manager).executeWithoutResult(status -> {
-            publisher.publishEvent(new ReviewPurgeEvent(List.of(900L)));
+            publisher.publishEvent(new ReviewIndexEvent(900L, ReviewIndexEvent.Operation.UPSERT));
+            assertThat(outboxCount()).isEqualTo(1);
             status.setRollbackOnly();
         });
-        verifyNoInteractions(service);
+        assertThat(outboxCount()).isZero();
+
         tx(() -> {
             publisher.publishEvent(new ReviewIndexEvent(900L, ReviewIndexEvent.Operation.UPSERT));
             publisher.publishEvent(new ReviewIndexEvent(901L, ReviewIndexEvent.Operation.DELETE));
-            publisher.publishEvent(new ReviewPurgeEvent(List.of(902L)));
-            verifyNoInteractions(service);
+            publisher.publishEvent(new ReviewPurgeEvent(List.of(902L, 903L, 902L)));
         });
-        verify(service).index(900L);
-        verify(service).remove(901L);
-        verify(service).remove(902L);
+
+        assertThat(outboxCount()).isEqualTo(4);
+        assertThat(jdbc.queryForList(
+                "SELECT review_id, operation FROM review_index_outbox ORDER BY id",
+                Long.class
+        )).containsExactly(900L, 901L, 902L, 903L);
     }
 
-    @Test void indexHttpRunsOutsideDatabaseTransactionAndConcurrentEditCannotBecomeReady() {
-        Long id = fixture();
-        RagClient client = mock(RagClient.class);
-        when(client.isEnabled()).thenReturn(true);
-        when(client.index(any())).thenAnswer(invocation -> {
-            assertThat(TransactionSynchronizationManager.isActualTransactionActive()).isFalse();
-            tx(() -> em.createNativeQuery("update reviews set content='edited during HTTP' where review_id=:id")
-                    .setParameter("id", id).executeUpdate());
-            return 1;
+    @Test
+    void claimKeepsSameReviewEventsOrderedButAllowsOtherReviewsToProgress() {
+        tx(() -> {
+            publisher.publishEvent(new ReviewIndexEvent(900L, ReviewIndexEvent.Operation.UPSERT));
+            publisher.publishEvent(new ReviewIndexEvent(900L, ReviewIndexEvent.Operation.DELETE));
+            publisher.publishEvent(new ReviewIndexEvent(901L, ReviewIndexEvent.Operation.UPSERT));
         });
-        ReviewIndexService actual = new ReviewIndexService(client, transactions, new ReviewLocks(100), mock(ReindexAccessGuard.class));
-        assertThat(actual.index(id)).isEqualTo(ReviewIndexService.Outcome.SKIPPED);
-        tx(() -> assertThat(em.find(Review.class, id).getIndexStatus()).isEqualTo(IndexStatus.INDEXING));
+
+        var first = outbox.claimNext().orElseThrow();
+        assertThat(first.reviewId()).isEqualTo(900L);
+        assertThat(first.operation()).isEqualTo(ReviewIndexEvent.Operation.UPSERT);
+
+        var otherReview = outbox.claimNext().orElseThrow();
+        assertThat(otherReview.reviewId()).isEqualTo(901L);
+        assertThat(otherReview.operation()).isEqualTo(ReviewIndexEvent.Operation.UPSERT);
+
+        assertThat(outbox.complete(otherReview)).isTrue();
+        // The second event for review 900 cannot overtake its still-processing UPSERT.
+        assertThat(outbox.claimNext()).isEmpty();
+
+        assertThat(outbox.complete(first)).isTrue();
+        var deletion = outbox.claimNext().orElseThrow();
+        assertThat(deletion.reviewId()).isEqualTo(900L);
+        assertThat(deletion.operation()).isEqualTo(ReviewIndexEvent.Operation.DELETE);
+        assertThat(outbox.complete(deletion)).isTrue();
+        assertThat(outbox.claimNext()).isEmpty();
+    }
+
+    @Test
+    void reclaimedLeaseFencesCompletionFromAnOlderWorker() {
+        tx(() -> publisher.publishEvent(new ReviewIndexEvent(911L, ReviewIndexEvent.Operation.UPSERT)));
+        var first = outbox.claimNext().orElseThrow();
+
+        // Simulate an expired worker lease; a second worker receives a new claim token.
+        jdbc.update("UPDATE review_index_outbox SET locked_until = ? WHERE id = ?",
+                LocalDateTime.now().minusSeconds(1), first.id());
+        var second = outbox.claimNext().orElseThrow();
+
+        assertThat(second.id()).isEqualTo(first.id());
+        assertThat(second.claimToken()).isNotEqualTo(first.claimToken());
+        assertThat(second.attemptCount()).isEqualTo(first.attemptCount() + 1);
+        assertThat(outbox.complete(first)).isFalse();
+        assertThat(outbox.complete(second)).isTrue();
+    }
+
+    private int outboxCount() {
+        return jdbc.queryForObject("SELECT COUNT(*) FROM review_index_outbox", Integer.class);
     }
 
     private Long fixture() {
@@ -144,5 +205,8 @@ class ReviewIndexPersistenceTest {
             return review.getReviewId();
         });
     }
-    private void tx(Runnable work) { new TransactionTemplate(manager).executeWithoutResult(status -> work.run()); }
+
+    private void tx(Runnable work) {
+        new TransactionTemplate(manager).executeWithoutResult(status -> work.run());
+    }
 }

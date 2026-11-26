@@ -31,6 +31,15 @@ public class ReviewIndexService {
         try (var ignored = locks.acquire(reviewId)) { return indexLocked(reviewId); }
     }
 
+    /** A durable outbox attempt always resets FAILED/READY to INDEXING before a fresh HTTP request. */
+    public Outcome indexQueued(Long reviewId) {
+        if (!client.isEnabled()) return Outcome.SKIPPED;
+        try (var ignored = locks.acquire(reviewId)) {
+            if (!transactions.beginManual(reviewId)) return Outcome.SKIPPED;
+            return indexLocked(reviewId);
+        }
+    }
+
     private Outcome indexLocked(Long reviewId) {
         if (!client.isEnabled()) return Outcome.SKIPPED;
         long generation = locks.generation();

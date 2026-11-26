@@ -5,7 +5,9 @@ import com.momo.backend.entity.User;
 import com.momo.backend.rag.client.RagClient;
 import com.momo.backend.rag.enums.IndexStatus;
 import com.momo.backend.rag.event.ReviewIndexEvent;
-import com.momo.backend.rag.event.ReviewIndexListener;
+import com.momo.backend.rag.event.ReviewIndexOutboxWriter;
+import com.momo.backend.rag.service.ReviewIndexOutboxStore;
+import com.momo.backend.rag.service.ReviewIndexOutboxWorker;
 import com.zaxxer.hikari.HikariDataSource;
 import jakarta.persistence.EntityManager;
 import org.junit.jupiter.api.BeforeEach;
@@ -19,6 +21,7 @@ import org.springframework.boot.test.context.TestConfiguration;
 import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Import;
+import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.transaction.PlatformTransactionManager;
 import org.springframework.transaction.annotation.Propagation;
 import org.springframework.transaction.annotation.Transactional;
@@ -54,10 +57,14 @@ import static org.mockito.Mockito.*;
         "spring.datasource.hikari.maximum-pool-size=10",
         "spring.datasource.hikari.minimum-idle=10",
         "spring.datasource.hikari.connection-timeout=1000",
-        "spring.datasource.hikari.pool-name=rag5-isolated-pool"})
+        "spring.datasource.hikari.pool-name=rag5-isolated-pool",
+        "spring.sql.init.mode=always",
+        "spring.sql.init.schema-locations=classpath:rag-index-outbox-test-schema.sql",
+        "RAG_ENABLED=true"})
 @AutoConfigureTestDatabase(replace = AutoConfigureTestDatabase.Replace.NONE)
 @Import({ReviewIndexTransactions.class, ReviewIndexService.class, ReviewLocks.class,
-        ReviewIndexListener.class, RagMySqlPoolTest.Config.class})
+        ReviewIndexOutboxWriter.class, ReviewIndexOutboxStore.class, ReviewIndexOutboxWorker.class,
+        RagMySqlPoolTest.Config.class})
 @Transactional(propagation = Propagation.NOT_SUPPORTED)
 class RagMySqlPoolTest {
     @Autowired EntityManager em;
@@ -67,6 +74,9 @@ class RagMySqlPoolTest {
     @Autowired ReviewIndexService indexing;
     @Autowired ReviewLocks locks;
     @Autowired RagClient client;
+    @Autowired ReviewIndexOutboxStore outbox;
+    @Autowired ReviewIndexOutboxWorker outboxWorker;
+    @Autowired JdbcTemplate jdbc;
     @Autowired DataSource dataSource;
     private final AtomicInteger httpCalls = new AtomicInteger();
 
@@ -74,12 +84,12 @@ class RagMySqlPoolTest {
     static class Config {
         @Bean RagClient client() { return mock(RagClient.class); }
         @Bean ReindexAccessGuard reindexAccessGuard() { return mock(ReindexAccessGuard.class); }
-        @Bean("ragPurgeExecutor") Executor purgeExecutor() { return Runnable::run; }
     }
 
     @BeforeEach
     void configureControlledHttp() {
         reset(client);
+        jdbc.update("DELETE FROM review_index_outbox");
         httpCalls.set(0);
         when(client.isEnabled()).thenReturn(true);
         when(client.index(any())).thenAnswer(invocation -> {
@@ -96,26 +106,31 @@ class RagMySqlPoolTest {
     @Test
     void eightOriginalConnectionsLeaveRoomForRequiresNewReadsAndResultWrites() throws Exception {
         Run run = concurrentCommits(8);
-        assertThat(run.states()).containsOnly(IndexStatus.READY);
-        assertThat(httpCalls.get()).isEqualTo(8);
+        assertThat(run.states()).containsOnly(IndexStatus.INDEXING);
+        assertThat(httpCalls.get()).isZero();
+        assertThat(outboxCount()).isEqualTo(8);
         assertThat(run.elapsedMillis()).isLessThan(10_000);
         assertThat(run.peakActive()).isLessThanOrEqualTo(10);
-        report("spare-connections", run, 8, 0, false);
+        for (int i = 0; i < 8; i++) assertThat(outboxWorker.processNext()).isTrue();
+        assertThat(run.ids().stream().map(this::state).toList()).containsOnly(IndexStatus.READY);
+        assertThat(httpCalls.get()).isEqualTo(8);
+        report("transactional-outbox-spare-connections", run, 8, 0, false);
     }
 
     @Test
     void tenRetainedOriginalConnectionsTimeOutInnerReadsWithoutFailingCommittedCrud() throws Exception {
         Run run = concurrentCommits(10);
-        // 모든 원본 커밋은 정상 반환한다. 새 연결을 얻지 못한 후속 색인만 INDEXING으로 남는다.
+        // 원본 트랜잭션은 같은 커넥션에 outbox 행을 기록한다. 커밋 후 별도 worker가 HTTP를 호출한다.
         assertThat(run.states()).containsOnly(IndexStatus.INDEXING);
         assertThat(httpCalls.get()).isZero();
+        assertThat(outboxCount()).isEqualTo(10);
         assertThat(run.peakActive()).isEqualTo(10);
-        assertThat(run.peakPending()).isGreaterThan(0);
-        assertThat(run.elapsedMillis()).isGreaterThanOrEqualTo(900).isLessThan(10_000);
-        Long recoverable = run.ids().getFirst();
-        assertThat(indexing.reindex(recoverable, 1L)).isEqualTo(ReviewIndexService.Outcome.READY);
-        assertThat(state(recoverable)).isEqualTo(IndexStatus.READY);
-        report("connection-starvation", run, 0, 10, true);
+        assertThat(run.peakPending()).isZero();
+        assertThat(run.elapsedMillis()).isLessThan(10_000);
+        for (int i = 0; i < 10; i++) assertThat(outboxWorker.processNext()).isTrue();
+        assertThat(run.ids().stream().map(this::state).toList()).containsOnly(IndexStatus.READY);
+        assertThat(httpCalls.get()).isEqualTo(10);
+        report("transactional-outbox-full-pool", run, 10, 0, false);
     }
 
     @Test
@@ -180,7 +195,7 @@ class RagMySqlPoolTest {
         CountDownLatch outerRowsFlushed = new CountDownLatch(workers);
         CountDownLatch startCommit = new CountDownLatch(1);
         CountDownLatch committed = new CountDownLatch(workers);
-        CountDownLatch listenersFinished = new CountDownLatch(workers);
+        CountDownLatch transactionsCompleted = new CountDownLatch(workers);
         AtomicReference<Throwable> coordinationFailure = new AtomicReference<>();
         AtomicInteger peakActive = new AtomicInteger(), peakPending = new AtomicInteger();
         List<Future<Long>> futures = new ArrayList<>();
@@ -202,7 +217,7 @@ class RagMySqlPoolTest {
                     em.persist(review);
                     em.flush();
                     Long id = review.getReviewId();
-                    // 이 동기화는 커밋 후 리스너 이전에 모든 원본 커넥션이 점유되도록 한다.
+                    // 커밋 전 outbox 기록이 끝난 뒤 원본 커넥션을 함께 점유한 상태로 커밋한다.
                     TransactionSynchronizationManager.registerSynchronization(new TransactionSynchronization() {
                         @Override public void afterCommit() {
                             committed.countDown();
@@ -210,11 +225,11 @@ class RagMySqlPoolTest {
                         }
                     });
                     publisher.publishEvent(new ReviewIndexEvent(id, ReviewIndexEvent.Operation.UPSERT));
-                    // 같은 최하위 순서의 리스너보다 나중에 등록하여 시도 완료까지 원본 자원을 보유한다.
+                    // 모든 커밋이 완료될 때까지 연결 점유 상태를 관찰한다.
                     TransactionSynchronizationManager.registerSynchronization(new TransactionSynchronization() {
                         @Override public void afterCompletion(int completion) {
-                            listenersFinished.countDown();
-                            await(listenersFinished, coordinationFailure, "리스너 완료 barrier");
+                            transactionsCompleted.countDown();
+                            await(transactionsCompleted, coordinationFailure, "트랜잭션 완료 barrier");
                         }
                     });
                     outerRowsFlushed.countDown();
@@ -225,7 +240,7 @@ class RagMySqlPoolTest {
             assertThat(outerRowsFlushed.await(5, TimeUnit.SECONDS)).isTrue();
             assertThat(hikari.getHikariPoolMXBean().getActiveConnections()).isEqualTo(workers);
             startCommit.countDown();
-            // 각 Future는 CRUD 원본 커밋과 동기 리스너가 모두 반환한 후 완료한다.
+            // 각 Future는 원본 커밋과 완료 동기화가 반환한 후 완료한다.
             long deadline = System.nanoTime() + TimeUnit.SECONDS.toNanos(10);
             for (Future<Long> future : futures)
                 ids.add(future.get(Math.max(1, deadline - System.nanoTime()), TimeUnit.NANOSECONDS));
@@ -260,6 +275,10 @@ class RagMySqlPoolTest {
 
     private IndexStatus state(Long id) {
         return new TransactionTemplate(manager).execute(status -> em.find(Review.class, id).getIndexStatus());
+    }
+
+    private int outboxCount() {
+        return jdbc.queryForObject("SELECT COUNT(*) FROM review_index_outbox", Integer.class);
     }
 
     private void report(String scenario, Run run, int ready, int indexingCount, boolean recovered) {
