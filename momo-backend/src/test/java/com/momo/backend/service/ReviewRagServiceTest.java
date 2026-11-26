@@ -16,8 +16,9 @@ import static org.junit.jupiter.api.Assertions.*;
 class ReviewRagServiceTest {
     ReviewRepository reviews = mock(ReviewRepository.class);
     UserRepository users = mock(UserRepository.class);
+    MovieRepository movies = mock(MovieRepository.class);
     ApplicationEventPublisher rag = mock(ApplicationEventPublisher.class);
-    ReviewService service = new ReviewService(reviews, users, mock(MovieRepository.class),
+    ReviewService service = new ReviewService(reviews, users, movies,
             mock(CommentRepository.class), mock(ReviewReactionRepository.class),
             mock(CommentReactionRepository.class), rag);
     User user = mock(User.class);
@@ -25,6 +26,7 @@ class ReviewRagServiceTest {
     @BeforeEach void setup() {
         when(user.getUserId()).thenReturn(91L);
         when(users.findByUserIdForUpdate(anyLong())).thenReturn(Optional.of(user));
+        when(movies.existsById("20990001")).thenReturn(true);
         review = new Review(user, "20990001", "우주 영화", "우주 탐험");
         ReflectionTestUtils.setField(review, "reviewId", 910001L);
         when(reviews.findByIdForUpdate(910001L)).thenReturn(Optional.of(review));

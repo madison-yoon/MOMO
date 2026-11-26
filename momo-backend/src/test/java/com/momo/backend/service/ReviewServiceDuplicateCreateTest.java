@@ -29,10 +29,13 @@ class ReviewServiceDuplicateCreateTest {
         when(reviewRepository.saveAndFlush(any()))
                 .thenThrow(new DataIntegrityViolationException("duplicate user/movie"));
 
+        MovieRepository movieRepository = mock(MovieRepository.class);
+        when(movieRepository.existsById("20260001")).thenReturn(true);
+
         ReviewService service = new ReviewService(
                 reviewRepository,
                 userRepository,
-                mock(MovieRepository.class),
+                movieRepository,
                 mock(CommentRepository.class),
                 mock(ReviewReactionRepository.class),
                 mock(CommentReactionRepository.class),

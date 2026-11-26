@@ -40,6 +40,12 @@
 
 학원 프로젝트에서 KOBIS·KMDb·TMDb API Key를 공용으로 사용하는 현재 방식을 유지한다. 이 PR은 해당 키의 폐기·재발급, 소스의 키 참조 방식 변경, Git 이력 정리를 수행하지 않는다.
 
+## 실제 MySQL·Swagger 검증
+
+Swagger의 실제 DB 반복 검증은 별도 테스트 DB를 만들지 않고 개발 PC의 기존 `momo_db`를 대상으로 한다. `momo-frontend/e2e/swagger-persistent.spec.js`는 `MOMO_SWAGGER_LOGIN_ID` 계정을 최초 실행 때 한 번만 만들고 이후 로그인으로 재사용한다. 지정된 `movies.movie_code`를 사용하며 영화·회원 데이터를 임의로 초기화하지 않는다. 리뷰·댓글은 QA 계정에 최초 1회만 만들고 같은 ID를 갱신한다. 회원·리뷰·댓글·반응·평점·관심 영화 삭제는 수행하지 않는다.
+
+이 실행은 실제 DB가 있는 개발 PC에서 수행해야 한다. GitHub Actions의 격리 MySQL 서비스 결과는 실제 `momo_db` 검증으로 간주하지 않는다. 실제 DB의 연결·기존 스키마·인덱스·제약조건 검증은 사용자의 PC에서 지속형 Swagger 테스트를 실행한 뒤 결과를 별도로 확인한다.
+
 ## 후속 작업으로 남긴 항목
 
 | 리뷰 항목 | 남은 이유 및 다음 작업 |

@@ -9,7 +9,7 @@ import org.springframework.context.annotation.Configuration;
 
 import java.util.List;
 
-// 실제 SecurityConfig의 공개·인증 경로를 Swagger에도 동일하게 표시한다.
+// SecurityConfig의 실제 공개·인증 경로와 Swagger 표시를 일치시킨다.
 @Configuration
 @SecurityScheme(
         name = OpenApiConfig.BEARER_AUTH,
@@ -27,12 +27,13 @@ public class OpenApiConfig {
             if (openApi.getPaths() == null) {
                 return;
             }
+
             openApi.getPaths().forEach((path, pathItem) ->
                     pathItem.readOperationsMap().forEach((method, operation) -> {
                         if (requiresAuthentication(path, method.name())) {
                             operation.setSecurity(List.of(new SecurityRequirement().addList(BEARER_AUTH)));
                         } else {
-                            // 빈 보안 배열은 공개 API가 전역 인증 요구사항을 상속하지 않도록 한다.
+                            // 빈 배열을 명시해 공개 API가 보안 요구사항을 상속하지 않게 한다.
                             operation.setSecurity(List.of());
                         }
                     })
@@ -40,26 +41,36 @@ public class OpenApiConfig {
         };
     }
 
-    private boolean requiresAuthentication(String path, String method) {
+    /*
+     * SecurityConfig의 requestMatchers 규칙을 OpenAPI의 {pathVariable} 형식으로 옮겼다.
+     * GET /reviews/{id}/reaction은 회원 개인 반응이므로 공개하지 않고,
+     * GET /reviews/{id}/reactions는 집계 수치이므로 공개한다.
+     */
+    boolean requiresAuthentication(String path, String method) {
         if ("GET".equals(method)) {
+            // 개인 데이터는 넓은 공개 조회 규칙보다 먼저 판별한다.
             if ("/api/movies/my/liked".equals(path)
                     || "/api/reviews/me".equals(path)
-                    || path.startsWith("/api/reviews/me/")) {
+                    || path.startsWith("/api/reviews/me/")
+                    || "/api/auth/me".equals(path)
+                    || path.startsWith("/api/auth/me/")) {
                 return true;
             }
 
-            if (path.equals("/api/movies") || path.startsWith("/api/movies/")
-                    || path.startsWith("/api/persons/")
+            if (path.startsWith("/api/movies/")
                     || path.startsWith("/api/boxoffice/")
-                    || path.startsWith("/posters/")) {
+                    || path.startsWith("/posters/")
+                    || path.startsWith("/api/persons/")) {
                 return false;
             }
 
-            if (path.equals("/api/reviews") || path.startsWith("/api/reviews/")) {
-                return false;
-            }
-
-            if (path.startsWith("/api/comments/") && path.endsWith("/reactions")) {
+            if ("/api/reviews".equals(path)
+                    || "/api/reviews/summaries".equals(path)
+                    || path.matches("^/api/reviews/[^/]+$")
+                    || path.matches("^/api/reviews/[^/]+/(comments|reactions)$")
+                    || path.matches("^/api/reviews/movie/[^/]+$")
+                    || path.matches("^/api/reviews/movie/[^/]+/rating$")
+                    || path.matches("^/api/comments/[^/]+/reactions$")) {
                 return false;
             }
 

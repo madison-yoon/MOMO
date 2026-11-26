@@ -123,6 +123,7 @@ class H1IdentityIntegrationTest {
  }
 
  @Test void otherMemberCannotDeleteOwnersReview() {
+  movies.saveAndFlush(new com.momo.backend.entity.Movie("20260002", "movie", "", "20250101", "", "Drama", "", "", ""));
   User owner = users.saveAndFlush(new User("ownership", passwords.encode("TestPassword1!"), "ownership", "owner@example.com"));
   User other = users.saveAndFlush(new User("outsider", passwords.encode("TestPassword2!"), "outsider", "other@example.com"));
   var request = new com.momo.backend.dto.review.ReviewCreateRequest();
