@@ -135,7 +135,10 @@ public class AuthService {
 
         if (!user.getNickname().equals(dto.nickname())
                 && userRepository.existsByNickname(dto.nickname())) {
-            throw new IllegalArgumentException("이미 사용 중인 닉네임입니다.");
+            throw new ResponseStatusException(
+                    HttpStatus.CONFLICT,
+                    "이미 사용 중인 닉네임입니다."
+            );
         }
 
         boolean changePassword = (dto.currentPassword() != null && !dto.currentPassword().isEmpty())
