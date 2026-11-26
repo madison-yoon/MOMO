@@ -29,7 +29,7 @@ test("격리 MySQL에서 회원·리뷰·댓글·반응·평점·관심 영화 A
   const headers = auth(session.accessToken);
 
   expect((await request.get(`${API}/api/auth/me`)).status()).toBe(401);
-  const profile = await request.get(`${API}/api/auth/me`, { headers: updatedHeaders });
+  const profile = await request.get(`${API}/api/auth/me`, { headers });
   expect(profile.status()).toBe(200);
   expect((await profile.json()).loginId).toBe(loginId);
 
@@ -156,30 +156,30 @@ test("격리 MySQL에서 회원·리뷰·댓글·반응·평점·관심 영화 A
   expect((await commentList.json()).content.some((item) => item.commentId === commentId)).toBe(true);
 
   const updateComment = await request.put(`${API}/api/comments/${commentId}`, {
-    headers, data: { content: `CI CRUD comment updated ${suffix}` },
+    headers: updatedHeaders, data: { content: `CI CRUD comment updated ${suffix}` },
   });
   expect(updateComment.status()).toBe(200);
   expect((await updateComment.json()).content).toContain("updated");
 
   expect((await request.put(`${API}/api/comments/${commentId}/reaction`, {
-    headers, data: true,
+    headers: updatedHeaders, data: true,
   })).status()).toBe(200);
   expect((await request.get(`${API}/api/comments/${commentId}/reactions`)).status()).toBe(200);
   expect((await request.delete(`${API}/api/comments/${commentId}/reaction`, { headers: updatedHeaders })).status()).toBe(204);
-  expect((await request.delete(`${API}/api/comments/${commentId}`, { headers })).status()).toBe(204);
+  expect((await request.delete(`${API}/api/comments/${commentId}`, { headers: updatedHeaders })).status()).toBe(204);
 
   const commentsAfterDelete = await request.get(`${API}/api/reviews/${reviewId}/comments?page=0`);
   expect((await commentsAfterDelete.json()).content.some((item) => item.commentId === commentId)).toBe(false);
 
-  expect((await request.delete(`${API}/api/reviews/${reviewId}`, { headers })).status()).toBe(204);
+  expect((await request.delete(`${API}/api/reviews/${reviewId}`, { headers: updatedHeaders })).status()).toBe(204);
   expect((await request.get(`${API}/api/reviews/${reviewId}`)).status()).toBe(404);
 
   expect((await request.put(`${API}/api/movies/${MOVIE_CODE}/rating`, {
-    headers, data: true,
+    headers: updatedHeaders, data: true,
   })).status()).toBe(200);
-  const rating = await request.get(`${API}/api/movies/${MOVIE_CODE}/rating`, { headers });
+  const rating = await request.get(`${API}/api/movies/${MOVIE_CODE}/rating`, { headers: updatedHeaders });
   expect((await rating.json()).myRating).toBe(true);
-  expect((await request.delete(`${API}/api/movies/${MOVIE_CODE}/rating`, { headers })).status()).toBe(204);
+  expect((await request.delete(`${API}/api/movies/${MOVIE_CODE}/rating`, { headers: updatedHeaders })).status()).toBe(204);
 
   const favorite = {
     movieCode: MOVIE_CODE,
@@ -188,15 +188,15 @@ test("격리 MySQL에서 회원·리뷰·댓글·반응·평점·관심 영화 A
     posterUrl: "",
   };
   expect((await request.post(`${API}/api/favorites`, { headers: updatedHeaders, data: favorite })).status()).toBe(201);
-  const favorites = await request.get(`${API}/api/favorites`, { headers });
+  const favorites = await request.get(`${API}/api/favorites`, { headers: updatedHeaders });
   expect((await favorites.json()).some((item) => item.movieCode === MOVIE_CODE)).toBe(true);
-  expect((await request.delete(`${API}/api/favorites/${MOVIE_CODE}`, { headers })).status()).toBe(204);
-  expect((await request.delete(`${API}/api/favorites/${MOVIE_CODE}`, { headers })).status()).toBe(204);
+  expect((await request.delete(`${API}/api/favorites/${MOVIE_CODE}`, { headers: updatedHeaders })).status()).toBe(204);
+  expect((await request.delete(`${API}/api/favorites/${MOVIE_CODE}`, { headers: updatedHeaders })).status()).toBe(204);
 
   const invalidSearch = await request.get(`${API}/api/movies/search?keyword=x&page=0&size=51`);
   expect(invalidSearch.status()).toBe(400);
 
-  expect((await request.post(`${API}/api/auth/logout`, { headers })).status()).toBe(204);
+  expect((await request.post(`${API}/api/auth/logout`, { headers: updatedHeaders })).status()).toBe(204);
   const reissue = await request.post(`${API}/api/auth/reissue`, {
     data: { refreshToken: renewedSession.refreshToken },
   });
