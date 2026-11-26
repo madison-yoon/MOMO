@@ -93,6 +93,11 @@ test("격리 MySQL에서 회원·리뷰·댓글·반응·평점·관심 영화 A
   expect(newPasswordCheck.status()).toBe(200);
   expect(await newPasswordCheck.json()).toBe(true);
 
+  const oldRefreshReissue = await request.post(`${API}/api/auth/reissue`, {
+    data: { refreshToken: session.refreshToken },
+  });
+  expect(oldRefreshReissue.status(), "비밀번호 변경 후 기존 Refresh Token은 폐기되어야 합니다.").toBe(401);
+
   expect((await request.post(`${API}/api/auth/login`, {
     data: { loginId, password },
   })).status()).toBe(400);
