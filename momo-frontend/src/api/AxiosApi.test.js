@@ -16,6 +16,25 @@ const requestInterceptor = axios.interceptors.request.use.mock.calls[0][0];
 const responseErrorInterceptor = axios.interceptors.response.use.mock.calls[0][1];
 const API_URL = "http://localhost:8111/api/private";
 
+test("카카오 요청은 쿠키를 포함하고 401에서 JWT 재발급을 시도하지 않는다", async () => {
+  axios.get.mockResolvedValue({data:{}});
+  axios.post.mockResolvedValue({data:{}});
+  await AxiosApi.oauthAuthorize("kakao");
+  await AxiosApi.oauthLogin("kakao", "test-code", "test-state");
+  expect(axios.get).toHaveBeenCalledWith("http://localhost:8111/api/auth/kakao/authorize", {withCredentials:true});
+  expect(axios.post).toHaveBeenCalledWith("http://localhost:8111/api/auth/kakao", {code:"test-code",state:"test-state"}, expect.objectContaining({withCredentials:true}));
+  axios.post.mockClear();
+  storeLoginTokens("existing-access", "existing-refresh");
+  for (const path of ["/api/auth/kakao/authorize", "/api/auth/kakao"]) {
+    const config=requestInterceptor({url:`http://localhost:8111${path}`,headers:{}});
+    expect(config.headers.Authorization).toBeUndefined();
+    const error={response:{status:401},config};
+    await expect(responseErrorInterceptor(error)).rejects.toBe(error);
+  }
+  expect(axios.post).not.toHaveBeenCalled();
+  expect(localStorage.getItem("refreshToken")).toBe("existing-refresh");
+});
+
 function unauthorizedRequest() {
   return requestInterceptor({
     url: API_URL,
@@ -191,4 +210,34 @@ describe("abortable read APIs", () => {
       },
     );
   });
+});
+
+
+describe("네이버·구글 OAuth API 계약", () => {
+  test.each(["naver", "google"])("%s 시작과 코드 교환은 쿠키를 포함한다", async provider => {
+    axios.get.mockResolvedValue({data:{}}); axios.post.mockResolvedValue({data:{}});
+    await AxiosApi.oauthAuthorize(provider);
+    expect(axios.get).toHaveBeenCalledWith(`http://localhost:8111/api/auth/${provider}/authorize`, {withCredentials:true});
+    await AxiosApi.oauthLogin(provider, "test-code", "test-state");
+    expect(axios.post).toHaveBeenCalledWith(`http://localhost:8111/api/auth/${provider}`, {code:"test-code",state:"test-state"}, expect.objectContaining({withCredentials:true}));
+  });
+});
+
+
+test.each(["naver", "google"])("%s OAuth 401은 재발급·기존 세션 삭제 없이 콜백에 전달한다", async provider => {
+  axios.post.mockClear(); storeLoginTokens("current-access", "current-refresh");
+  for (const suffix of ["", "/authorize"]) {
+    const config = requestInterceptor({url:`http://localhost:8111/api/auth/${provider}${suffix}`,headers:{}});
+    expect(config.headers.Authorization).toBeUndefined();
+    const error = {response:{status:401},config};
+    await expect(responseErrorInterceptor(error)).rejects.toBe(error);
+  }
+  expect(axios.post).not.toHaveBeenCalled();
+  expect(localStorage.getItem("refreshToken")).toBe("current-refresh");
+});
+
+test.each(["kakao","naver","google"])("%s 탈퇴 API는 로그인 공개 경로와 달리 Bearer 인증을 전달한다", provider => {
+  storeLoginTokens("delete-access", "delete-refresh");
+  const config=requestInterceptor({url:`http://localhost:8111/api/auth/${provider}/delete/complete`,headers:{}});
+  expect(config.headers.Authorization).toBe("Bearer delete-access");
 });

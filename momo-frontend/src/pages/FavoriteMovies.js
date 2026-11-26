@@ -45,31 +45,26 @@ function FavoriteMovies() {
         React.createElement(
           "header",
           { className: "favorite-page-heading" },
+          React.createElement("h1", null, "관심 영화"),
           React.createElement(
-            "div",
+            "p",
             null,
-            React.createElement("span", { className: "favorite-page-eyebrow" }, "MY MOMO"),
-            React.createElement("h1", null, "관심 영화"),
-            React.createElement(
-              "p",
-              null,
-              "마음에 드는 영화를 모아 나만의 영화 목록을 만들어 보세요.",
-            ),
-          ),
-          React.createElement(
-            "button",
-            {
-              type: "button",
-              className: "page-back-link",
-              onClick: () => navigate("/profile"),
-            },
-            "← 마이페이지",
+            "마음에 드는 영화를 모아 나만의 영화 목록을 만들어 보세요.",
           ),
         ),
         React.createElement(
           "div",
           { className: "favorite-list-toolbar" },
           React.createElement("span", null, "총 ", movies.length, "개의 영화"),
+          React.createElement(
+            "button",
+            {
+              type: "button",
+              className: "favorite-back-button",
+              onClick: () => navigate("/profile"),
+            },
+            "← 마이페이지",
+          ),
         ),
         movies.length === 0
           ? React.createElement(

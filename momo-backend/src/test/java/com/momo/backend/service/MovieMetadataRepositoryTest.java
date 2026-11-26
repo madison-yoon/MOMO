@@ -26,7 +26,7 @@ class MovieMetadataRepositoryTest {
         save("20260001", null);
         save("20260002", null);
         var candidates = movies.findMoviesNeedingMetadata(LocalDateTime.now().minusHours(6), PageRequest.of(0, 1));
-        assertEquals(List.of("20260001"), candidates.stream().map(movie -> movie.getMovieCode()).toList());
+        assertEquals(List.of("20260001"), candidates.stream().map(Movie::getMovieCode).toList());
     }
 
     @Test void sixHourCutoffAndMissingDetailsRemainRequired() {
@@ -38,7 +38,7 @@ class MovieMetadataRepositoryTest {
         movies.saveAndFlush(new Movie("20260005", "완료 영화", "Title", "20260101", "120",
                 "드라마", "감독", "배우", "전체"));
         var candidates = movies.findMoviesNeedingMetadata(cutoff, PageRequest.of(0, 10));
-        assertEquals(List.of("20260003", "20260004"), candidates.stream().map(movie -> movie.getMovieCode()).toList());
+        assertEquals(List.of("20260003", "20260004"), candidates.stream().map(Movie::getMovieCode).toList());
     }
 
     private void save(String code, LocalDateTime attemptedAt) {

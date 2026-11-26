@@ -108,7 +108,7 @@ public class ChatImageStorageService {
         uploadAttempts.values().forEach(times -> {
             while (!times.isEmpty() && !times.peekFirst().isAfter(cutoff)) times.removeFirst();
         });
-        uploadAttempts.values().removeIf(times -> times.isEmpty());
+        uploadAttempts.values().removeIf(Deque::isEmpty);
         Deque<Instant> times = uploadAttempts.computeIfAbsent(ownerId, ignored -> new ArrayDeque<>());
         if (times.size() >= MAX_UPLOADS_PER_MINUTE) {
             throw new ResponseStatusException(HttpStatus.TOO_MANY_REQUESTS,

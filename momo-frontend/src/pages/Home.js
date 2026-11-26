@@ -229,15 +229,13 @@ function Home() {
         {!favoriteMovies.length ? <div className="home-favorites-empty">
           <strong>아직 관심 영화가 없어요.</strong><p>영화를 둘러보고 마음에 드는 작품을 관심 영화에 담아보세요.</p>
         </div> : <MovieGrid>{favoriteMovies.slice(0, 5).map((movie) => (
-          <MovieCard as="article" key={movie.movieCode}>
-            <button type="button" className="home-movie-card-open" aria-label={`${movie.title} 상세 페이지`}
+          <MovieCard key={movie.movieCode} role="button" tabIndex={0}
             onClick={() => goToMovie(movie.movieCode)} onKeyDown={(event) => handleMovieKeyDown(event, movie.movieCode)}>
             <PosterWrap>
               <SafeImage src={resolvePosterUrl(movie.posterUrl)} alt={movie.title} fallback={<EmptyPoster>포스터 준비 중</EmptyPoster>} />
+              <FavoriteStar movie={movie} active={true} />
             </PosterWrap>
             <MovieInfo><h3>{movie.title}</h3><p>{movie.releaseDate || "개봉일 정보 없음"}</p></MovieInfo>
-            </button>
-            <div className="home-movie-card-favorite"><FavoriteStar movie={movie} active={true} /></div>
           </MovieCard>
         ))}</MovieGrid>}
       </Section>

@@ -168,7 +168,7 @@ function Layout() {
 
   return (
     <Container $homeRedesign={location.pathname === "/"} $archiveRedesign={Boolean(archivePageForPath(location.pathname))}>
-      <Header className="momo-app-header">
+      <Header>
         <Logo to="/" aria-label="MOMO 홈">
           <LogoImage src={textlogo} alt="MOMO" />
         </Logo>
@@ -196,7 +196,7 @@ function Layout() {
                   <strong>{nickname}</strong>님
                 </p>
 
-                <ActionButton className="momo-logout-button" onClick={handleLogout} disabled={logoutLoading}>
+                <ActionButton onClick={handleLogout} disabled={logoutLoading}>
                   {logoutLoading ? "로그아웃 중..." : "로그아웃"}
                 </ActionButton>
               </UserArea>

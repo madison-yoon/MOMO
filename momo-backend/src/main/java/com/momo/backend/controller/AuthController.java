@@ -10,7 +10,6 @@ import com.momo.backend.dto.auth.UserDeleteRequest;
 import com.momo.backend.entity.User;
 import com.momo.backend.service.AuthService;
 import com.momo.backend.dto.auth.LoginResponse;
-import com.momo.backend.security.TokenProvider;
 
 import jakarta.validation.Valid;
 
@@ -45,10 +44,10 @@ public class AuthController {
         // 로그인 성공 시 Access Token을 발급한다.
         private final AuthService authService;
         private final RefreshTokenService refreshTokenService;
-        private final com.momo.backend.service.AccountDeletionService accountDeletionService;
 
         // JWT 발급 담당
-        private final TokenProvider tokenProvider;
+         private final com.momo.backend.service.LoginSessionService loginSessions;
+         private final com.momo.backend.service.AccountDeletionService deletions;
 
         // 1. 회원가입
 
@@ -72,13 +71,7 @@ public class AuthController {
                                 dto.getLoginId(),
                                 dto.getPassword());
 
-                String accessToken = tokenProvider.createToken(user.getUserId());
-                String refreshToken = tokenProvider.createRefreshToken(user.getUserId());
-
-                refreshTokenService.saveOrReplace(user, refreshToken);
-
-                return ResponseEntity.ok(
-                                new LoginResponse(user, accessToken, refreshToken));
+                 return ResponseEntity.ok(loginSessions.issue(user));
         }
 
         // Refresh Token Rotation을 통한 토큰 재발급
@@ -123,25 +116,11 @@ public class AuthController {
                         Authentication authentication) {
 
                 // 회원 탈퇴 처리
-                authService.deleteMyAccount(
-                                MemberPrincipal.requireUserId(authentication),
-                                dto.password());
+                 deletions.delete(MemberPrincipal.requireUserId(authentication), dto);
 
                 // 인증 정보 제거
                 SecurityContextHolder.clearContext();
 
-                return ResponseEntity.ok("회원 탈퇴가 완료되었습니다.");
-        }
-
-        // 카카오 회원은 서버에 저장된 공급자 ID로 연결을 해제한 뒤 회원 데이터를 삭제한다.
-        @DeleteMapping("/me/social")
-        public ResponseEntity<String> deleteSocialAccount(
-                        @Valid @RequestBody UserDeleteRequest dto,
-                        Authentication authentication) {
-                accountDeletionService.delete(
-                                MemberPrincipal.requireUserId(authentication),
-                                dto);
-                SecurityContextHolder.clearContext();
                 return ResponseEntity.ok("회원 탈퇴가 완료되었습니다.");
         }
 

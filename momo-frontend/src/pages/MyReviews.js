@@ -149,7 +149,7 @@ function MyReviews() {
           <p>내가 남긴 영화 감상 기록을 모아볼 수 있어요.</p>
         </div>
 
-        <Link to="/profile" className="page-back-link">← 마이페이지</Link>
+        <Link to="/profile">← 마이페이지</Link>
       </section>
 
       <section className="my-reviews-card">

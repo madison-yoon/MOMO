@@ -90,24 +90,6 @@ test("TMDb 전용 영화에는 저장을 지원하지 않는 관심 영화 버�
   render(<MovieDetail />);
   await screen.findByRole("heading", { name: "TMDb 전용 검증 영화" });
   expect(screen.queryByRole("button", { name: "관심 영화 추가" })).not.toBeInTheDocument();
-  // 팀 main의 미연결 영화 안내를 유지하며 평가 저장 버튼을 노출하지 않는다.
-  expect(screen.getByRole("heading", { name: "관객 평점" })).toBeInTheDocument();
-  expect(screen.getByText("이 영화는 관객 평가 기능과 아직 연결되지 않았습니다.")).toBeInTheDocument();
-  expect(screen.queryByRole("button", { name: /좋아요/ })).not.toBeInTheDocument();
-});
-
-test("팀 main의 감독·배우 더보기와 접기를 리디자인에서도 유지한다", async () => {
-  AxiosApi.moviePeople.mockResolvedValue({ data: ["director", "actor"].flatMap(department =>
-    Array.from({ length: 8 }, (_, index) => ({ name: `${department}-${index}`, department, profileUrl: "" }))) });
-  const { container } = render(<MovieDetail />);
-  const directorMore = await screen.findByRole("button", { name: "감독 더보기 (6 / 8)" });
-  const actorMore = screen.getByRole("button", { name: "배우 더보기 (6 / 8)" });
-  expect(container.querySelectorAll(".person-chip")).toHaveLength(12);
-  fireEvent.click(directorMore); fireEvent.click(actorMore);
-  expect(container.querySelectorAll(".person-chip")).toHaveLength(16);
-  fireEvent.click(screen.getByRole("button", { name: "감독 접기" }));
-  fireEvent.click(screen.getByRole("button", { name: "배우 접기" }));
-  expect(container.querySelectorAll(".person-chip")).toHaveLength(12);
 });
 
 test("회원가입 닉네임은 기존처럼 앞뒤 공백을 제거한다", () => {

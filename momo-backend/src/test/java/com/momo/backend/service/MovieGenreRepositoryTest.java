@@ -37,7 +37,7 @@ class MovieGenreRepositoryTest {
         save("20260001", "20200101", "드라마");
         var first = movies.findByGenreContainingIgnoreCaseOrderByReleaseDateDescMovieCodeAsc("드라마", PageRequest.of(0, 2));
         var second = movies.findByGenreContainingIgnoreCaseOrderByReleaseDateDescMovieCodeAsc("드라마", PageRequest.of(1, 2));
-        assertEquals(java.util.List.of("20260002", "20260003"), first.map(movie -> movie.getMovieCode()).getContent());
+        assertEquals(java.util.List.of("20260002", "20260003"), first.map(Movie::getMovieCode).getContent());
         assertEquals("20260001", second.getContent().getFirst().getMovieCode());
     }
 

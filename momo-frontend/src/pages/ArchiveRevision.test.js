@@ -17,7 +17,7 @@ jest.mock("react-router-dom", () => ({ useNavigate: () => mockNavigate, useParam
 jest.mock("../components/redesign/ArchiveAuthFrame", () => ({ children }) => children);
 jest.mock("../components/ProfileAvatar", () => () => <span>프로필 이미지</span>);
 jest.mock("../components/common/FavoriteStar", () => () => <button aria-label="관심 영화 추가" />);
-jest.mock("../api/AxiosApi", () => ({ movieDetailByIdentifier: jest.fn(), movieDetail: jest.fn(), moviePoster: jest.fn(), moviePeople: jest.fn(), movieReviews: jest.fn(), movieRating: jest.fn(), memberMe: jest.fn(), reviewCreate: jest.fn(), allReviews: jest.fn(), reviewSummaries: jest.fn(), moviePostersEnsure: jest.fn(), moviePosterStatuses: jest.fn(), memberIdExist: jest.fn(), memberSignup: jest.fn(), reviewDetail: jest.fn(), reviewComments: jest.fn(), reviewReactionCounts: jest.fn(), reviewMyReactionGet: jest.fn(), reviewUpdate: jest.fn(), reviewDelete: jest.fn(), myReviews: jest.fn(), myLikedReviews: jest.fn(), memberDelete: jest.fn() }));
+jest.mock("../api/AxiosApi", () => ({ getAuthSessionVersion: () => 1, isAuthSessionCurrent: () => true, movieDetailByIdentifier: jest.fn(), movieDetail: jest.fn(), moviePoster: jest.fn(), moviePeople: jest.fn(), movieReviews: jest.fn(), movieRating: jest.fn(), memberMe: jest.fn(), reviewCreate: jest.fn(), allReviews: jest.fn(), reviewSummaries: jest.fn(), moviePostersEnsure: jest.fn(), moviePosterStatuses: jest.fn(), memberIdExist: jest.fn(), memberSignup: jest.fn(), reviewDetail: jest.fn(), reviewComments: jest.fn(), reviewReactionCounts: jest.fn(), reviewMyReactionGet: jest.fn(), reviewUpdate: jest.fn(), reviewDelete: jest.fn(), myReviews: jest.fn(), myLikedReviews: jest.fn(), memberDelete: jest.fn() }));
 jest.mock("../utils/favorites", () => ({ getFavoriteMovies: () => [], getCurrentFavoriteUserId: () => "sample-id" }));
 beforeEach(() => {
   jest.clearAllMocks(); localStorage.clear();
@@ -100,8 +100,8 @@ test("활동 목록은 기존 로그인 회원별 API와 상세 링크를 사용
  AxiosApi.myLikedReviews.mockResolvedValue({data:{content:[{reviewId:2,title:'내가 좋아요한 글',content:'다른 작성자의 글',nickname:'다른 회원'}],totalElements:1,totalPages:1}});
  render(<LikedReviews />);expect(await screen.findByRole('link',{name:'내가 좋아요한 글'})).toHaveAttribute('href','/reviews/2');expect(AxiosApi.myLikedReviews).toHaveBeenCalled();
 });
-test("탈퇴 안내와 취소는 서버 탈퇴를 호출하지 않는다", () => {
- render(<ProfileDelete />);expect(screen.getByRole('button',{name:'탈퇴하기'})).toBeDisabled();expect(screen.getByLabelText('현재 비밀번호')).toHaveAttribute('type','password');
+test("탈퇴 안내와 취소는 서버 탈퇴를 호출하지 않는다", async () => {
+ render(<ProfileDelete />);expect(screen.getByRole('button',{name:'회원 탈퇴',exact:true})).toBeDisabled();expect(await screen.findByLabelText('현재 비밀번호')).toHaveAttribute('type','password');
  fireEvent.click(screen.getByRole('button',{name:'취소',exact:true}));expect(mockNavigate).toHaveBeenCalledWith('/profile');expect(AxiosApi.memberDelete).not.toHaveBeenCalled();
 });
 
@@ -125,4 +125,9 @@ test("서버 이메일이 없으면 다른 계정일 수 있는 공용 로컬 �
 test("빈 메모 진입 버튼은 새 입력창으로 포커스를 이동한다", async () => {
  render(<MovieDetail />);const first=await screen.findByRole('button',{name:'첫 메모 남기기'});fireEvent.click(first);
  expect(screen.getByLabelText('메모 제목')).toHaveFocus();
+});
+
+test("소셜 프로필은 공급자 이메일이 없으면 미등록으로 표시한다", async () => {
+ AxiosApi.memberMe.mockResolvedValue({data:{userId:1,loginId:"social-member",nickname:"소셜회원",email:null,provider:"GOOGLE"}});
+ render(<Profile/>);expect(await screen.findByText("소셜회원")).toBeInTheDocument();expect(screen.getByText("미등록")).toBeInTheDocument();
 });

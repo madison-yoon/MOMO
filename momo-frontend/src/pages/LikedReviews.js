@@ -197,7 +197,7 @@ function LikedReviews() {
             <p>내가 마음에 들었던 영화 리뷰를 모아볼 수 있어요.</p>
           </div>
 
-          <Link to="/profile" className="page-back-link">← 마이페이지</Link>
+          <Link to="/profile">← 마이페이지</Link>
         </header>
 
         {/* 리뷰 목록 */}

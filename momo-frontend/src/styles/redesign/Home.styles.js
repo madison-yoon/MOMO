@@ -116,14 +116,8 @@ export const MovieGrid = styled.div`
   @media (max-width: 430px) { grid-template-columns: repeat(2, minmax(0, 1fr)); }
 `;
 export const MovieCard = styled.div`
-  position: relative;
   min-width: 0;
   cursor: pointer;
-  .home-movie-card-open { display: block; width: 100%; padding: 0; border: 0; background: transparent; color: inherit; text-align: left; cursor: pointer; }
-  .home-movie-card-open:focus-visible { outline: 3px solid var(--momo-accent-ink); outline-offset: 5px; border-radius: 7px; }
-  .home-movie-card-favorite { position: absolute; top: 10px; right: 10px; z-index: 2; }
-  .home-movie-card-favorite .favorite-star { position: static; }
-  .favorite-film-ticket-icon { width: 24px; height: 24px; }
   &:focus-visible { outline: 3px solid var(--momo-accent-ink); outline-offset: 5px; border-radius: 10px; }
   &:hover h3 { color: var(--momo-accent-ink); text-decoration: underline; text-underline-offset: 4px; }
 `;

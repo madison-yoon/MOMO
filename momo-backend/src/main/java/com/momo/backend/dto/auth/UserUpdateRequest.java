@@ -15,12 +15,9 @@ public record UserUpdateRequest(
         )
         String nickname,
 
-        // 소셜 회원은 이메일이 없을 수 있으며, LOCAL 회원의 필수 여부는 서비스에서 검증한다.
+        // LOCAL 필수·형식 검증과 소셜 읽기 전용 검증은 DB 회원 유형을 아는 서비스에서 수행한다.
         @Email(message = "올바른 이메일 형식이 아닙니다.")
-        @jakarta.validation.constraints.Pattern(
-                regexp = "^[^\\s@]+@[^\\s@]+\\.[^\\s@]{2,}$",
-                message = "올바른 이메일 형식이 아닙니다."
-        )
+        @jakarta.validation.constraints.Pattern(regexp = "^[^\\s@]+@[^\\s@]+\\.[^\\s@]{2,}$", message = "올바른 이메일 형식이 아닙니다.")
         String email,
 
         // 비밀번호 변경 시 입력하는 현재 비밀번호

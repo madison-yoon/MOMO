@@ -14,7 +14,7 @@ jest.mock("../api/AxiosApi", () => {
 jest.mock("../utils/favorites", () => ({ getCurrentFavoriteUserId: () => null, syncFavoriteMoviesFromServer: jest.fn() }));
 jest.mock("../components/chat/ChatPopup", () => () => null);
 jest.mock("../components/common/MovieSearchAutocomplete", () => () => null);
-// 세션 격리 검증은 실제 핸들러를 사용하되 JSDOM이 해석하지 못하는 테마 선택자와 분리한다.
+// 세션 검증은 실제 핸들러를 사용하고 JSDOM이 해석하지 못하는 테마 선택자와 분리한다.
 jest.mock("../styles/legacy/Layout.styles", () => {
   const React = require("react");
   const names = ["Container", "Header", "Logo", "LogoImage", "Navigation", "UserArea", "ActionButton", "Main", "Footer", "FooterContainer", "FooterLeft", "FooterLogo", "FooterDesc", "FooterRight", "FooterColumn", "FooterBottom"];
@@ -48,9 +48,10 @@ async function begin(action, pending) {
   } else {
     AxiosApi.memberDelete.mockReturnValue(pending.promise);
     render(React.createElement(ProfileDelete));
+    await screen.findByLabelText("현재 비밀번호");
     fireEvent.change(screen.getByLabelText("현재 비밀번호"), { target: { value: "test-password" } });
     fireEvent.click(screen.getByRole("checkbox"));
-    fireEvent.click(screen.getByRole("button", { name: "탈퇴하기" }));
+    fireEvent.click(screen.getByRole("button", { name: "회원 탈퇴", exact: true }));
   }
 }
 

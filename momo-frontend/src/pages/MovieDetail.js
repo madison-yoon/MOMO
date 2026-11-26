@@ -88,8 +88,6 @@ function MovieDetail() {
 
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
-  const [showAllDirectors, setShowAllDirectors] = useState(false);
-  const [showAllActors, setShowAllActors] = useState(false);
 
   // =========================================================
   // 2. 영화 평가 상태
@@ -162,8 +160,6 @@ function MovieDetail() {
         setLoading(true);
         setError("");
         setMovie(null);
-        setShowAllDirectors(false);
-        setShowAllActors(false);
 
         const detailResponse = await AxiosApi.movieDetailByIdentifier(id, controller.signal);
         const detailData = detailResponse.data;
@@ -355,8 +351,7 @@ function MovieDetail() {
 
   // 좋아요 비율을 5점 만점 평점으로 환산
   const movieScore =
-    totalCount > 0 ? ((likeCount / totalCount) * 5).toFixed(2) : "—";
-  const positivePercent = totalCount > 0 ? Math.round((likeCount / totalCount) * 100) : 0;
+    totalCount > 0 ? ((likeCount / totalCount) * 5).toFixed(2) : "0.00";
 
   // =========================================================
   // 7. 영화 평가 갱신
@@ -626,7 +621,7 @@ function MovieDetail() {
         ? React.createElement(
             "div",
             { className: "people-list" },
-            directors.slice(0, showAllDirectors ? directors.length : 6).map((person, index) =>
+            directors.map((person, index) =>
               React.createElement(
                 "button",
                 {
@@ -661,8 +656,6 @@ function MovieDetail() {
             { className: "people-empty" },
             "감독 정보가 아직 연결되지 않았습니다.",
           ),
-      // 팀 main의 인물 더보기 기능은 새 화면에서도 유지한다.
-      directors.length > 6 && React.createElement("button", { type: "button", className: "people-more-button", "aria-expanded": showAllDirectors, onClick: () => setShowAllDirectors((value) => !value) }, showAllDirectors ? "감독 접기" : `감독 더보기 (6 / ${directors.length})`),
     ),
     React.createElement(
       "section",
@@ -672,7 +665,7 @@ function MovieDetail() {
         ? React.createElement(
             ActorCarousel,
             null,
-            actors.slice(0, showAllActors ? actors.length : 6).map((person, index) =>
+            actors.map((person, index) =>
               React.createElement(
                 "button",
                 {
@@ -713,12 +706,11 @@ function MovieDetail() {
             { className: "people-empty" },
             "배우 정보가 아직 연결되지 않았습니다.",
           ),
-      actors.length > 6 && React.createElement("button", { type: "button", className: "people-more-button", "aria-expanded": showAllActors, onClick: () => setShowAllActors((value) => !value) }, showAllActors ? "배우 접기" : `배우 더보기 (6 / ${actors.length})`),
     ),
-    React.createElement(
+    movie.movieCode && React.createElement(
       "section",
       { className: "movie-rating-panel", "data-detail-region": "reactions" },
-      movie.movieCode && React.createElement(
+      React.createElement(
         "div",
         { className: "detail-reaction-counts" },
         React.createElement(
@@ -767,9 +759,7 @@ function MovieDetail() {
           formatNumber(totalCount),
           "명이 평가했습니다.",
         ),
-        React.createElement("p", { className: "rating-positive-summary" }, totalCount > 0 ? `긍정 평가 비율 ${positivePercent}%` : "아직 등록된 관객 평가가 없습니다."),
       ),
-      !movie.movieCode && React.createElement("p", { className: "rating-unavailable" }, "이 영화는 관객 평가 기능과 아직 연결되지 않았습니다."),
       React.createElement(
         "p",
         { className: "detail-total-count" },

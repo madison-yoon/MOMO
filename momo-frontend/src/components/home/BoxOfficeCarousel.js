@@ -40,7 +40,7 @@ export default function BoxOfficeCarousel({ movies, onMovieSelect }) {
       onDragStart={(event) => event.preventDefault()}
       onPointerDown={(event) => {
         suppressClick.current = false;
-        if (event.pointerType === "touch" || event.button !== 0 || event.target.closest("button:not(.home-movie-card-open), a")) return;
+        if (event.pointerType === "touch" || event.button !== 0 || event.target.closest("button, a")) return;
         drag.current = { x: event.clientX, left: viewport.current.scrollLeft };
       }}
       onPointerMove={(event) => {
@@ -58,15 +58,12 @@ export default function BoxOfficeCarousel({ movies, onMovieSelect }) {
         // 드래그를 영화 선택으로 오인하지 않되 다음 정상 클릭은 막지 않는다.
         if (suppressClick.current) { event.preventDefault(); event.stopPropagation(); suppressClick.current = false; }
       }}>
-      {movies.slice(0, 10).map((movie, index) => <MovieCard as="article" key={movie.movieCode || index}>
-        {/* 팀 main의 상세 이동·관심 영화 조작 분리를 유지해 중첩 버튼을 방지한다. */}
-        <button type="button" className="home-movie-card-open" aria-label={`${movie.title} 상세 페이지`} onClick={() => onMovieSelect(movie.movieCode)}
+      {movies.slice(0, 10).map((movie, index) => <MovieCard key={movie.movieCode || index} role="button" tabIndex={0}
+        aria-label={`${movie.title} 상세 페이지`} onClick={() => onMovieSelect(movie.movieCode)}
         onFocus={(event) => { if (event.target === event.currentTarget) event.currentTarget.scrollIntoView?.({ block: "nearest", inline: "nearest" }); }}
         onKeyDown={(event) => { if (event.target === event.currentTarget && ["Enter", " "].includes(event.key)) { event.preventDefault(); onMovieSelect(movie.movieCode); } }}>
-        <PosterWrap><SafeImage src={resolvePosterUrl(movie.posterUrl)} alt={movie.title} fallback={<EmptyPoster>포스터 준비 중</EmptyPoster>} /><Rank>{movie.rank}</Rank></PosterWrap>
+        <PosterWrap><SafeImage src={resolvePosterUrl(movie.posterUrl)} alt={movie.title} fallback={<EmptyPoster>포스터 준비 중</EmptyPoster>} /><Rank>{movie.rank}</Rank><FavoriteStar movie={movie} /></PosterWrap>
         <MovieInfo><h3>{movie.title}</h3><p>{movie.releaseDate || "개봉일 정보 없음"}</p></MovieInfo>
-        </button>
-        <div className="home-movie-card-favorite"><FavoriteStar movie={movie} /></div>
       </MovieCard>)}
     </CarouselViewport>
     <CarouselArrow type="button" $side="right" aria-label="다음 박스오피스 영화" disabled={edges.end} onClick={() => move(1)}>›</CarouselArrow>

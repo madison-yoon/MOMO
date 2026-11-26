@@ -164,3 +164,49 @@ test("a same-session retry 401 terminates authentication without a refresh loop"
   expect(localStorage.getItem("accessToken")).toBeNull();
   expect(localStorage.getItem("refreshToken")).toBeNull();
 });
+
+// 탈퇴 API는 외부 공급자의 실패를 JWT 만료로 오인해 일회용 코드를 재전송하면 안 된다.
+test.each([403,502,503])("social delete %s does not refresh or replay a consumed code",async status=>{
+ const calls=[];axios.defaults.adapter=config=>{calls.push(config);return Promise.reject(failure(config,status));};
+ const {default:api}=require("./AxiosApi");
+ await expect(api.socialDeleteComplete("google","one-use-code","state",{agreed:true,confirmation:"MOMO 회원 탈퇴"})).rejects.toMatchObject({response:{status}});
+ expect(calls).toHaveLength(1);expect(calls[0].headers.Authorization).toBe("Bearer A-access");expect(localStorage.getItem("accessToken")).toBe("A-access");
+});
+test("security 401 before state consumption refreshes once and sends the current JWT",async()=>{
+ const calls=[];axios.defaults.adapter=config=>{
+  calls.push(config);
+  if(config.url.endsWith("/reissue"))return Promise.resolve(response(config,{accessToken:"fresh-access",refreshToken:"fresh-refresh"}));
+  if(!config._retry)return Promise.reject(failure(config,401));
+  return Promise.resolve(response(config));
+ };
+ const {default:api}=require("./AxiosApi");await api.socialDeleteComplete("naver","code","state",{agreed:true,confirmation:"MOMO 회원 탈퇴"});
+ expect(calls.filter(c=>c.url.endsWith("/reissue"))).toHaveLength(1);
+ const requests=calls.filter(c=>c.url.endsWith("/delete/complete"));expect(requests).toHaveLength(2);expect(requests[1].headers.Authorization).toBe("Bearer fresh-access");
+});
+test("missing JWT is refreshed before a delete callback consumes state",async()=>{
+ localStorage.removeItem("accessToken");const calls=[];axios.defaults.adapter=config=>{
+  calls.push(config);return Promise.resolve(response(config,config.url.endsWith("/reissue")?{accessToken:"fresh-access",refreshToken:"fresh-refresh"}:{}));
+ };
+ const {default:api}=require("./AxiosApi");await api.socialDeleteComplete("google","code","state",{agreed:true,confirmation:"MOMO 회원 탈퇴"});
+ expect(calls.map(c=>new globalThis.URL(c.url).pathname)).toEqual(["/api/auth/reissue","/api/auth/google/delete/complete"]);expect(calls[1].headers.Authorization).toBe("Bearer fresh-access");
+});
+test("another tab switching accounts before delete dispatch cannot send the new account JWT",async()=>{
+ localStorage.setItem("username","member-a");const calls=[];axios.defaults.adapter=config=>{calls.push(config);return Promise.resolve(response(config));};
+ const {default:api}=require("./AxiosApi");const pending=api.socialDeleteComplete("google","code","state",{agreed:true,confirmation:"MOMO 회원 탈퇴"});
+ // 다른 탭의 localStorage 갱신은 이 탭의 메모리 버전을 올리지 않는다.
+ localStorage.setItem("username","member-b");localStorage.setItem("accessToken","B-access");localStorage.setItem("momo-auth-session-id","B-session");
+ await expect(pending).rejects.toMatchObject({code:"MOMO_AUTH_SESSION_CHANGED"});expect(calls).toHaveLength(0);
+});
+
+test("cross-tab account switch during refresh rejection preserves the new account",async()=>{
+ localStorage.setItem("username","member-a");const {pending}=delayedRefreshAdapter();const result=axios.get(URL).catch(error=>error);await flushUntil(()=>pending.length===1);
+ localStorage.setItem("username","member-b");localStorage.setItem("accessToken","B-access");localStorage.setItem("refreshToken","B-refresh");localStorage.setItem("momo-auth-session-id","B-session");
+ pending[0].reject(failure(pending[0].config,401));await result;
+ expect(localStorage.getItem("accessToken")).toBe("B-access");expect(localStorage.getItem("username")).toBe("member-b");
+});
+
+test("OAuth LOGIN dispatch blocks another-tab session switch after interceptors",async()=>{
+ const calls=[];axios.defaults.transformRequest=[...originalTransforms,function(data){localStorage.setItem("momo-auth-session-id","another-tab-login");return data;}];
+ axios.defaults.adapter=config=>{calls.push(config);return Promise.resolve(response(config));};const {default:api}=require("./AxiosApi");
+ await expect(api.oauthLogin("kakao","old-code","state")).rejects.toMatchObject({code:"MOMO_AUTH_SESSION_CHANGED"});expect(calls).toHaveLength(0);
+});

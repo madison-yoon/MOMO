@@ -77,8 +77,7 @@ function PersonDetail() {
 
   const [person, setPerson] = useState(null);
   const [filmography, setFilmography] = useState([]);
-  const [visibleCount, setVisibleCount] = useState(6);
-  const [showFullBiography, setShowFullBiography] = useState(false);
+  const [visibleCount, setVisibleCount] = useState(10);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
 
@@ -99,8 +98,7 @@ function PersonDetail() {
         setError("");
         setPerson(null);
         setFilmography([]);
-        setVisibleCount(6);
-        setShowFullBiography(false);
+        setVisibleCount(10);
 
         // 숫자형 식별자는 TMDb 인물 고유 ID로 조회해 동명이인 오연결을 방지한다.
         const response = /^\d+$/.test(identifier)
@@ -300,22 +298,9 @@ function PersonDetail() {
 
           React.createElement(
             "p",
-            {
-              className: `person-biography${showFullBiography ? " is-expanded" : ""}`,
-            },
+            null,
             person.biography || "등록된 인물 소개가 없습니다.",
           ),
-          person.biography && person.biography.trim().length > 90 &&
-            React.createElement(
-              "button",
-              {
-                type: "button",
-                className: "person-bio-toggle",
-                onClick: () => setShowFullBiography((value) => !value),
-                "aria-expanded": showFullBiography,
-              },
-              showFullBiography ? "접기" : "소개 더보기",
-            ),
         ),
       ),
 
@@ -333,7 +318,7 @@ function PersonDetail() {
 
             React.createElement(
               "div",
-              { className: "people-list filmography-list" },
+              { className: "people-list" },
 
               filmography.slice(0, visibleCount).map((movie, index) => {
                 const movieId = movie.tmdbId ?? `${movie.title}-${index}`;
@@ -394,25 +379,23 @@ function PersonDetail() {
               }),
             ),
 
-            // 처음에는 2열 기준 세 줄만 보여주고, 나머지는 펼쳐서 확인한다.
-            filmography.length > 6 &&
+            // 필모그래피 더보기
+            visibleCount < filmography.length &&
               React.createElement(
                 "div",
-                { className: "people-list-actions" },
+                null,
+
                 React.createElement(
                   "button",
                   {
                     type: "button",
-                    className: "people-more-button",
-                    onClick: () =>
-                      setVisibleCount((count) =>
-                        count < filmography.length ? Math.min(count + 6, filmography.length) : 6,
-                      ),
-                    "aria-expanded": visibleCount > 6,
+                    onClick: () => setVisibleCount((count) => count + 10),
                   },
-                  visibleCount < filmography.length
-                    ? `필모그래피 더보기 (${Math.min(visibleCount, filmography.length)} / ${filmography.length})`
-                    : "접기",
+                  "더보기 (",
+                  Math.min(visibleCount, filmography.length),
+                  " / ",
+                  filmography.length,
+                  ")",
                 ),
               ),
           )

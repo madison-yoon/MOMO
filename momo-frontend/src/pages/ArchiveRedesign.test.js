@@ -54,5 +54,6 @@ test("로그인 중앙 폼은 지정 제목과 기존 필드·비활성 검증�
   expect(screen.getByRole("heading", { name: "다시 만나서 반가워요." })).toBeInTheDocument();
   expect(screen.getByLabelText("아이디")).toBeInTheDocument();
   expect(screen.getByLabelText("비밀번호")).toHaveAttribute("type", "password");
-  expect(screen.getByRole("button", { name: /로그인/ })).toBeDisabled();
+  expect(screen.getByRole("button", { name: "로그인", exact: true })).toBeDisabled();
+  expect(screen.getByRole("button", { name: "카카오로 로그인" })).toBeEnabled();
 });

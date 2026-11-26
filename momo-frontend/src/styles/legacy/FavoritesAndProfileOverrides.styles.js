@@ -99,8 +99,8 @@ const FavoritesAndProfileOverridesStyles = createGlobalStyle`
 }
 
 .profile-favorites-link:hover {
-  border-color: #ffd43b;
-  background: #fffdf4;
+  border-color: var(--momo-border);
+  background: var(--momo-surface);
 }
 
 .profile-favorites-count {

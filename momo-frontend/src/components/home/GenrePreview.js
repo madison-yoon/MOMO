@@ -79,13 +79,10 @@ export default function GenrePreview() {
     {pending ? <HomeState role="status">{genre} 영화를 불러오는 중입니다.</HomeState>
       : state.error ? <HomeState role="alert">{genre} 영화를 불러오지 못했습니다.</HomeState>
       : !state.movies.length ? <HomeState>현재 표시할 {genre} 영화가 없습니다.</HomeState>
-      : <MovieGrid>{state.movies.map((movie) => <MovieCard as="article" key={movie.movieCode}>
-        <button type="button" className="home-movie-card-open" aria-label={`${movie.title} 상세 페이지`}
+      : <MovieGrid>{state.movies.map((movie) => <MovieCard key={movie.movieCode} role="button" tabIndex={0} aria-label={`${movie.title} 상세 페이지`}
         onClick={() => navigate("/movie/" + movie.movieCode)} onKeyDown={(event) => { if (event.target === event.currentTarget && ["Enter", " "].includes(event.key)) { event.preventDefault(); navigate("/movie/" + movie.movieCode); } }}>
-        <PosterWrap><SafeImage src={resolvePosterUrl(movie.posterUrl)} alt={movie.title} fallback={<EmptyPoster>포스터 준비 중</EmptyPoster>} /></PosterWrap>
+        <PosterWrap><SafeImage src={resolvePosterUrl(movie.posterUrl)} alt={movie.title} fallback={<EmptyPoster>포스터 준비 중</EmptyPoster>} /><FavoriteStar movie={movie} /></PosterWrap>
         <MovieInfo><h3>{movie.title}</h3><p>{formatGenreDate(movie.releaseDate)}</p></MovieInfo>
-        </button>
-        <div className="home-movie-card-favorite"><FavoriteStar movie={movie} /></div>
       </MovieCard>)}</MovieGrid>}
   </Section>;
 }

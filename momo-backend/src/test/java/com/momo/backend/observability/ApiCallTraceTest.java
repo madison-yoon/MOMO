@@ -73,7 +73,7 @@ class ApiCallTraceTest {
                     throw new IllegalStateException("private-key-value");
                 }));
             });
-            String output = appender.list.stream().map(event -> event.getFormattedMessage()).collect(java.util.stream.Collectors.joining("\n"));
+            String output = appender.list.stream().map(ILoggingEvent::getFormattedMessage).collect(java.util.stream.Collectors.joining("\n"));
             assertTrue(output.contains("catalogHttpAttempts=0"));
             assertTrue(output.contains(response.getHeader("X-Request-Id")));
             for (String secret : java.util.List.of("private-person-value", "private-key-value", "private-token-value", "untrusted-client-value")) assertFalse(output.contains(secret));

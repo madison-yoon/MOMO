@@ -2,6 +2,7 @@ package com.momo.backend.service;
 
 import com.momo.backend.dto.movie.MovieSearchResponse;
 import org.junit.jupiter.api.Test;
+import org.springframework.dao.DataIntegrityViolationException;
 
 import java.util.Arrays;
 import java.util.List;

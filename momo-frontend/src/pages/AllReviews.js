@@ -58,9 +58,16 @@ function AllReviews() {
 
         // 통계와 포스터 수집 요청을 페이지 단위로 묶는다.
         const reviewIds = reviewList.map((review) => review.reviewId);
-        const movieCodes = [...new Set(
-          reviewList.map((review) => review.movieCode).filter(Boolean),
-        )];
+        const movieCodes = [
+          ...new Set(
+            reviewList
+              .map((review) => review.movieCode)
+              .filter(
+                (code) =>
+                  typeof code === "string" && /^[A-Za-z0-9]{8}$/.test(code),
+              ),
+          ),
+        ];
 
         const [summaryResult, posterResult] = await Promise.all([
           reviewIds.length
@@ -78,14 +85,23 @@ function AllReviews() {
         if (controller.signal.aborted) return;
 
         if (summaryResult.status === "rejected") {
-          console.error("리뷰 요약 조회 실패:", safeRequestFailure(summaryResult.reason));
+          console.error(
+            "리뷰 요약 조회 실패:",
+            safeRequestFailure(summaryResult.reason),
+          );
         }
         if (posterResult.status === "rejected") {
-          console.error("일괄 포스터 조회 실패:", safeRequestFailure(posterResult.reason));
+          console.error(
+            "일괄 포스터 조회 실패:",
+            safeRequestFailure(posterResult.reason),
+          );
         }
 
         const summaryByReviewId = new Map(
-          (summaryResult.data || []).map((summary) => [summary.reviewId, summary]),
+          (summaryResult.data || []).map((summary) => [
+            summary.reviewId,
+            summary,
+          ]),
         );
         const posterByMovieCode = new Map(
           (posterResult.data || []).map((poster) => [poster.movieCode, poster]),

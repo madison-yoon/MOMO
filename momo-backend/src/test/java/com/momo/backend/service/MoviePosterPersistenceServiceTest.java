@@ -6,6 +6,7 @@ import com.momo.backend.repository.MoviePosterCacheRepository;
 import com.momo.backend.repository.MovieRepository;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
+import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 

@@ -86,7 +86,7 @@ class MovieGenreRequestTest {
         assertEquals("20260001", service.getMoviesByGenre("드라마", 2).getFirst().movieCode());
         ArgumentCaptor<Pageable> pages = ArgumentCaptor.forClass(Pageable.class);
         verify(movies, times(2)).findByGenreContainingIgnoreCaseOrderByReleaseDateDescMovieCodeAsc(eq("드라마"), pages.capture());
-        assertEquals(List.of(0, 1), pages.getAllValues().stream().map(page -> page.getPageNumber()).toList());
+        assertEquals(List.of(0, 1), pages.getAllValues().stream().map(Pageable::getPageNumber).toList());
         assertTrue(pages.getAllValues().stream().allMatch(p -> p.getPageSize() == 10));
         verifyNoInteractions(kobis, kmdb, tmdb, persistence, poster, posters);
     }

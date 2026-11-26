@@ -1,16 +1,7 @@
 import { createGlobalStyle } from "styled-components";
 
-// 기존 호환 스타일의 밝은 잔여 색을 교체하고 팀의 인물 소개 펼치기 상태를 보존한다.
+// 기존 호환 스타일의 밝은 잔여 색만 교체한다. 홈 A안의 선택자와 배치는 건드리지 않는다.
 const CinemaCharcoalStyles = createGlobalStyle`
-  .favorite-film-ticket-icon { width: 24px; height: 24px; vertical-align: middle; }
-  .person-biography:not(.is-expanded) { display: -webkit-box; -webkit-box-orient: vertical; -webkit-line-clamp: 3; overflow: hidden; }
-  .person-bio-toggle { background: var(--momo-surface); color: var(--momo-text); border: 1px solid var(--momo-border); cursor: pointer; }
-  [data-archive-page][data-archive-page] .page-back-link {
-    display: inline-flex; align-items: center; padding: 10px 16px; border: 1px solid var(--momo-border);
-    border-radius: 8px; background: var(--momo-surface); color: var(--momo-text); cursor: pointer;
-    &:hover { background: var(--momo-control-hover); }
-  }
-  [data-archive-page="favorites"][data-archive-page] :is(.favorite-page-heading p, .favorite-page-card p) { color: var(--momo-muted); }
   [data-archive-page][data-archive-page] { background-color: var(--momo-bg); }
   [data-archive-page][data-archive-page] a { color: var(--momo-text); }
   [data-archive-page][data-archive-page] :is(h1, h2, h3, h4) { color: var(--momo-text); }

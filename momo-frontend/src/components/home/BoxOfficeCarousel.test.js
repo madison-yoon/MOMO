@@ -7,8 +7,6 @@ const movies = Array.from({ length: 10 }, (_, i) => ({ movieCode: String(i), tit
 test("10편을 유지하고 카드와 키보드로 기존 상세 이동을 요청한다", () => {
   const go = jest.fn(); render(<BoxOfficeCarousel movies={movies} onMovieSelect={go} />);
   expect(screen.getAllByRole("button", { name: /상세 페이지/ })).toHaveLength(10);
-  // 팀 main의 상세 버튼과 관심 영화 버튼 분리를 리디자인에서도 유지한다.
-  expect(screen.getByRole("button", { name: "영화 0 상세 페이지" })).not.toContainElement(screen.getAllByRole("button", { name: "관심 영화" })[0]);
   fireEvent.click(screen.getByRole("button", { name: "영화 0 상세 페이지" }));
   fireEvent.keyDown(screen.getByRole("button", { name: "영화 1 상세 페이지" }), { key: "Enter" });
   expect(go.mock.calls).toEqual([["0"], ["1"]]);

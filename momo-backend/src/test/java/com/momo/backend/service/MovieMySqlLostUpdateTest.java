@@ -12,6 +12,7 @@ import org.springframework.boot.data.jpa.test.autoconfigure.DataJpaTest;
 import org.springframework.boot.jdbc.test.autoconfigure.AutoConfigureTestDatabase;
 import org.springframework.context.annotation.Import;
 import org.springframework.test.context.bean.override.mockito.MockitoBean;
+import org.springframework.test.util.ReflectionTestUtils;
 import org.springframework.transaction.PlatformTransactionManager;
 import org.springframework.transaction.annotation.*;
 import org.springframework.transaction.support.TransactionTemplate;
@@ -99,6 +100,8 @@ class MovieMySqlLostUpdateTest {
 
  @Test void weeklyWritePreservesNewerDailyHistoryAfterVersionConflict() throws Exception {
   String code="20991002"; seed(code);
+  var weekly = List.of(new BoxOfficeResponse(7,code,"movie","20200101","0","0",""));
+  var daily = List.of(new BoxOfficeResponse(1,code,"movie","20200101","0","0",""));
   race("findById", repo -> coordinator(repo).saveBoxOffice(code,7,"20261108",false), () -> {
    persistence.saveBoxOffice(code,1,"20261113",true);
    assertEquals("20261113",movies.findById(code).orElseThrow().getLastBoxOfficeDate());
