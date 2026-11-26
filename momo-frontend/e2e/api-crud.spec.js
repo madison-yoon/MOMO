@@ -70,6 +70,20 @@ test("격리 MySQL에서 회원·리뷰·댓글·반응·평점·관심 영화 A
   const secondProfile = await request.get(`${API}/api/auth/me`, { headers: secondHeaders });
   expect((await secondProfile.json()).nickname).toBe(secondNickname);
 
+  // 프로필 이미지 API는 인증 없이 조회·삭제할 수 없어야 한다.
+  expect((await request.get(`${API}/api/auth/me/profile-image`)).status()).toBe(401);
+  expect((await request.delete(`${API}/api/auth/me/profile-image`)).status()).toBe(401);
+
+  // 중복 닉네임 검증에 사용한 두 번째 임시 회원은 비밀번호 확인 후 API로 탈퇴시킨다.
+  const deleteSecondAccount = await request.delete(`${API}/api/auth/me`, {
+    headers: secondHeaders,
+    data: { password },
+  });
+  expect(deleteSecondAccount.status()).toBe(200);
+  expect((await request.post(`${API}/api/auth/login`, {
+    data: { loginId: secondLoginId, password },
+  })).status()).toBe(400);
+
   // 현재 비밀번호 검증 후 변경하고, 기존 비밀번호 재로그인은 거부되는지 확인한다.
   const passwordUpdate = await request.put(`${API}/api/auth/me`, {
     headers,
