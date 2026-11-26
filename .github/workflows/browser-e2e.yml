@@ -72,7 +72,9 @@ jobs:
             echo "GitHub Actions MySQL service container was not found."
             exit 1
           fi
-          docker exec "$mysql_container" mysql -uroot -pmomo-e2e-password momo_db -e "INSERT INTO movies (movie_code, title, box_office_entered, row_version, supplement_verified) VALUES ('20261234', 'MOMO API CRUD E2E', 0, 0, 0) ON DUPLICATE KEY UPDATE title = VALUES(title);"
+          docker exec "$mysql_container" mysql -uroot -pmomo-e2e-password momo_db -e "INSERT INTO movies (movie_code, title, box_office_entered, row_version, supplement_verified, poster_url) VALUES ('20261234', 'MOMO API CRUD E2E', 0, 0, 0, 'https://example.com/momo-e2e-fixture-poster.jpg') ON DUPLICATE KEY UPDATE title = VALUES(title), poster_url = VALUES(poster_url);"
+          # The real search controller is exercised from a valid CI-only cache fixture; no provider API quota is consumed.
+          docker exec "$mysql_container" mysql -uroot -pmomo-e2e-password momo_db -e "INSERT INTO movie_cache (cache_type, cache_key, content_json, cached_at, expires_at) VALUES ('SEARCH', 'MOMO API CRUD E2E|1|5', CAST(JSON_OBJECT('content', JSON_ARRAY(JSON_OBJECT('movieCode', '20261234', 'title', 'MOMO API CRUD E2E', 'releaseDate', '20260101', 'genre', 'Drama', 'director', 'CI Fixture Director', 'posterUrl', '')), 'page', 1, 'size', 5, 'totalCount', 1, 'hasNext', false) AS CHAR), NOW(), DATE_ADD(NOW(), INTERVAL 24 HOUR)) ON DUPLICATE KEY UPDATE content_json = VALUES(content_json), cached_at = VALUES(cached_at), expires_at = VALUES(expires_at);"
 
       - name: Install frontend dependencies
         working-directory: momo-frontend

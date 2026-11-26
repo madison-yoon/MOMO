@@ -125,6 +125,17 @@ test("격리 MySQL에서 회원·리뷰·댓글·반응·평점·관심 영화 A
   const ratingBefore = await request.get(`${API}/api/movies/${MOVIE_CODE}/rating`, { headers: updatedHeaders });
   expect(ratingBefore.status(), "CI DB Movie fixture가 존재해야 합니다.").toBe(200);
 
+  // 정상 검색어로 실제 Spring 검색 API를 호출한다. 검색 cache는 격리 CI DB fixture다.
+  const movieSearch = await request.get(
+    `${API}/api/movies/search?keyword=${encodeURIComponent("MOMO API CRUD E2E")}&page=1&size=5`,
+  );
+  expect(movieSearch.status(), "정상 영화 검색 API 실패").toBe(200);
+  const movieSearchBody = await movieSearch.json();
+  expect(movieSearchBody.page).toBe(1);
+  expect(movieSearchBody.size).toBe(5);
+  expect(movieSearchBody.totalCount).toBe(1);
+  expect(movieSearchBody.content.some((movie) => movie.movieCode === MOVIE_CODE)).toBe(true);
+
   const reviewTitle = `CI CRUD ${suffix}`;
   const createReview = await request.post(`${API}/api/reviews`, {
     headers: updatedHeaders,
