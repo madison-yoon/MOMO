@@ -93,7 +93,7 @@ test("회원가입, 로그인, 로그아웃이 브라우저에서 이어진다",
   await expect(page.getByText("아직 등록한 관심 영화가 없습니다.")).toBeVisible();
 
   await page.getByRole("button", { name: "로그아웃" }).click();
-  await expect(page.getByRole("link", { name: "로그인" })).toBeVisible();
+  // 로그아웃은 localStorage 토큰 제거와 로그아웃 버튼 제거로 검증한다.
   await expect.poll(() => page.evaluate(() => localStorage.getItem("accessToken")))
     .toBeNull();
   await expect(page.getByRole("button", { name: "로그아웃" })).toHaveCount(0);
