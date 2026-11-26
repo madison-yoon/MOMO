@@ -30,7 +30,9 @@ class OpenApiConfigTest {
         Operation publicReviewSummaries = new Operation();
         Operation publicMovieRating = new Operation();
         Operation privateMovieRatingWrite = new Operation();
+        Operation publicSocialAuthorize = new Operation();
         Operation publicSocialCallback = new Operation();
+        Operation privateSocialDeleteStart = new Operation();
         Operation privateSocialDelete = new Operation();
         Operation privateLikedMovies = new Operation();
         Operation publicReactionCounts = new Operation();
@@ -47,7 +49,9 @@ class OpenApiConfigTest {
                 .path("/api/comments/{commentId}/reactions", new PathItem().get(publicCommentCounts))
                 .path("/api/movies/{movieCode}/rating",
                         new PathItem().get(publicMovieRating).put(privateMovieRatingWrite))
+                .path("/api/auth/{provider}/authorize", new PathItem().get(publicSocialAuthorize))
                 .path("/api/auth/{provider}", new PathItem().post(publicSocialCallback))
+                .path("/api/auth/{provider}/delete/authorize", new PathItem().post(privateSocialDeleteStart))
                 .path("/api/auth/{provider}/delete/complete", new PathItem().post(privateSocialDelete))
                 .path("/api/auth/me", new PathItem().get(privateMe))
                 .path("/api/movies/my/liked", new PathItem().get(privateLikedMovies));
@@ -60,7 +64,9 @@ class OpenApiConfigTest {
         assertTrue(publicReviewSummaries.getSecurity().isEmpty());
         assertTrue(publicMovieRating.getSecurity().isEmpty());
         assertFalse(privateMovieRatingWrite.getSecurity().isEmpty());
+        assertTrue(publicSocialAuthorize.getSecurity().isEmpty());
         assertTrue(publicSocialCallback.getSecurity().isEmpty());
+        assertFalse(privateSocialDeleteStart.getSecurity().isEmpty());
         assertFalse(privateSocialDelete.getSecurity().isEmpty());
         assertFalse(privateLikedMovies.getSecurity().isEmpty());
         assertTrue(publicReactionCounts.getSecurity().isEmpty());
@@ -87,5 +93,9 @@ class OpenApiConfigTest {
         assertTrue(config.requiresAuthentication("/api/reviews/{reviewId}", "DELETE"));
         assertTrue(config.requiresAuthentication("/api/auth/me", "GET"));
         assertTrue(config.requiresAuthentication("/api/auth/me/password-check", "POST"));
+        assertFalse(config.requiresAuthentication("/api/auth/{provider}/authorize", "GET"));
+        assertFalse(config.requiresAuthentication("/api/auth/{provider}", "POST"));
+        assertTrue(config.requiresAuthentication("/api/auth/{provider}/delete/authorize", "POST"));
+        assertTrue(config.requiresAuthentication("/api/auth/{provider}/delete/complete", "POST"));
     }
 }
