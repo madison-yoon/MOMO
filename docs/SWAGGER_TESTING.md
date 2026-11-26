@@ -14,6 +14,27 @@
 
 GitHub Actions의 일회용 MySQL 결과는 코드 회귀 검증용일 뿐, 아래의 실제 `momo_db` 검증을 대체하지 않는다.
 
+## CI API CRUD 회귀 테스트
+
+`.github/workflows/browser-e2e.yml`은 GitHub Actions 전용 MySQL 8.4 컨테이너를 실행한다. Spring Boot가 스키마를 준비한 뒤 CI 컨테이너에만 영화 fixture(`20261234`)를 넣고 `momo-frontend/e2e/api-crud.spec.js`를 실행한다. 이 fixture와 테스트 회원·리뷰·댓글은 workflow 종료 시 컨테이너와 함께 폐기되며 개발 PC의 `momo_db`에는 접근하지 않는다.
+
+CI API 테스트는 실제 Spring Boot API를 호출해 다음 동작을 확인한다.
+
+- 회원가입·로그인·내 정보 조회 및 닉네임·이메일 수정
+- 이미 사용 중인 닉네임으로 수정할 때 `409 Conflict` 반환
+- 현재 비밀번호 확인, 비밀번호 변경, 이전 비밀번호 로그인 거부
+- 비밀번호 변경 직후 기존 Refresh Token 재발급 거부, 새 비밀번호 로그인 및 새 토큰 로그아웃
+- 리뷰 생성·중복 거부·상세/검색 조회·수정·삭제
+- 댓글 생성·목록 조회·수정·반응·삭제
+- 리뷰 반응 생성·조회·삭제
+- 영화 평점 생성·조회·삭제
+- 관심 영화 등록·조회·삭제·중복 삭제
+- 잘못된 영화 검색 입력값의 `400` 검증
+
+정상 검색어로 KOBIS를 조회하는 실제 영화 검색 검증은 개발 PC용 지속형 테스트에 포함되어 있다. 공급자 API 호출과 캐시·Movie 저장·포스터 작업이 발생할 수 있으므로, 로컬 실행 전 API 사용량과 키 상태를 확인한다.
+
+CI의 `swagger-persistent.spec.js`는 `MOMO_SWAGGER_PASSWORD`가 설정되지 않아 의도적으로 건너뛴다. CI API CRUD 성공과 기존 `momo_db` 검증 성공은 별개의 결과로 기록한다.
+
 ## 1. 실제 DB 연결 확인
 
 MySQL CMD에서 실제 프로젝트 DB를 선택한 뒤 대상 스키마와 버전을 확인한다.
