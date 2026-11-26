@@ -79,7 +79,7 @@ public class ExternalApiRateLimitFilter extends OncePerRequestFilter {
         response.setHeader("X-RateLimit-Remaining", Integer.toString(remaining));
 
         if (used > limit) {
-            response.setStatus(HttpServletResponse.SC_TOO_MANY_REQUESTS);
+            response.setStatus(429);
             response.setHeader("Retry-After", "60");
             response.setContentType("application/json;charset=UTF-8");
             response.getWriter().write(RATE_LIMITED_BODY);

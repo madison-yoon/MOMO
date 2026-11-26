@@ -8,7 +8,7 @@ import { archivePageForPath } from "../styles/redesign/ArchivePages.styles";
 
 const mockNavigate = jest.fn();
 jest.mock("react-router-dom", () => ({
-  useNavigate: () => mockNavigate,
+  useLocation: () => ({ state: null }), useNavigate: () => mockNavigate,
   useSearchParams: () => [new URLSearchParams("keyword=타짜"), jest.fn()],
   Link: ({ to, children, ...props }) => <a href={to} {...props}>{children}</a>,
 }));
