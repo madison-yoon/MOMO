@@ -1,5 +1,5 @@
 import React from "react";
-import { fireEvent, render, screen } from "@testing-library/react";
+import { act, fireEvent, render, screen } from "@testing-library/react";
 import MovieDetail from "./MovieDetail";
 import AllReviews from "./AllReviews";
 import ProfileEdit from "./ProfileEdit";
@@ -100,8 +100,10 @@ test("활동 목록은 기존 로그인 회원별 API와 상세 링크를 사용
  AxiosApi.myLikedReviews.mockResolvedValue({data:{content:[{reviewId:2,title:'내가 좋아요한 글',content:'다른 작성자의 글',nickname:'다른 회원'}],totalElements:1,totalPages:1}});
  render(<LikedReviews />);expect(await screen.findByRole('link',{name:'내가 좋아요한 글'})).toHaveAttribute('href','/reviews/2');expect(AxiosApi.myLikedReviews).toHaveBeenCalled();
 });
-test("탈퇴 안내와 취소는 서버 탈퇴를 호출하지 않는다", () => {
- render(<ProfileDelete />);expect(screen.getByRole('button',{name:'탈퇴하기'})).toBeDisabled();expect(screen.getByLabelText('현재 비밀번호')).toHaveAttribute('type','password');
+test("탈퇴 안내와 취소는 서버 탈퇴를 호출하지 않는다", async () => {
+ render(<ProfileDelete />);
+ await act(async () => { await Promise.resolve(); });
+ expect(screen.getByRole('button',{name:'탈퇴하기'})).toBeDisabled();expect(screen.getByLabelText('현재 비밀번호')).toHaveAttribute('type','password');
  fireEvent.click(screen.getByRole('button',{name:'취소',exact:true}));expect(mockNavigate).toHaveBeenCalledWith('/profile');expect(AxiosApi.memberDelete).not.toHaveBeenCalled();
 });
 
