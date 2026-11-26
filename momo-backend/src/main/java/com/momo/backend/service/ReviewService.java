@@ -249,6 +249,14 @@ public class ReviewService {
                                 "회원 정보를 찾을 수 없습니다."
                         ));
 
+        // 영화 마스터에 등록된 코드만 리뷰가 참조할 수 있도록 서비스 경계에서 검증한다.
+        if (!movieRepository.existsById(dto.getMovieCode())) {
+            throw new CustomException(
+                    "MOVIE_NOT_FOUND",
+                    "영화 정보를 찾을 수 없습니다."
+            );
+        }
+
         boolean exists = reviewRepository
                 .existsByUser_UserIdAndMovieCode(
                         user.getUserId(),

@@ -10,6 +10,11 @@ import com.momo.backend.service.PersonService;
 import com.momo.backend.service.TmdbService;
 import com.momo.backend.service.ReviewService;
 import org.springframework.web.server.ResponseStatusException;
+import jakarta.validation.constraints.Max;
+import jakarta.validation.constraints.Min;
+import jakarta.validation.constraints.NotBlank;
+import jakarta.validation.constraints.Size;
+import org.springframework.validation.annotation.Validated;
 
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -22,6 +27,7 @@ import java.util.List;
 import java.util.Map;
 
 @RestController
+@Validated
 @RequestMapping("/api/movies")
 @RequiredArgsConstructor
 @Slf4j
@@ -34,16 +40,16 @@ public class MovieController {
 
         @GetMapping("/recommendations")
         public ResponseEntity<List<Map<String, Object>>> getBoxOfficeRecommendations(
-                        @RequestParam(required = false) String genre) {
+                        @RequestParam(required = false) @Size(max = 30) String genre) {
                 return ResponseEntity.ok(
                                 movieService.getBoxOfficeRecommendations(genre));
         }
 
         @GetMapping("/search")
         public ResponseEntity<MovieSearchPageResponse> searchMovies(
-                        @RequestParam String keyword,
-                        @RequestParam(defaultValue = "1") int page,
-                        @RequestParam(defaultValue = "20") int size) {
+                        @RequestParam @NotBlank @Size(min = 2, max = 100) String keyword,
+                        @RequestParam(defaultValue = "1") @Min(1) @Max(1000) int page,
+                        @RequestParam(defaultValue = "20") @Min(1) @Max(50) int size) {
 
                 return ResponseEntity.ok(
                                 movieService.searchMovies(keyword, page, size));
@@ -190,8 +196,8 @@ public class MovieController {
 
         @GetMapping("/genre")
         public ResponseEntity<List<MovieSearchResponse>> getMoviesByGenre(
-                        @RequestParam String genre,
-                        @RequestParam(defaultValue = "1") int page) {
+                        @RequestParam @NotBlank @Size(max = 30) String genre,
+                        @RequestParam(defaultValue = "1") @Min(1) @Max(1000) int page) {
 
                 return ResponseEntity.ok(
                                 movieService.getMoviesByGenre(genre, page));

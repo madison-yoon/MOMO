@@ -51,7 +51,7 @@ function MovieSearchAutocomplete() {
         const response = await AxiosApi.movieSearch(
           trimmedKeyword,
           1,
-          100,
+          20,
           controller.signal,
         );
 

@@ -57,9 +57,9 @@ React의 라우트는 `App.js`, 페이지는 `pages`, 공통 UI는 `components`�
 
 Google은 PKCE S256과 nonce를 적용하며 공식 검증기로 ID Token의 서명·발급자·대상·만료를 확인한 뒤 subject를 사용한다. Naver는 사용자 조회 응답의 성공 코드와 ID를 확인한다. 공급자 Access Token을 MOMO JWT로 사용하거나 DB에 보관하지 않는다. 인가 코드는 자동 재교환하지 않는다.
 
-**화면 지원은 별도로 구분한다.** 현재 `SocialOAuthCallback.js`와 `auth/socialOAuthFlow.js` 및 소셜 프로필·탈퇴 분기는 존재하지만, `Login.js`에 소셜 로그인 진입 버튼이 없고 `App.js`에 공급자 콜백 라우트가 연결되어 있지 않다. 따라서 현 상태를 브라우저에서 바로 사용할 수 있는 소셜 로그인 전체 화면 완성으로 기록하지 않는다.
+**화면 진입과 콜백 라우트는 연결했다.** 로그인 화면에 Kakao·Naver·Google 인증 시작 버튼을 추가했고, `App.js`에 공급자별 `/oauth/{provider}` 콜백 경로를 등록했다. 콜백은 기존 `socialOAuthFlow.js`의 state·세션 검증과 `SocialOAuthCallback.js`를 그대로 사용하며, 일반 로그인과 동일한 토큰 저장 경로로 완료한다.
 
-실제 공급자 앱 등록·Redirect URI 등록·비밀 설정의 준비 여부는 소스만으로 확인할 수 없다. 이번 RAG 작업에서 실제 공급자 로그인·연결 해제의 외부 E2E 성공을 확인한 것으로 간주하지 않는다. 설정이 없으면 해당 OAuth 기능은 503으로 실패한다.
+실제 공급자 앱 등록·Redirect URI 등록·비밀 설정은 배포 환경에서 별도로 확인해야 한다. 공급자 콘솔의 Redirect URI와 `KAKAO_REDIRECT_URI`, `NAVER_REDIRECT_URI`, `GOOGLE_REDIRECT_URI`는 프론트의 실제 콜백 경로와 정확히 일치해야 한다. 이번 변경으로 실제 외부 공급자 계정의 로그인·연결 해제 성공까지 검증한 것은 아니다. 설정이 없으면 해당 OAuth 기능은 503으로 실패한다.
 
 주요 코드: [OAuthController](../momo-backend/src/main/java/com/momo/backend/controller/OAuthController.java), [OAuthStateService](../momo-backend/src/main/java/com/momo/backend/service/OAuthStateService.java), [SocialOAuthService](../momo-backend/src/main/java/com/momo/backend/service/SocialOAuthService.java), [GoogleIdentityVerifier](../momo-backend/src/main/java/com/momo/backend/service/GoogleIdentityVerifier.java), [SocialLoginService](../momo-backend/src/main/java/com/momo/backend/service/SocialLoginService.java).
 

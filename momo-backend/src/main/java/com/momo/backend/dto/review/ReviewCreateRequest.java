@@ -3,6 +3,7 @@ package com.momo.backend.dto.review;
 
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.Size;
+import jakarta.validation.constraints.Pattern;
 
 import lombok.Getter;
 import lombok.NoArgsConstructor;
@@ -13,7 +14,7 @@ public class ReviewCreateRequest {
 
     // KOBIS 영화 식별 코드
     @NotBlank(message = "영화 코드는 필수입니다.")
-    @Size(max = 20, message = "영화 코드는 20자 이하여야 합니다.")
+    @Pattern(regexp = "[A-Za-z0-9]{8}", message = "영화 코드는 영문자 또는 숫자 8자리여야 합니다.")
     private String movieCode;
 
     // 리뷰 제목

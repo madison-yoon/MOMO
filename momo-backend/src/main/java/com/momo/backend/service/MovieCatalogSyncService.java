@@ -103,10 +103,11 @@ public class MovieCatalogSyncService {
             log.info("영화 카탈로그 수집 진행. phase={}, page={}/{}, pageCount={}, totalCount={}",
                     state.getPhase(), page, state.getTotalPages(), movies.size(), state.getTotalCount());
         } catch (Exception exception) {
-            state.recordFailure(exception.getMessage(), now);
+            // 공급자 예외에는 요청 URL·쿼리 문자열·API 키가 포함될 수 있어 원문을 상태/로그에 남기지 않는다.
+            state.recordFailure("EXTERNAL_PROVIDER_FAILURE", now);
             stateRepository.save(state);
-            log.error("영화 카탈로그 수집 실패. phase={}, page={}. 1분 후 재시도합니다.",
-                    state.getPhase(), state.getNextPage(), exception);
+            log.error("영화 카탈로그 수집 실패. phase={}, page={}, errorType={}. 1분 후 재시도합니다.",
+                    state.getPhase(), state.getNextPage(), exception.getClass().getSimpleName());
         }
     }
 
@@ -122,7 +123,7 @@ public class MovieCatalogSyncService {
                 state.getStartYear(),
                 state.getEndYear(),
                 state.getLastCompletedAt(),
-                state.getLastError()
+                state.getLastError() == null ? null : "외부 영화 데이터 수집에 실패했습니다."
         );
     }
 

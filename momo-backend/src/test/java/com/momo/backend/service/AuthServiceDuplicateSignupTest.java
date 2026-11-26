@@ -20,6 +20,68 @@ import static org.mockito.Mockito.*;
 class AuthServiceDuplicateSignupTest {
 
     @Test
+    void returnsConflictWhenLoginIdIsAlreadyTakenBeforeInsert() {
+        UserRepository userRepository = mock(UserRepository.class);
+        when(userRepository.existsByLoginId("new-member")).thenReturn(true);
+
+        AuthService service = new AuthService(
+                userRepository,
+                mock(PasswordEncoder.class),
+                mock(ReviewRepository.class),
+                mock(CommentRepository.class),
+                mock(ReviewReactionRepository.class),
+                mock(CommentReactionRepository.class),
+                mock(FirebaseStorageService.class),
+                mock(MovieRatingRepository.class),
+                mock(FavoriteMovieRepository.class),
+                mock(RefreshTokenService.class),
+                mock(org.springframework.context.ApplicationEventPublisher.class)
+        );
+        SignupRequest request = mock(SignupRequest.class);
+        when(request.getLoginId()).thenReturn("new-member");
+
+        ResponseStatusException exception = assertThrows(
+                ResponseStatusException.class,
+                () -> service.signUp(request)
+        );
+
+        assertEquals(HttpStatus.CONFLICT, exception.getStatusCode());
+        verify(userRepository, never()).saveAndFlush(any());
+    }
+
+    @Test
+    void returnsConflictWhenNicknameIsAlreadyTakenBeforeInsert() {
+        UserRepository userRepository = mock(UserRepository.class);
+        when(userRepository.existsByLoginId("new-member")).thenReturn(false);
+        when(userRepository.existsByNickname("new-nickname")).thenReturn(true);
+
+        AuthService service = new AuthService(
+                userRepository,
+                mock(PasswordEncoder.class),
+                mock(ReviewRepository.class),
+                mock(CommentRepository.class),
+                mock(ReviewReactionRepository.class),
+                mock(CommentReactionRepository.class),
+                mock(FirebaseStorageService.class),
+                mock(MovieRatingRepository.class),
+                mock(FavoriteMovieRepository.class),
+                mock(RefreshTokenService.class),
+                mock(org.springframework.context.ApplicationEventPublisher.class)
+        );
+        SignupRequest request = mock(SignupRequest.class);
+        when(request.getLoginId()).thenReturn("new-member");
+        when(request.getNickname()).thenReturn("new-nickname");
+
+        ResponseStatusException exception = assertThrows(
+                ResponseStatusException.class,
+                () -> service.signUp(request)
+        );
+
+        assertEquals(HttpStatus.CONFLICT, exception.getStatusCode());
+        verify(userRepository, never()).saveAndFlush(any());
+    }
+
+    @Test
     void returnsConflictWhenConcurrentSignupHitsDatabaseUniqueConstraint() {
         UserRepository userRepository = mock(UserRepository.class);
         PasswordEncoder passwordEncoder = mock(PasswordEncoder.class);

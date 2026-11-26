@@ -1,4 +1,4 @@
-jest.mock("react-router-dom", () => ({ useNavigate: () => jest.fn(), Link: ({ children }) => require("react").createElement("a", null, children) }));
+jest.mock("react-router-dom", () => ({ useNavigate: () => jest.fn(), useLocation: () => ({ state: null }), Link: ({ children }) => require("react").createElement("a", null, children) }));
 jest.mock("../api/AxiosApi", () => ({ __esModule: true, default: { memberLogin: jest.fn() }, storeLoginTokens: jest.fn() }));
 import React from "react";
 import { render, screen, fireEvent, act } from "@testing-library/react";

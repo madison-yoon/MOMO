@@ -1,16 +1,17 @@
-import React from "react";
+import React, { useEffect, useState } from "react";
 import ArchivePagesStyles from "./styles/redesign/ArchivePages.styles";
 import CinemaCharcoalStyles from "./styles/redesign/CinemaCharcoal.styles";
 import GlobalStyles from "./styles/GlobalStyles";
 import ToastNotification from "./components/common/ToastNotification";
 
-import { BrowserRouter, Navigate, Routes, Route, useParams } from "react-router-dom";
+import { BrowserRouter, Navigate, Routes, Route, useParams, useLocation } from "react-router-dom";
 
 import Home from "./pages/Home";
 import MovieDetail from "./pages/MovieDetail";
 import Login from "./pages/Login";
 import SignUp from "./pages/SignUp";
 import Layout from "./pages/Layout";
+import SocialOAuthCallback from "./pages/SocialOAuthCallback";
 
 import Profile from "./pages/Profile";
 import ProfileEdit from "./pages/ProfileEdit";
@@ -24,6 +25,32 @@ import LikedReviews from "./pages/LikedReviews";
 import FavoriteMovies from "./pages/FavoriteMovies";
 import PersonDetail from "./pages/PersonDetail";
 
+// 화면 접근 흐름을 로그인 상태와 동기화한다. API 권한 검사는 백엔드가 최종 담당한다.
+function RequireAuth({ children }) {
+  const location = useLocation();
+  const [authenticated, setAuthenticated] = useState(
+    () => Boolean(localStorage.getItem("accessToken")),
+  );
+
+  useEffect(() => {
+    const syncAuthentication = () => {
+      setAuthenticated(Boolean(localStorage.getItem("accessToken")));
+    };
+
+    window.addEventListener("momo-auth-changed", syncAuthentication);
+    window.addEventListener("storage", syncAuthentication);
+    return () => {
+      window.removeEventListener("momo-auth-changed", syncAuthentication);
+      window.removeEventListener("storage", syncAuthentication);
+    };
+  }, []);
+
+  if (!authenticated) {
+    return <Navigate to="/login" replace state={{ from: location }} />;
+  }
+  return children;
+}
+
 function LegacyMovieRedirect() {
   const { tmdbId } = useParams();
   return <Navigate to={`/movie/${encodeURIComponent(tmdbId)}`} replace />;
@@ -31,7 +58,7 @@ function LegacyMovieRedirect() {
 
 function App() {
   return (
-    <BrowserRouter>
+    <BrowserRouter basename={process.env.PUBLIC_URL || "/"}>
       <GlobalStyles />
       <ArchivePagesStyles />
       <CinemaCharcoalStyles />
@@ -42,41 +69,33 @@ function App() {
 
           {/* 기존 TMDb 전용 주소는 통합 영화 주소로 이동한다. */}
           <Route path="/movie/tmdb/:tmdbId" element={<LegacyMovieRedirect />} />
-
           <Route path="/movie/:id" element={<MovieDetail />} />
-
           <Route path="/search" element={<Search />} />
 
-          {/* 전체 리뷰 */}
+          {/* 전체 공개 리뷰 */}
           <Route path="/reviews" element={<AllReviews />} />
           <Route path="/reviews/movie/:movieCode" element={<AllReviews />} />
-          <Route path="/profile/liked-reviews" element={<LikedReviews />} />
-
-          {/* 리뷰 상세 및 댓글 */}
           <Route path="/reviews/:reviewId" element={<ReviewDetail />} />
 
-          {/* 마이페이지 */}
-          <Route path="/profile" element={<Profile />} />
-
-          {/* 내가 작성한 리뷰 */}
-          <Route path="/profile/reviews" element={<MyReviews />} />
-
-          {/* 회원정보 수정 및 탈퇴 */}
-          <Route path="/profile/edit" element={<ProfileEdit />} />
-          <Route path="/profile/delete" element={<ProfileDelete />} />
-
-          {/* 관심 영화 */}
-          <Route path="/profile/favorites" element={<FavoriteMovies />} />
+          {/* 회원 전용 화면 */}
+          <Route path="/profile/liked-reviews" element={<RequireAuth><LikedReviews /></RequireAuth>} />
+          <Route path="/profile" element={<RequireAuth><Profile /></RequireAuth>} />
+          <Route path="/profile/reviews" element={<RequireAuth><MyReviews /></RequireAuth>} />
+          <Route path="/profile/edit" element={<RequireAuth><ProfileEdit /></RequireAuth>} />
+          <Route path="/profile/delete" element={<RequireAuth><ProfileDelete /></RequireAuth>} />
+          <Route path="/profile/favorites" element={<RequireAuth><FavoriteMovies /></RequireAuth>} />
 
           {/* 인물 상세 */}
           <Route path="/person/:type/:identifier" element={<PersonDetail />} />
         </Route>
 
-        {/* 로그인 */}
         <Route path="/login" element={<Login />} />
-
-        {/* 회원가입 */}
         <Route path="/signup" element={<SignUp />} />
+
+        {/* 각 공급자의 실제 Redirect URI에 등록할 공통 콜백 */}
+        <Route path="/oauth/kakao" element={<SocialOAuthCallback provider="kakao" />} />
+        <Route path="/oauth/naver" element={<SocialOAuthCallback provider="naver" />} />
+        <Route path="/oauth/google" element={<SocialOAuthCallback provider="google" />} />
       </Routes>
     </BrowserRouter>
   );

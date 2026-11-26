@@ -1,6 +1,8 @@
 package com.momo.backend.exception;
 
 import lombok.extern.slf4j.Slf4j;
+import jakarta.validation.ConstraintViolationException;
+import org.springframework.http.converter.HttpMessageNotReadableException;
 import org.springframework.dao.DataAccessException;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -114,6 +116,26 @@ public class GlobalExceptionHandler {
 
         log.warn("요청 처리 거부. status={}, message={}", status.value(), message);
         return ResponseEntity.status(status).body(new ErrorResponse(code, message));
+    }
+
+    // JSON 문법·본문 자료형이 잘못된 요청은 서버 오류가 아니라 400으로 처리한다.
+    @ExceptionHandler(HttpMessageNotReadableException.class)
+    public ResponseEntity<ErrorResponse> handleUnreadableMessage(
+            HttpMessageNotReadableException error) {
+        return ResponseEntity.badRequest().body(new ErrorResponse(
+                "INVALID_JSON",
+                "요청 본문 JSON 형식 또는 자료형이 올바르지 않습니다."
+        ));
+    }
+
+    // @Validated 컨트롤러의 경로·쿼리 파라미터 검증 실패
+    @ExceptionHandler(ConstraintViolationException.class)
+    public ResponseEntity<ErrorResponse> handleConstraintViolation(
+            ConstraintViolationException error) {
+        return ResponseEntity.badRequest().body(new ErrorResponse(
+                "VALIDATION_ERROR",
+                "요청 파라미터의 값 또는 길이가 올바르지 않습니다."
+        ));
     }
 
     // 5. 그 외 예상하지 못한 서버 오류 처리

@@ -34,7 +34,7 @@ class MovieRatingServiceTest {
                 .thenReturn(Optional.empty());
 
         MovieRatingService service = new MovieRatingService(
-                ratingRepository, movieRepository, userRepository, mock(MovieService.class));
+                ratingRepository, movieRepository, userRepository);
 
         service.saveRating(7L, "20261234", true);
 
@@ -61,7 +61,7 @@ class MovieRatingServiceTest {
                 .thenReturn(Optional.of(existing));
 
         MovieRatingService service = new MovieRatingService(
-                ratingRepository, movieRepository, userRepository, mock(MovieService.class));
+                ratingRepository, movieRepository, userRepository);
 
         service.saveRating(7L, "20261234", false);
 
@@ -87,7 +87,7 @@ class MovieRatingServiceTest {
         when(rating.getLiked()).thenReturn(true);
 
         MovieRatingService service = new MovieRatingService(
-                ratingRepository, movieRepository, userRepository, mock(MovieService.class));
+                ratingRepository, movieRepository, userRepository);
 
         Map<String, Object> result = service.getMovieRating("20261234", 7L);
 
@@ -104,25 +104,23 @@ class MovieRatingServiceTest {
     }
 
     @Test
-    void registersMissingMovieBeforeReturningAnEmptyRatingSummary() {
+    void rejectsUnregisteredMovieWithoutCallingExternalMovieApis() {
         UserRepository userRepository = mock(UserRepository.class);
         MovieRepository movieRepository = mock(MovieRepository.class);
         MovieRatingRepository ratingRepository = mock(MovieRatingRepository.class);
-        MovieService movieService = mock(MovieService.class);
+        when(movieRepository.existsById("20167904")).thenReturn(false);
 
-        when(movieRepository.existsById("20167904"))
-                .thenReturn(false, true);
         MovieRatingService service = new MovieRatingService(
-                ratingRepository, movieRepository, userRepository, movieService);
+                ratingRepository, movieRepository, userRepository);
 
-        Map<String, Object> result = service.getMovieRating("20167904", null);
+        com.momo.backend.exception.CustomException error = org.junit.jupiter.api.Assertions.assertThrows(
+                com.momo.backend.exception.CustomException.class,
+                () -> service.getMovieRating("20167904", null));
 
-        verify(movieService).getMovieDetail("20167904");
-        verify(movieRepository, times(2)).existsById("20167904");
-        assertEquals(0L, result.get("likeCount"));
-        assertEquals(0L, result.get("dislikeCount"));
-        assertEquals(0L, result.get("totalCount"));
-        assertNull(result.get("myRating"));
+        assertEquals("MOVIE_NOT_FOUND", error.getCode());
+        verify(movieRepository).existsById("20167904");
+        verifyNoInteractions(ratingRepository);
+        verifyNoInteractions(userRepository);
     }
 
     @Test
@@ -135,7 +133,7 @@ class MovieRatingServiceTest {
         when(ratingRepository.countByMovie_MovieCodeAndLiked("20261234", false)).thenReturn(0L);
 
         MovieRatingService service = new MovieRatingService(
-                ratingRepository, movieRepository, userRepository, mock(MovieService.class));
+                ratingRepository, movieRepository, userRepository);
 
         Map<String, Object> result = service.getMovieRating("20261234", null);
 

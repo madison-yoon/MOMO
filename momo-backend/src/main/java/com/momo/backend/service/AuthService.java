@@ -55,11 +55,17 @@ public class AuthService {
 
     public UserResponse signUp(SignupRequest dto) {
         if (userRepository.existsByLoginId(dto.getLoginId())) {
-            throw new IllegalArgumentException("이미 사용 중인 아이디입니다.");
+            throw new ResponseStatusException(
+                    HttpStatus.CONFLICT,
+                    "이미 사용 중인 아이디입니다."
+            );
         }
 
         if (userRepository.existsByNickname(dto.getNickname())) {
-            throw new IllegalArgumentException("이미 사용 중인 닉네임입니다.");
+            throw new ResponseStatusException(
+                    HttpStatus.CONFLICT,
+                    "이미 사용 중인 닉네임입니다."
+            );
         }
 
         User user = new User(

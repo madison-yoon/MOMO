@@ -9,6 +9,7 @@ import tools.jackson.databind.ObjectMapper;
 
 import java.util.Optional;
 
+import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.Mockito.*;
 
@@ -22,6 +23,7 @@ class MovieCatalogSyncServiceTest {
         MovieCatalogSyncState state = MovieCatalogSyncState.initial();
 
         when(stateRepository.findByIdForUpdate(1)).thenReturn(Optional.of(state));
+        when(stateRepository.findById(1)).thenReturn(Optional.of(state));
         when(kobisApiClient.searchCatalogMovies(1, 100, null, null))
                 .thenThrow(new IllegalStateException("provider unavailable"));
 
@@ -42,7 +44,8 @@ class MovieCatalogSyncServiceTest {
         order.verify(kobisApiClient).searchCatalogMovies(1, 100, null, null);
 
         verify(stateRepository).save(state);
-        assertTrue(state.getLastError().contains("provider unavailable"));
+        assertEquals("EXTERNAL_PROVIDER_FAILURE", state.getLastError());
+        assertEquals("외부 영화 데이터 수집에 실패했습니다.", service.getStatus().lastError());
     }
 
     @Test

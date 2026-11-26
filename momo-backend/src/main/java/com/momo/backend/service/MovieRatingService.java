@@ -25,7 +25,6 @@ public class MovieRatingService {
     private final MovieRatingRepository movieRatingRepository;
     private final MovieRepository movieRepository;
     private final UserRepository userRepository;
-    private final MovieService movieService;
 
     // 영화 좋아요 또는 싫어요 등록 및 변경
     public void saveRating(
@@ -136,15 +135,12 @@ public class MovieRatingService {
             String movieCode,
             Long userId
     ) {
-        // 상세정보 경로에서 등록이 누락된 KOBIS 영화도 평가 조회 시 DB에 먼저 등록한다.
+        // 공개 평점 조회는 외부 API 수집을 시작하지 않는다. 미등록 코드는 즉시 거부한다.
         if (!movieRepository.existsById(movieCode)) {
-            movieService.getMovieDetail(movieCode);
-            if (!movieRepository.existsById(movieCode)) {
-                throw new CustomException(
-                        "MOVIE_NOT_FOUND",
-                        "영화 정보를 등록하지 못했습니다."
-                );
-            }
+            throw new CustomException(
+                    "MOVIE_NOT_FOUND",
+                    "영화 정보를 찾을 수 없습니다."
+            );
         }
 
         long likeCount = movieRatingRepository.countByMovie_MovieCodeAndLiked(

@@ -17,8 +17,12 @@ public class SignupRequest {
     private String loginId;
 
     // 회원가입 시 입력한 비밀번호 (암호화 전)
-    @NotBlank
-    @Size(min = 8)
+    @NotBlank(message = "비밀번호는 필수 입력 항목입니다.")
+    @Size(min = 8, max = 20, message = "비밀번호는 8~20자로 입력해 주세요.")
+    @Pattern(
+            regexp = "^(?=.*[A-Za-z])(?=.*\\d)(?=.*[!@#$%^&*])[A-Za-z\\d!@#$%^&*]{8,20}$",
+            message = "비밀번호는 영문, 숫자, 특수문자를 각각 1개 이상 포함한 8~20자여야 합니다."
+    )
     private String password;
 
     // 화면에서 사용할 닉네임
