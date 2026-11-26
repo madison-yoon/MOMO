@@ -14,7 +14,7 @@ MOMO는 영화를 찾아보고, 평점과 감상을 남기며 다른 사람의 �
 
 RAG는 **문자 2-gram 메모리 StubEngine과 근거 발췌 모의 답변**입니다. 실제 임베딩·LLM·벡터 DB·MongoDB Atlas와 React RAG 질문 화면은 구현 범위가 아닙니다. 검색 근거가 부족하거나 반환 전 원본 검증에 실패하면 답변을 보류합니다.
 
-Kakao·Naver·Google 로그인·탈퇴 API와 프론트 흐름 모듈은 존재하지만 현재 로그인 화면의 소셜 진입 버튼과 `App.js`의 콜백 라우트는 연결되어 있지 않습니다. 실제 공급자 앱 등록과 외부 인증 E2E 성공도 이번 RAG 작업에서 확인한 범위가 아닙니다. 자세한 지원 범위는 [아키텍처](docs/ARCHITECTURE.md)를 참고하세요.
+Kakao·Naver·Google 로그인과 탈퇴 API를 지원하며, 로그인 화면의 공급자 버튼과 `App.js`의 `/oauth/{provider}` 콜백 라우트도 연결되어 있습니다. 프론트는 state·세션 상태를 확인하고 백엔드는 공급자·목적·회원 컨텍스트를 검증합니다. 다만 실제 공급자 앱 등록, Redirect URI·Secret 설정과 외부 실계정 로그인·연결 해제 성공은 아직 검증되지 않았습니다. 설정이 없는 환경에서는 해당 공급자 기능이 실패하도록 유지합니다. 자세한 지원 범위는 [아키텍처](docs/ARCHITECTURE.md)를 참고하세요.
 
 | 구분 | 기술 및 위치 |
 |---|---|
@@ -45,6 +45,7 @@ FastAPI 메모리 색인은 재시작하면 사라집니다. **재시작 후 운
 - Java 21, MySQL 8, Node.js와 Yarn 1.22.22를 준비합니다. 기존 검증의 Node.js는 24.22.1이며 Node 버전 고정 파일은 없습니다.
 - DB·영화 API·JWT 설정은 기존 [application.properties](momo-backend/src/main/resources/application.properties)의 주입 방식을 확인합니다. 실제 DB 비밀번호·API Key·JWT 비밀값은 문서나 새 커밋에 넣지 않습니다.
 - Firebase 인증 파일은 별도로 준비해 `momo-backend/config/firebase-service-account.json`에 둡니다.
+- DB 비밀번호는 `DB_PASSWORD` 환경변수로 전달합니다. 코드에 기본 비밀번호를 두지 않으므로 기존 PC의 실제 값을 IntelliJ Run Configuration 또는 실행 CMD 환경에 설정합니다.
 - RAG를 사용할 때는 Python 3.14와 `MOMO-RAG/.venv`를 준비하고 [RAG 실행·설정](docs/RAG.md)을 따릅니다. 기본 `RAG_ENABLED=false`이며 활성화 시 서비스 토큰이 필요합니다.
 - 백엔드 기본 포트는 `8111`, React는 `3000`, FastAPI 예시는 `8000`입니다. 원격 PC 접근 시 API 주소와 CORS·WebSocket 허용 Origin을 맞춥니다.
 
@@ -87,6 +88,26 @@ yarn start
 기존 공유 접속용 스크립트는 해당 기관의 주소 설정을 확인한 뒤 사용합니다.
 
 ## 검증 결과
+
+### API 보안·CRUD 보완 CI — 2026-11-26
+
+최신 확인 커밋 `251fb2ec` 기준 GitHub Actions 결과다. 아래 CI MySQL은 개발 PC의 `momo_db`와 분리된 일회용 컨테이너다.
+
+| 검증 | 결과 |
+|---|---|
+| Backend Gradle Test | PASS |
+| Frontend tests | 29 suites / 189 tests PASS |
+| Frontend production build | PASS |
+| MOMO-RAG Python tests | 18 PASS |
+| Browser E2E | 5 PASS / 1 SKIP |
+| Gemini Code Review | PASS |
+
+Browser E2E는 실제 Spring Boot API를 호출해 회원정보 수정·중복 닉네임·비밀번호 변경·탈퇴·Refresh Token 폐기·영화 검색 API·리뷰/댓글 CRUD·반응·평점·관심 영화 흐름을 확인한다. 정상 영화 검색 경로는 격리 CI DB의 검색 캐시 fixture를 사용하므로 KOBIS 호출량을 소비하지 않는다. 1건 SKIP은 개발 PC의 기존 `momo_db` 전용 지속형 Swagger 테스트이며, 로컬 DB 검증 통과를 의미하지 않는다.
+
+- [Build and Test](https://github.com/madison-yoon/MOMO/actions/runs/45739240431)
+- [Browser E2E](https://github.com/madison-yoon/MOMO/actions/runs/45739240395)
+- [Gemini Code Review](https://github.com/madison-yoon/MOMO/actions/runs/45739240421)
+
 
 ### RAG 5차시 — 2026-11-25
 
