@@ -9,7 +9,11 @@ const ACCOUNT = {
   email: process.env.MOMO_SWAGGER_EMAIL || "momo.swagger.qa@example.com",
 };
 const REVIEW_TITLE = "[MOMO SWAGGER QA] persistent review";
+const DELETE_REVIEW_TITLE = "[MOMO SWAGGER QA] review deletion";
 const COMMENT_MARKER = "[MOMO SWAGGER QA] persistent comment";
+const DELETE_COMMENT_MARKER = "[MOMO SWAGGER QA] comment deletion";
+const UPDATED_NICKNAME = process.env.MOMO_SWAGGER_UPDATED_NICKNAME || `${ACCOUNT.nickname}2`;
+const UPDATED_EMAIL = `${ACCOUNT.loginId}+updated@example.com`;
 
 const authHeaders = (token) => ({ Authorization: `Bearer ${token}` });
 
@@ -56,20 +60,20 @@ async function loginOrCreateAccount(request) {
   return login.json();
 }
 
-async function loadExistingMovie(request, movieCode) {
-  // This suite never inserts a fake Movie row. Supply one code already present in momo_db.
+async function loadExistingMovie(request, movieCode, titleVariable, codeVariable) {
+  // This suite never inserts a fake Movie row. Each supplied code must already exist in momo_db.
   expect(
     movieCode,
-    "실제 momo_db의 movies.movie_code를 MOMO_SWAGGER_MOVIE_CODE로 지정하세요.",
+    `실제 momo_db의 movies.movie_code를 ${codeVariable}로 지정하세요.`,
   ).toMatch(/^[A-Za-z0-9]{8}$/);
 
-  const title = (process.env.MOMO_SWAGGER_MOVIE_TITLE || "").trim();
+  const title = (process.env[titleVariable] || "").trim();
   expect(
     title,
-    "관심 영화 데이터에 실제 제목을 기록하기 위해 MOMO_SWAGGER_MOVIE_TITLE을 지정하세요.",
+    `실제 영화 제목을 ${titleVariable}로 지정하세요.`,
   ).not.toBe("");
 
-  // Rating GET checks the Movie row without starting external movie-data collection.
+  // Rating GET checks the Movie row without starting external movie-detail collection.
   const existingMovie = await request.get(`${API}/api/movies/${movieCode}/rating`);
   expect(existingMovie.status(), `실제 Movie 행이 없습니다: ${movieCode}`).toBe(200);
 
@@ -139,9 +143,28 @@ test("Swagger UI와 기존 momo_db의 실제 API 계약을 검증하고 테스�
     ACCOUNT.password,
     "비밀번호는 영문·숫자·특수문자(!@#$%^&*)를 포함한 8~20자로 지정하세요.",
   ).toMatch(/^(?=.*[A-Za-z])(?=.*\d)(?=.*[!@#$%^&*])[A-Za-z\d!@#$%^&*]{8,20}$/);
+  expect(
+    UPDATED_NICKNAME,
+    "회원정보 수정 테스트용 닉네임은 한글·영문·숫자 2~12자여야 합니다.",
+  ).toMatch(/^[가-힣a-zA-Z0-9]{2,12}$/);
+  expect(UPDATED_NICKNAME).not.toBe(ACCOUNT.nickname);
+
   const configuredMovie = await loadExistingMovie(
-    request, process.env.MOMO_SWAGGER_MOVIE_CODE || "",
+    request,
+    process.env.MOMO_SWAGGER_MOVIE_CODE || "",
+    "MOMO_SWAGGER_MOVIE_TITLE",
+    "MOMO_SWAGGER_MOVIE_CODE",
   );
+  const deleteMovie = await loadExistingMovie(
+    request,
+    process.env.MOMO_SWAGGER_DELETE_MOVIE_CODE || "",
+    "MOMO_SWAGGER_DELETE_MOVIE_TITLE",
+    "MOMO_SWAGGER_DELETE_MOVIE_CODE",
+  );
+  expect(
+    deleteMovie.movieCode,
+    "리뷰 삭제 검증용 영화는 유지형 리뷰 테스트 영화와 달라야 합니다.",
+  ).not.toBe(configuredMovie.movieCode);
 
   // 테스트 계정은 최초 한 번만 만들고, 이후에는 기존 계정을 재사용
   expect((await request.get(`${API}/api/auth/me`)).status()).toBe(401);
@@ -149,13 +172,70 @@ test("Swagger UI와 기존 momo_db의 실제 API 계약을 검증하고 테스�
   const headers = authHeaders(session.accessToken);
   const me = await request.get(`${API}/api/auth/me`, { headers });
   expect(me.status()).toBe(200);
-  expect((await me.json()).loginId).toBe(ACCOUNT.loginId);
+  const originalProfile = await me.json();
+  expect(originalProfile.loginId).toBe(ACCOUNT.loginId);
+
+  // 회원 정보 수정은 QA 계정에만 적용하고, 성공 여부를 확인한 직후 기존 값으로 복구한다.
+  const nextNickname = originalProfile.nickname === UPDATED_NICKNAME
+    ? ACCOUNT.nickname
+    : UPDATED_NICKNAME;
+  const nextEmail = originalProfile.email === UPDATED_EMAIL
+    ? ACCOUNT.email
+    : UPDATED_EMAIL;
+  expect(nextNickname).not.toBe(originalProfile.nickname);
+
+  try {
+    const profileUpdate = await request.put(`${API}/api/auth/me`, {
+      headers,
+      data: {
+        nickname: nextNickname,
+        email: nextEmail,
+        currentPassword: null,
+        newPassword: null,
+      },
+    });
+    expect(profileUpdate.status(), "회원 정보 수정 API 실패").toBe(200);
+    const updatedProfile = await profileUpdate.json();
+    expect(updatedProfile.nickname).toBe(nextNickname);
+    expect(updatedProfile.email).toBe(nextEmail);
+  } finally {
+    const restoreProfile = await request.put(`${API}/api/auth/me`, {
+      headers,
+      data: {
+        nickname: originalProfile.nickname,
+        email: originalProfile.email,
+        currentPassword: null,
+        newPassword: null,
+      },
+    });
+    expect(restoreProfile.status(), "회원 정보 복구 실패").toBe(200);
+    const restoredProfile = await restoreProfile.json();
+    expect(restoredProfile.nickname).toBe(originalProfile.nickname);
+    expect(restoredProfile.email).toBe(originalProfile.email);
+  }
 
   const passwordCheck = await request.post(`${API}/api/auth/me/password-check`, {
     headers, data: { currentPassword: ACCOUNT.password },
   });
   expect(passwordCheck.status()).toBe(200);
   expect(await passwordCheck.json()).toBe(true);
+
+  // 실제 영화 검색 API를 호출한다. 검색 결과는 서비스의 정상 동작에 따라 캐시·Movie DB에 반영될 수 있다.
+  const movieSearch = await request.get(
+    `${API}/api/movies/search?keyword=${encodeURIComponent(configuredMovie.title)}&page=1&size=5`,
+  );
+  expect(movieSearch.status(), "영화 검색 API 실패").toBe(200);
+  const searchBody = await movieSearch.json();
+  expect(Array.isArray(searchBody.content)).toBe(true);
+  expect(searchBody.page).toBe(1);
+  expect(searchBody.size).toBe(5);
+  expect(Number.isInteger(searchBody.totalCount)).toBe(true);
+  expect(typeof searchBody.hasNext).toBe("boolean");
+
+  const invalidMovieSearch = await request.get(
+    `${API}/api/movies/search?keyword=x&page=0&size=51`,
+  );
+  expect(invalidMovieSearch.status(), "영화 검색 입력값 검증 실패").toBe(400);
 
   // 모든 페이지를 조회해 QA 레코드를 찾는다. 다른 리뷰를 테스트 데이터로 오인하지 않는다.
   const ownReviews = await getAllPagedContent(request, "/api/reviews/me", headers);
@@ -175,6 +255,53 @@ test("Swagger UI와 기존 momo_db의 실제 API 계약을 검증하고 테스�
       `선택한 영화(${movie.movieCode})에 QA 표시가 없는 기존 리뷰가 있습니다. 기존 리뷰를 변경하지 않도록 다른 미리 리뷰하지 않은 영화 코드를 지정하세요.`,
     ).toBeUndefined();
   }
+
+  // 삭제 API 검증용 임시 리뷰는 별도 기존 영화에만 만든 뒤 바로 삭제한다.
+  const oldDeleteReview = ownReviews.find((item) => item.title === DELETE_REVIEW_TITLE);
+  if (oldDeleteReview) {
+    expect(oldDeleteReview.movieCode).toBe(deleteMovie.movieCode);
+    const oldDeleteComments = await getAllPagedContent(
+      request, `/api/reviews/${oldDeleteReview.reviewId}/comments`, headers,
+    );
+    expect(oldDeleteComments, "기존 삭제 테스트 리뷰에 다른 사용자의 댓글이 있어 자동 삭제를 중단합니다.").toHaveLength(0);
+    const oldDeleteReactions = await request.get(
+      `${API}/api/reviews/${oldDeleteReview.reviewId}/reactions`,
+    );
+    expect(oldDeleteReactions.status()).toBe(200);
+    const oldReactionCounts = await oldDeleteReactions.json();
+    expect(oldReactionCounts.likeCount + oldReactionCounts.dislikeCount).toBe(0);
+    expect((await request.delete(
+      `${API}/api/reviews/${oldDeleteReview.reviewId}`, { headers },
+    )).status()).toBe(204);
+  }
+
+  const unrelatedDeleteMovieReview = ownReviews.find(
+    (item) => item.movieCode === deleteMovie.movieCode && item.title !== DELETE_REVIEW_TITLE,
+  );
+  expect(
+    unrelatedDeleteMovieReview,
+    "리뷰 삭제 검증용 영화에 일반 리뷰가 있습니다. 해당 리뷰는 수정·삭제하지 않습니다.",
+  ).toBeUndefined();
+
+  const deleteReviewCreate = await request.post(`${API}/api/reviews`, {
+    headers,
+    data: {
+      movieCode: deleteMovie.movieCode,
+      title: DELETE_REVIEW_TITLE,
+      content: "DELETE API 전용 임시 QA 리뷰입니다.",
+    },
+  });
+  expect(deleteReviewCreate.status(), "리뷰 삭제 검증용 임시 리뷰 생성 실패").toBe(201);
+  const deleteReviewId = (await deleteReviewCreate.json()).reviewId;
+  expect(deleteReviewId).toBeTruthy();
+  expect((await request.get(`${API}/api/reviews/${deleteReviewId}`)).status()).toBe(200);
+  expect((await request.delete(
+    `${API}/api/reviews/${deleteReviewId}`, { headers },
+  )).status()).toBe(204);
+  expect(
+    (await request.get(`${API}/api/reviews/${deleteReviewId}`)).status(),
+    "삭제한 리뷰가 다시 조회됩니다.",
+  ).toBe(404);
 
   let reviewId;
   if (qaReview) {
@@ -205,7 +332,12 @@ test("Swagger UI와 기존 momo_db의 실제 API 계약을 검증하고 테스�
   expect(duplicate.status()).toBe(409);
 
   expect((await request.get(`${API}/api/reviews/${reviewId}`)).status()).toBe(200);
-  expect((await request.get(`${API}/api/reviews?page=0&searchType=TITLE&keyword=SWAGGER`)).status()).toBe(200);
+  const reviewSearch = await request.get(
+    `${API}/api/reviews?page=0&searchType=TITLE&keyword=SWAGGER`,
+  );
+  expect(reviewSearch.status()).toBe(200);
+  const reviewSearchBody = await reviewSearch.json();
+  expect(reviewSearchBody.content.some((item) => item.reviewId === reviewId)).toBe(true);
   expect((await request.get(`${API}/api/reviews/movie/${movie.movieCode}?page=0`)).status()).toBe(200);
   expect((await request.get(`${API}/api/reviews/summaries?reviewIds=${reviewId}`)).status()).toBe(200);
 
@@ -220,6 +352,11 @@ test("Swagger UI와 기존 momo_db의 실제 API 계약을 검증하고 테스�
   expect(await (await request.get(
     `${API}/api/reviews/${reviewId}/reaction`, { headers },
   )).json()).toBe(true);
+
+  // 댓글 목록은 비회원에게도 공개되며, 개인 반응 정보만 인증에 의존한다.
+  expect((await request.get(
+    `${API}/api/reviews/${reviewId}/comments?page=0`,
+  )).status()).toBe(200);
 
   // 댓글 역시 모든 페이지에서 QA 표시를 찾고, 동일 commentId만 수정한다.
   const allComments = await getAllPagedContent(
@@ -248,6 +385,38 @@ test("Swagger UI와 기존 momo_db의 실제 API 계약을 검증하고 테스�
     headers, data: true,
   })).status()).toBe(200);
   expect((await request.get(`${API}/api/comments/${commentId}/reactions`)).status()).toBe(200);
+
+  // 댓글 삭제는 별도 임시 댓글만 사용한다. 기존 QA 댓글과 일반 댓글은 보존한다.
+  const commentsForDeletion = await getAllPagedContent(
+    request, `/api/reviews/${reviewId}/comments`, headers,
+  );
+  const oldDeleteComments = commentsForDeletion.filter(
+    (item) => (item.content || "").startsWith(DELETE_COMMENT_MARKER),
+  );
+  expect(oldDeleteComments.length).toBeLessThanOrEqual(1);
+  if (oldDeleteComments.length === 1) {
+    const oldDeleteComment = oldDeleteComments[0];
+    expect(oldDeleteComment.userId).toBe(originalProfile.userId);
+    expect(oldDeleteComment.likeCount + oldDeleteComment.dislikeCount).toBe(0);
+    expect((await request.delete(
+      `${API}/api/comments/${oldDeleteComment.commentId}`, { headers },
+    )).status()).toBe(204);
+  }
+
+  const deleteCommentCreate = await request.post(
+    `${API}/api/reviews/${reviewId}/comments`,
+    { headers, data: { content: DELETE_COMMENT_MARKER } },
+  );
+  expect(deleteCommentCreate.status()).toBe(201);
+  const deleteCommentId = (await deleteCommentCreate.json()).commentId;
+  expect(deleteCommentId).toBeTruthy();
+  expect((await request.delete(
+    `${API}/api/comments/${deleteCommentId}`, { headers },
+  )).status()).toBe(204);
+  const commentsAfterDelete = await getAllPagedContent(
+    request, `/api/reviews/${reviewId}/comments`, headers,
+  );
+  expect(commentsAfterDelete.some((item) => item.commentId === deleteCommentId)).toBe(false);
 
   // 평가·관심 영화는 user/movie 조합으로 갱신해 중복 행을 만들지 않는다.
   expect((await request.put(`${API}/api/movies/${movie.movieCode}/rating`, {
@@ -281,7 +450,7 @@ test("Swagger UI와 기존 momo_db의 실제 API 계약을 검증하고 테스�
   expect((await request.get(`${API}/api/movies/catalog/budget`)).status()).toBe(200);
   expect((await request.get(`${API}/api/movies/ZZZ99999/rating`)).status()).toBe(404);
 
-  // 회원·리뷰·댓글·반응·평점·관심 영화는 삭제하지 않는다. Refresh Token만 로그아웃으로 폐기한다.
+  // 영구 QA 회원·리뷰·댓글·반응·평점·관심 영화는 보존한다. 별도 임시 삭제 검증 행만 생성 직후 삭제한다.
   expect((await request.post(`${API}/api/auth/logout`, { headers })).status()).toBe(204);
   const reissue = await request.post(`${API}/api/auth/reissue`, {
     data: { refreshToken: session.refreshToken },
