@@ -56,13 +56,18 @@ async function loginOrCreateAccount(request) {
   return login.json();
 }
 
-async function loadExistingMovie(request, preferredCode) {
+async function loadExistingMovie(request, movieCode) {
   // This suite never inserts a fake Movie row. Supply one code already present in momo_db.
-  const movieCode = preferredCode || process.env.MOMO_SWAGGER_MOVIE_CODE || "";
   expect(
     movieCode,
     "실제 momo_db의 movies.movie_code를 MOMO_SWAGGER_MOVIE_CODE로 지정하세요.",
   ).toMatch(/^[A-Za-z0-9]{8}$/);
+
+  const title = (process.env.MOMO_SWAGGER_MOVIE_TITLE || "").trim();
+  expect(
+    title,
+    "관심 영화 데이터에 실제 제목을 기록하기 위해 MOMO_SWAGGER_MOVIE_TITLE을 지정하세요.",
+  ).not.toBe("");
 
   // Rating GET checks the Movie row without starting external movie-data collection.
   const existingMovie = await request.get(`${API}/api/movies/${movieCode}/rating`);
@@ -70,7 +75,7 @@ async function loadExistingMovie(request, preferredCode) {
 
   return {
     movieCode,
-    title: process.env.MOMO_SWAGGER_MOVIE_TITLE || movieCode,
+    title,
     releaseDate: process.env.MOMO_SWAGGER_MOVIE_RELEASE_DATE || "",
   };
 }
@@ -129,6 +134,15 @@ test("Swagger UI와 기존 momo_db의 실제 API 계약을 검증하고 테스�
   await publicReviews.locator("button.execute").click();
   await expect(publicReviews.locator(".responses-wrapper")).toContainText("200");
 
+  // DB에 쓰기 전에 테스트 비밀번호와 기존 영화 정보를 먼저 검증한다.
+  expect(
+    ACCOUNT.password,
+    "비밀번호는 영문·숫자·특수문자(!@#$%^&*)를 포함한 8~20자로 지정하세요.",
+  ).toMatch(/^(?=.*[A-Za-z])(?=.*\\d)(?=.*[!@#$%^&*])[A-Za-z\\d!@#$%^&*]{8,20}$/);
+  const configuredMovie = await loadExistingMovie(
+    request, process.env.MOMO_SWAGGER_MOVIE_CODE || "",
+  );
+
   // 테스트 계정은 최초 한 번만 만들고, 이후에는 기존 계정을 재사용
   expect((await request.get(`${API}/api/auth/me`)).status()).toBe(401);
   const session = await loginOrCreateAccount(request);
@@ -146,7 +160,13 @@ test("Swagger UI와 기존 momo_db의 실제 API 계약을 검증하고 테스�
   // 모든 페이지를 조회해 QA 레코드를 찾는다. 다른 리뷰를 테스트 데이터로 오인하지 않는다.
   const ownReviews = await getAllPagedContent(request, "/api/reviews/me", headers);
   const qaReview = ownReviews.find((item) => item.title === REVIEW_TITLE);
-  const movie = await loadExistingMovie(request, qaReview?.movieCode);
+  if (qaReview) {
+    expect(
+      qaReview.movieCode,
+      "기존 QA 리뷰와 MOMO_SWAGGER_MOVIE_CODE가 다릅니다. 최초 실행 때 사용한 영화 코드를 유지하세요.",
+    ).toBe(configuredMovie.movieCode);
+  }
+  const movie = configuredMovie;
 
   if (!qaReview) {
     const existingReview = ownReviews.find((item) => item.movieCode === movie.movieCode);
